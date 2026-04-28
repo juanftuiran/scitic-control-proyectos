@@ -7,6 +7,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Librería oficial de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
@@ -19,6 +20,7 @@
             --border: #334155; --accent: #d97706;      
             --table-header-bg: #0f172a; --table-row-hover: #334155;
             --input-bg: #0f172a; --danger: #ef4444; --danger-bg: rgba(239, 68, 68, 0.1);
+            --success: #22c55e;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -26,7 +28,7 @@
         #loginView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-box { background: var(--card-bg); padding: 3rem; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .login-box h2 { margin-top: 0; color: var(--primary); font-size: 1.5rem; margin-bottom: 2rem; }
-        .login-box input { margin-bottom: 1rem; padding: 0.8rem; font-size: 1rem; text-align: center; width: 100%; box-sizing: border-box; }
+        .login-box input { margin-bottom: 1rem; padding: 0.8rem; font-size: 1rem; text-align: center; }
 
         header { background: #1e293b; padding: 1rem 1.5rem; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
         .header-title { font-weight: 700; font-size: 1.25rem; letter-spacing: 1px; }
@@ -93,10 +95,18 @@
         .modal.show { display: block; animation: modalFade 0.3s ease forwards; } .modal.show .modal-content { animation: modalPop 0.4s forwards; }
         .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 2.5rem; border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
 
-        .alert-item { animation: slideInCascade 0.4s forwards; opacity: 0; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s, transform 0.2s; }
+        .alert-item { animation: slideInCascade 0.4s forwards; opacity: 0; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 0.75rem 1rem; display: flex; flex-direction: column; cursor: pointer; transition: background-color 0.2s, transform 0.2s; margin-bottom: 10px;}
         .alert-item:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+        .alert-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
+        .alert-detail { font-size: 0.8rem; color: #fca5a5; background: rgba(0,0,0,0.2); padding: 5px 8px; border-radius: 4px; margin-top: 5px; }
 
-        /* Clases de Ocultamiento por Rol */
+        /* Estilos para el Desglose Admin */
+        .admin-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 10px; }
+        .admin-project-card { border-left: 3px solid var(--primary); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; }
+        .worker-stat { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+        .worker-stat:last-child { border-bottom: none; }
+
+        /* Clase para ocultar elementos a colaboradores y moderadores */
         .oculto-por-rol { display: none !important; }
     </style>
 </head>
@@ -106,7 +116,7 @@
 <div id="loginView">
     <div class="login-box">
         <h2>🔒 Acceso SCITIC</h2>
-        <input type="text" id="inUser" placeholder="Usuario (Ej. admin, ketty, juan)">
+        <input type="text" id="inUser" placeholder="Usuario">
         <input type="password" id="inPass" placeholder="Contraseña" onkeypress="if(event.key === 'Enter') iniciarSesion()">
         <button class="btn-primary" onclick="iniciarSesion()">Ingresar al Sistema</button>
         <p id="loginError" style="color: var(--danger); font-size: 0.85rem; display: none; margin-top: 1rem;">Usuario o clave incorrectos.</p>
@@ -165,9 +175,9 @@
                         <datalist id="trabajadoresList"></datalist>
                     </div>
                     
-                    <div class="perm-financiero" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="form-group"><label>Horas Presup.</label><input type="number" id="horasPres" value="0"></div>
-                        <div class="form-group"><label>Valor Hora</label><input type="number" id="valor" value="0"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group perm-financiero"><label>Horas Presup.</label><input type="number" id="horasPres" value="0"></div>
+                        <div class="form-group perm-financiero"><label>Valor Hora</label><input type="number" id="valor" value="0"></div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -193,6 +203,7 @@
                         <button class="btn-primary" onclick="document.getElementById('excelFile').click()">📂 Importar Excel</button>
                         <button class="btn-secondary" onclick="exportarExcel()">💾 Exportar Vista Actual</button>
                         <button class="btn-secondary" style="border: 1px solid var(--accent); color: var(--accent);" onclick="descargarAuditoria()">📜 Descargar Auditoría</button>
+                        <!-- BOTÓN CORREGIDO: Borrado Seguro -->
                         <button class="btn-danger" style="margin-top: 15px;" onclick="abrirModalBorrado()">⚠️ Borrar Toda la Base</button>
                     </div>
                 </div>
@@ -206,11 +217,16 @@
                     </div>
                     
                     <div class="card perm-financiero" style="margin-bottom: 0; border-top: 4px solid var(--danger); display: flex; flex-direction: column;">
-                        <h3 style="color: #fca5a5; display: flex; align-items: center; gap: 8px;">⚠️ Proyectos > 100% Avance</h3>
-                        <div id="alertasContainer" class="custom-scroll" style="flex: 1; overflow-y: auto; max-height: 250px; display: flex; flex-direction: column; gap: 10px;">
+                        <h3 style="color: #fca5a5; display: flex; align-items: center; gap: 8px;">⚠️ Alertas de Presupuesto</h3>
+                        <div id="alertasContainer" class="custom-scroll" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
                         </div>
                     </div>
+                </div>
+
+                <div class="card perm-admin-only" id="adminDesgloseContainer" style="display: none;">
+                    <h3>Desglose Administrativo (Horas y Costos)</h3>
+                    <div id="adminDesgloseContent" class="admin-view-grid"></div>
                 </div>
 
                 <div class="card">
@@ -220,7 +236,7 @@
                             <thead>
                                 <tr>
                                     <th>Fecha</th> <th>Proyecto</th> <th>Trabajador</th> <th>H. Trab</th>
-                                    <th class="perm-financiero">Pago</th> <th class="perm-financiero">% Avance</th>
+                                    <th class="perm-financiero">Pago</th> <th class="perm-financiero">% Avance (Histórico)</th>
                                     <th>Actividad</th> <th style="text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
@@ -233,7 +249,7 @@
     </div>
 </div>
 
-<!-- Modal Detalles de Proyecto -->
+<!-- Modal de Detalles -->
 <div id="detalleModal" class="modal">
     <div class="modal-content">
         <h2 id="modalNombreProy" style="color: var(--primary); margin-top:0; font-size: 1.8rem;"></h2>
@@ -253,15 +269,16 @@
             <small style="color: var(--text-muted); text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;">Resumen por Actividad</small>
             <div id="mActividades" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);"></div>
         </div>
+        <!-- CORRECCIÓN DE CERRAR MODAL -->
         <button class="btn-primary" style="width:100%; margin-top:30px; padding: 1rem;" onclick="cerrarModal('detalleModal')">Cerrar Detalles</button>
     </div>
 </div>
 
-<!-- Modal Borrado Seguro -->
+<!-- NUEVO MODAL: Borrado Seguro -->
 <div id="deleteModal" class="modal">
     <div class="modal-content" style="width: 400px;">
         <h3 style="color:var(--danger); margin-top:0;">⚠️ Acción Crítica</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">Estás a punto de borrar toda la base de datos. Esta acción no se puede deshacer.</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Estás a punto de borrar toda la base de datos de SCITIC. Esta acción no se puede deshacer.</p>
         <p>Escribe <strong>ELIMINAR-TODO-SCITIC</strong> para confirmar:</p>
         <input type="text" id="confirmCode" placeholder="Escribe el código aquí..." style="margin-bottom: 15px;">
         <div class="btn-group">
@@ -283,12 +300,10 @@ const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let datos = [];
 let auditoria = [];
 let listaFiltradaGlobal = []; 
+let alertasDetalladasGlobales = []; 
 let editId = null;
 let usuarioActual = null;
 
-// ==========================================
-// LOGIN Y SESIÓN
-// ==========================================
 window.onload = function() {
     const sesionGuardada = sessionStorage.getItem('scitic_session');
     if (sesionGuardada) {
@@ -331,34 +346,41 @@ function cerrarSesion() {
     location.reload();
 }
 
+// CORRECCIÓN: Permisos ahora incluyen "moderador" para ocultar finanzas
 function aplicarPermisos() {
     document.querySelectorAll('.oculto-por-rol').forEach(el => el.classList.remove('oculto-por-rol'));
     
-    // Si NO es admin, ocultamos funciones de Admin (Excel, Borrar)
     if (usuarioActual.role !== 'admin') {
         document.querySelectorAll('.perm-admin-only').forEach(el => el.classList.add('oculto-por-rol'));
     }
-
-    // Si es colaborador o moderador, ocultamos las finanzas
     if (usuarioActual.role === 'colaborador' || usuarioActual.role === 'moderador') {
         document.querySelectorAll('.perm-financiero').forEach(el => el.classList.add('oculto-por-rol'));
     }
-
-    // Comportamiento del campo Trabajador según el rol
-    const inTrab = document.getElementById('trabajador');
     if (usuarioActual.role === 'colaborador') {
+        const inTrab = document.getElementById('trabajador');
         inTrab.value = usuarioActual.name;
         inTrab.setAttribute('readonly', 'true');
         document.querySelectorAll('.perm-trabajador-filtro').forEach(el => el.classList.add('oculto-por-rol'));
     } else {
-        // Admin y Moderador pueden seleccionar trabajadores
-        inTrab.removeAttribute('readonly');
+        // Admin o Moderador sí pueden elegir trabajador
+        document.getElementById('trabajador').removeAttribute('readonly');
     }
 }
 
-// ==========================================
-// CORE APP
-// ==========================================
+async function registrarAuditoria(accion, detalle) {
+    const log = { fecha_hora: new Date().toLocaleString(), usuario: usuarioActual.name, rol: usuarioActual.role, accion: accion, detalle: detalle };
+    await dbClient.from('auditoria').insert([log]);
+    auditoria.unshift(log); 
+}
+
+function descargarAuditoria() {
+    if(auditoria.length === 0) return alert("No hay registros de auditoría aún.");
+    const ws = XLSX.utils.json_to_sheet(auditoria);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Auditoria_Eventos");
+    XLSX.writeFile(wb, `SCITIC_Auditoria_${new Date().getTime()}.xlsx`);
+}
+
 async function iniciarApp() {
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('appView').style.display = 'block';
@@ -375,7 +397,7 @@ async function iniciarApp() {
 
     recalcularProgresos();
     document.getElementById('fecha').valueAsDate = new Date();
-    actualizarListasYFiltros();
+    inicializarDatosGlobales();
 
     document.getElementById('displayUserName').innerText = "👤 " + usuarioActual.name;
     document.getElementById('displayUserRole').innerText = usuarioActual.role.toUpperCase();
@@ -385,17 +407,38 @@ async function iniciarApp() {
 function generarIdUnico() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 
 function recalcularProgresos() {
-    const proyectosMap = {};
-    datos.forEach(d => { proyectosMap[d.proyecto] = (proyectosMap[d.proyecto] || 0) + Number(d.horas); });
+    datos.sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+
+    const acumulador = {};
+    const proyectosSuperados = new Set();
+    alertasDetalladasGlobales = [];
+
     datos.forEach(d => {
-        d.acum = proyectosMap[d.proyecto] || 0;
-        d.progreso = d.horas_pres > 0 ? ((d.acum / d.horas_pres) * 100).toFixed(1) : 0;
+        if (!acumulador[d.proyecto]) acumulador[d.proyecto] = 0;
+
+        let horasAntes = acumulador[d.proyecto];
+        acumulador[d.proyecto] += Number(d.horas);
+        let horasDespues = acumulador[d.proyecto];
+
+        d.acum = horasDespues;
+        d.progreso = d.horas_pres > 0 ? ((horasDespues / d.horas_pres) * 100).toFixed(1) : 0;
+
+        if (d.horas_pres > 0 && horasAntes <= d.horas_pres && horasDespues > d.horas_pres && !proyectosSuperados.has(d.proyecto)) {
+            proyectosSuperados.add(d.proyecto);
+            let exceso = horasDespues - d.horas_pres;
+            alertasDetalladasGlobales.push({
+                proyecto: d.proyecto,
+                cliente: d.cliente,
+                trabajador: d.trabajador,
+                fecha: d.fecha,
+                horasPres: d.horas_pres,
+                exceso: exceso
+            });
+        }
     });
+    datos.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
 }
 
-// ==========================================
-// AUTOCOMPLETADO Y HERENCIA
-// ==========================================
 function autocompletarProyecto() {
     const inputProy = document.getElementById('proyecto').value.trim().toUpperCase();
     if (!inputProy) return;
@@ -411,41 +454,41 @@ function autocompletarProyecto() {
     }
 }
 
-function actualizarListasYFiltros() {
-    const trabajadoresSet = new Set();
-    const mesesSet = new Set();
-    const clientesSet = new Set();
-    const proyectosSet = new Set();
+function inicializarDatosGlobales() {
+    const trabajadoresGlobales = new Set();
+    const mesesGlobales = new Set();
+    const clientesForm = new Set();
+    const proyectosForm = new Set();
 
     datos.forEach(d => { 
-        if(d.trabajador) trabajadoresSet.add(d.trabajador); 
-        if(d.fecha && d.fecha.length >= 7) mesesSet.add(d.fecha.substring(0,7));
-        if(d.cliente) clientesSet.add(d.cliente);
-        if(d.proyecto) proyectosSet.add(d.proyecto);
+        if(d.trabajador) trabajadoresGlobales.add(d.trabajador); 
+        if(d.fecha && d.fecha.length >= 7) mesesGlobales.add(d.fecha.substring(0,7));
+        if(d.cliente) clientesForm.add(d.cliente);
+        if(d.proyecto) proyectosForm.add(d.proyecto);
     });
     
-    // Llenar Datalists del formulario
-    document.getElementById("clientesList").innerHTML = [...clientesSet].sort().map(c => `<option value="${c}">`).join('');
-    document.getElementById("proyectosList").innerHTML = [...proyectosSet].sort().map(p => `<option value="${p}">`).join('');
-    document.getElementById("trabajadoresList").innerHTML = [...trabajadoresSet].sort().map(t => `<option value="${t}">`).join('');
+    document.getElementById("clientesList").innerHTML = [...clientesForm].sort().map(c => `<option value="${c}">`).join('');
+    document.getElementById("proyectosList").innerHTML = [...proyectosForm].sort().map(p => `<option value="${p}">`).join('');
 
-    // Llenar Filtro de Meses
+    let dlHtml = '';
+    [...trabajadoresGlobales].sort().forEach(val => { dlHtml += `<option value="${val}">`; });
+    document.getElementById("trabajadoresList").innerHTML = dlHtml;
+
     let fMes = document.getElementById("fMes");
     let valMesActual = fMes.value;
     let htmlMeses = '<option value="">Todos los meses</option>';
-    [...mesesSet].sort().reverse().forEach(val => { 
+    [...mesesGlobales].sort().reverse().forEach(val => { 
         const selected = val === valMesActual ? 'selected' : '';
         htmlMeses += `<option value="${val}" ${selected}>${val}</option>`;
     });
     fMes.innerHTML = htmlMeses;
-    
     filtrar();
 }
 
 function filtrar() {
     const fc = document.getElementById('fCliente').value;
     let ft = document.getElementById('fTrabajador').value;
-    // Si es colaborador, se fuerza su filtro. El moderador sí puede filtrar a otros.
+    // CORRECCIÓN: Moderador puede usar el filtro completo
     if (usuarioActual.role === 'colaborador') ft = usuarioActual.name;
     
     const fp = document.getElementById('fProyecto').value;
@@ -467,18 +510,22 @@ function filtrar() {
     
     mostrar(listaFiltradaGlobal);
     graficar(listaFiltradaGlobal);
-    if(usuarioActual.role === 'admin') generarAlertas(listaFiltradaGlobal); 
+    if(usuarioActual.role === 'admin') {
+        generarAlertas(); 
+        generarDesgloseAdmin(listaFiltradaGlobal); 
+    }
 
     const datosParaCliente = datos.filter(d => (!ft || d.trabajador === ft) && (!fp || d.proyecto === fp));
-    const clSet = new Set(datosParaCliente.map(d => d.cliente).filter(Boolean));
+    const clientesSet = new Set(datosParaCliente.map(d => d.cliente).filter(Boolean));
     const datosParaTrabajador = datos.filter(d => (!fc || d.cliente === fc) && (!fp || d.proyecto === fp));
-    const trSet = new Set(datosParaTrabajador.map(d => d.trabajador).filter(Boolean));
+    const trabajadoresSet = new Set(datosParaTrabajador.map(d => d.trabajador).filter(Boolean));
     const datosParaProyecto = datos.filter(d => (!fc || d.cliente === fc) && (!ft || d.trabajador === ft));
-    const prSet = new Set(datosParaProyecto.map(d => d.proyecto).filter(Boolean));
+    const proyectosSet = new Set(datosParaProyecto.map(d => d.proyecto).filter(Boolean));
 
-    llenarSelectManteniendoValor('fCliente', clSet, fc);
-    if(usuarioActual.role !== 'colaborador') llenarSelectManteniendoValor('fTrabajador', trSet, ft);
-    llenarSelectManteniendoValor('fProyecto', prSet, fp);
+    llenarSelectManteniendoValor('fCliente', clientesSet, fc);
+    // CORRECCIÓN: Moderador también actualiza select de trabajadores
+    if(usuarioActual.role !== 'colaborador') llenarSelectManteniendoValor('fTrabajador', trabajadoresSet, ft);
+    llenarSelectManteniendoValor('fProyecto', proyectosSet, fp);
 }
 
 function llenarSelectManteniendoValor(id, set, valorActual) {
@@ -494,6 +541,7 @@ function llenarSelectManteniendoValor(id, set, valorActual) {
 
 function limpiarFiltros() {
     document.getElementById('fCliente').value = "";
+    // CORRECCIÓN: Moderador puede limpiar trabajador
     if(usuarioActual.role !== 'colaborador') document.getElementById('fTrabajador').value = "";
     document.getElementById('fProyecto').value = "";
     document.getElementById('fMes').value = "";
@@ -501,9 +549,6 @@ function limpiarFiltros() {
     filtrar();
 }
 
-// ==========================================
-// CRUD Y RENDERIZADO
-// ==========================================
 async function guardar() {
     let trabajadorVal = document.getElementById('trabajador').value;
     if(usuarioActual.role === 'colaborador') trabajadorVal = usuarioActual.name;
@@ -526,18 +571,17 @@ async function guardar() {
         valor: Number(document.getElementById('valor').value) || 0
     };
 
-    // MAGIA DE SEGURIDAD PARA HERENCIA: Si no es admin, forzamos los valores del proyecto existente
+    // CORRECCIÓN: Colaborador Y Moderador heredan finanzas (ya que el moderador no ve los campos para digitarlos)
     if (usuarioActual.role !== 'admin') {
         const proyExistente = datos.find(d => d.proyecto.toUpperCase() === obj.proyecto.toUpperCase());
         if (proyExistente) {
             obj.horas_pres = proyExistente.horas_pres;
             obj.valor = proyExistente.valor;
-            if(!obj.cliente) obj.cliente = proyExistente.cliente;
+            if(!obj.cliente) obj.cliente = proyExistente.cliente; 
         }
     }
 
     obj.pago = obj.horas * obj.valor;
-
     let accionAuditoria = "";
 
     if (editId !== null) {
@@ -546,7 +590,7 @@ async function guardar() {
             const { error } = await dbClient.from('registros').update(obj).eq('id', editId);
             if(!error) {
                 datos[index] = obj;
-                accionAuditoria = `EDITAR: Modificó a ${obj.horas}h en proy. ${obj.proyecto}`;
+                accionAuditoria = `EDITAR: Modificó horas a ${obj.horas}h en proy. ${obj.proyecto}`;
             }
         }
     } else {
@@ -563,12 +607,77 @@ async function guardar() {
     await registrarAuditoria(editId ? "EDICIÓN" : "CREACIÓN", accionAuditoria);
     
     btn.disabled = false;
-    actualizarListasYFiltros();
+    inicializarDatosGlobales();
     limpiarFormulario();
+}
+
+function generarAlertas() {
+    const container = document.getElementById('alertasContainer');
+    
+    if (alertasDetalladasGlobales.length === 0) {
+        container.innerHTML = `<div class="alert-item" style="cursor: default; background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3);"><span style="font-size: 1.5rem;">✅</span><p style="color: var(--success); margin: 0.5rem 0 0; font-weight: 600;">Todos los proyectos están en presupuesto.</p></div>`;
+        return;
+    }
+
+    let html = '';
+    alertasDetalladasGlobales.forEach((al, i) => {
+        html += `
+        <div class="alert-item" onclick="verDetalle('${al.proyecto}')" style="animation-delay: ${i * 0.05}s;">
+            <div class="alert-header">
+                <strong>${al.proyecto}</strong>
+                <span style="background: var(--danger); color: white; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; font-size:0.75rem;">+${al.exceso} h</span>
+            </div>
+            <small style="color: var(--text-muted);">${al.cliente || 'Sin Cliente'}</small>
+            <div class="alert-detail">
+                🚨 <strong>${al.trabajador}</strong> superó el límite de ${al.horasPres}h el día <strong>${al.fecha}</strong>.
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function generarDesgloseAdmin(lista) {
+    if(usuarioActual.role !== 'admin') return;
+    
+    const container = document.getElementById('adminDesgloseContainer');
+    const content = document.getElementById('adminDesgloseContent');
+    container.style.display = 'block';
+
+    const resumenAdmin = {};
+    lista.forEach(d => {
+        if (!resumenAdmin[d.proyecto]) {
+            resumenAdmin[d.proyecto] = { horasPres: d.horas_pres, trabajadores: {}, totalHoras: 0 };
+        }
+        if (!resumenAdmin[d.proyecto].trabajadores[d.trabajador]) {
+            resumenAdmin[d.proyecto].trabajadores[d.trabajador] = { horas: 0, costo: 0 };
+        }
+        resumenAdmin[d.proyecto].trabajadores[d.trabajador].horas += Number(d.horas);
+        resumenAdmin[d.proyecto].trabajadores[d.trabajador].costo += Number(d.pago);
+        resumenAdmin[d.proyecto].totalHoras += Number(d.horas);
+    });
+
+    let html = '';
+    for (const [proyecto, data] of Object.entries(resumenAdmin)) {
+        let colorClase = data.totalHoras > data.horasPres && data.horasPres > 0 ? "color: var(--danger)" : "color: var(--success)";
+        
+        html += `<div class="admin-project-card">
+            <h4 style="margin:0 0 10px 0; color: var(--primary)">${proyecto} 
+            <span style="font-size:11px; font-weight:normal; ${colorClase}; display:block; margin-top:4px;">(${data.totalHoras}h usadas / ${data.horasPres}h presup.)</span></h4>`;
+        
+        for (const [trabajador, stats] of Object.entries(data.trabajadores)) {
+            html += `<div class="worker-stat">
+                <span>👤 <span style="color: var(--text-main)">${trabajador}</span></span>
+                <span style="text-align: right"><strong>${stats.horas}h</strong> <br><small style="color: #60a5fa">$${stats.costo.toLocaleString('es-CO')}</small></span>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+    content.innerHTML = html;
 }
 
 function mostrar(lista) {
     let totalH = 0; let totalP = 0; const proyActivos = new Set(); let htmlTabla = "";
+    
     const listaOrdenada = [...lista].sort((a, b) => {
         const fechaA = new Date(a.fecha || 0); const fechaB = new Date(b.fecha || 0);
         if (fechaB.getTime() === fechaA.getTime()) return b.id.localeCompare(a.id);
@@ -582,14 +691,14 @@ function mostrar(lista) {
         if(d.proyecto) proyActivos.add(d.proyecto);
         const animDelay = Math.min(index * 0.02, 0.5); 
         
-        // Modificado: El Moderador y el Admin pueden editar cualquier registro
+        // CORRECCIÓN: Moderador también puede editar las filas de los demás.
         const puedeEditar = esAdmin || usuarioActual.role === 'moderador' || (d.trabajador === usuarioActual.name);
 
         htmlTabla += `
         <tr class="animated-row" style="animation-delay: ${animDelay}s;">
             <td style="color:var(--text-muted); font-size: 0.85rem; font-weight: 600;">${d.fecha || 'N/A'}</td>
             <td><span class="project-link" onclick="verDetalle('${d.proyecto}')">${d.proyecto}</span><br><small style="color:var(--text-muted)">${d.cliente}</small></td>
-            <td>${d.trabajador}</td><td>${d.horas} h</td>
+            <td>${d.trabajador}</td><td><strong>${d.horas} h</strong></td>
             ${esAdmin ? `<td style="color: #60a5fa; font-weight: 600;">$${Number(d.pago).toLocaleString('es-CO')}</td>` : ''}
             ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso, 100)}%; ${Number(d.progreso)>100 ? 'background:var(--danger);':''}"></div></div><small style="${Number(d.progreso)>100 ? 'color:var(--danger); font-weight:bold;':''}">${d.progreso}%</small></td>` : ''}
             <td><span class="badge bg-blue">${d.actividad}</span></td>
@@ -620,35 +729,6 @@ function animarNumero(id, finalValue, sufijo, esMoneda = false) {
     window.requestAnimationFrame(step);
 }
 
-function generarAlertas(lista) {
-    const container = document.getElementById('alertasContainer');
-    const proyectosUnicos = {};
-    lista.forEach(d => { if(!proyectosUnicos[d.proyecto]) { proyectosUnicos[d.proyecto] = d; } });
-    const criticos = Object.values(proyectosUnicos).filter(p => Number(p.progreso) > 100);
-
-    if (criticos.length === 0) {
-        container.innerHTML = `<div class="alert-item" style="cursor: default;"><span style="font-size: 1.5rem;">✅</span><br><p style="color: #4ade80; margin: 0.5rem 0 0; font-weight: 600;">Todos los proyectos están en presupuesto.</p></div>`;
-        return;
-    }
-    criticos.sort((a, b) => Number(b.progreso) - Number(a.progreso));
-    let html = '';
-    criticos.forEach((p, i) => {
-        html += `<div class="alert-item" onclick="verDetalle('${p.proyecto}')" style="animation-delay: ${i * 0.05}s;"><div style="overflow: hidden; padding-right: 5px;"><strong style="color: var(--text-main); font-size: 0.95rem;">${p.proyecto}</strong><small style="color: var(--text-muted); display: block;">${p.cliente || 'Sin Cliente'}</small></div><span style="background: var(--danger); color: white; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700;">${p.progreso}%</span></div>`;
-    });
-    container.innerHTML = html;
-}
-
-function graficar(listaFiltrada) {
-    const ctx = document.getElementById("grafico"); const resumen = {};
-    listaFiltrada.forEach(d => resumen[d.proyecto] = (resumen[d.proyecto] || 0) + Number(d.horas));
-    Chart.defaults.color = '#94a3b8';
-    if (window.chart) window.chart.destroy();
-    window.chart = new Chart(ctx, {
-        type: 'bar', data: { labels: Object.keys(resumen), datasets: [{ label: 'Horas', data: Object.values(resumen), backgroundColor: '#3b82f6', hoverBackgroundColor: '#60a5fa', borderRadius: 5 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
-    });
-}
-
 function verDetalle(nombre) {
     const registros = datos.filter(d => d.proyecto === nombre);
     if(registros.length === 0) return;
@@ -662,67 +742,23 @@ function verDetalle(nombre) {
     document.getElementById('detalleModal').classList.add('show');
 }
 
+// CORRECCIÓN: Función que puede cerrar cualquier modal por su ID
 function cerrarModal(modalId) { 
-    const modal = document.getElementById(modalId); modal.classList.remove('show');
+    const modal = document.getElementById(modalId); 
+    if(!modal) return;
+    modal.classList.remove('show');
     setTimeout(() => { if(!modal.classList.contains('show')) modal.style.display = 'none'; modal.style.display = ''; }, 300);
 }
 
-function editar(id) {
-    const d = datos.find(x => x.id === id); if (!d) return;
-    
-    // Si es colaborador, no puede editar registros ajenos
-    if(usuarioActual.role === 'colaborador' && d.trabajador !== usuarioActual.name) return alert("No puedes editar el registro de otro compañero.");
-    
-    document.getElementById('cliente').value = d.cliente; 
-    document.getElementById('proyecto').value = d.proyecto;
-    document.getElementById('trabajador').value = d.trabajador; 
-    document.getElementById('horasPres').value = d.horas_pres || 0;
-    document.getElementById('fecha').value = d.fecha || new Date().toISOString().split('T')[0];
-    document.getElementById('horas').value = d.horas; 
-    document.getElementById('valor').value = d.valor;
-    document.getElementById('actividad').value = ["DISEÑO", "RRHH", "OBRAS"].includes(d.actividad) ? d.actividad : "DISEÑO";
-    
-    editId = id;
-    document.getElementById('formTitle').innerText = "Editando Registro..."; 
-    document.getElementById('formularioRegistro').classList.add('editing-mode');
-    document.getElementById('btnGuardar').innerText = "Guardar Cambios"; 
-    document.getElementById('btnCancelar').style.display = "block";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function eliminar(id) {
-    if(usuarioActual.role !== 'admin') return;
-    const registro = datos.find(d => d.id === id);
-    if(confirm("¿Seguro que deseas eliminar permanentemente este registro de la nube?")) {
-        const { error } = await dbClient.from('registros').delete().eq('id', id);
-        if(!error) {
-            datos = datos.filter(d => d.id !== id);
-            recalcularProgresos();
-            await registrarAuditoria("ELIMINAR", `Se borró registro de ${registro.horas}h en ${registro.proyecto}.`);
-            actualizarListasYFiltros();
-            if (editId === id) limpiarFormulario();
-        }
-    }
-}
-
-function limpiarFormulario() {
-    document.getElementById('cliente').value = ""; document.getElementById('proyecto').value = "";
-    if(usuarioActual.role !== 'colaborador') document.getElementById('trabajador').value = "";
-    document.getElementById('horasPres').value = "0"; document.getElementById('horas').value = "0"; document.getElementById('valor').value = "0";
-    document.getElementById('fecha').valueAsDate = new Date(); document.getElementById('actividad').value = "DISEÑO";
-    editId = null;
-    document.getElementById('formTitle').innerText = "Registro de Avance"; document.getElementById('formularioRegistro').classList.remove('editing-mode');
-    document.getElementById('btnGuardar').innerText = "Registrar Actividad"; document.getElementById('btnCancelar').style.display = "none";
-}
-
-// ==========================================
-// EXCEL Y SEGURIDAD AVANZADA
-// ==========================================
-function esDatoBasura(str) {
-    if (!str) return true;
-    const texto = str.toString().toUpperCase().trim();
-    const meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
-    return meses.includes(texto) || ["CLIENTE", "PROYECTO", "TRABAJADOR"].includes(texto);
+function graficar(listaFiltrada) {
+    const ctx = document.getElementById("grafico"); const resumen = {};
+    listaFiltrada.forEach(d => resumen[d.proyecto] = (resumen[d.proyecto] || 0) + Number(d.horas));
+    Chart.defaults.color = '#94a3b8';
+    if (window.chart) window.chart.destroy();
+    window.chart = new Chart(ctx, {
+        type: 'bar', data: { labels: Object.keys(resumen), datasets: [{ label: 'Horas', data: Object.values(resumen), backgroundColor: '#3b82f6', hoverBackgroundColor: '#60a5fa', borderRadius: 5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
+    });
 }
 
 function formatExcelDate(excelDate) {
@@ -733,6 +769,13 @@ function formatExcelDate(excelDate) {
         return `${jsDate.getFullYear()}-${String(jsDate.getMonth() + 1).padStart(2, '0')}-${String(jsDate.getDate()).padStart(2, '0')}`;
     }
     return String(excelDate);
+}
+
+function esDatoBasura(str) {
+    if (!str) return true;
+    const texto = str.toString().toUpperCase().trim();
+    const meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+    return meses.includes(texto) || ["CLIENTE", "PROYECTO", "TRABAJADOR"].includes(texto);
 }
 
 function importarExcel() {
@@ -765,7 +808,7 @@ function importarExcel() {
             datos = datos.concat(importados);
             recalcularProgresos();
             await registrarAuditoria("IMPORTAR", `Se importaron ${importados.length} registros desde Excel.`);
-            actualizarListasYFiltros();
+            inicializarDatosGlobales();
             document.getElementById('excelFile').value = '';
             alert(`Éxito: Se importaron ${importados.length} registros a la nube.`);
         } else {
@@ -788,36 +831,70 @@ async function exportarExcel() {
         }
         return fila;
     });
-    await registrarAuditoria("EXPORTAR", `El usuario exportó la tabla a Excel.`);
+    await registrarAuditoria("EXPORTAR", `El usuario exportó la tabla filtrada a Excel.`);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosSalida), "Vista_Exportada");
     XLSX.writeFile(wb, `Reporte_Scitic.xlsx`);
 }
 
-async function registrarAuditoria(accion, detalle) {
-    const log = { fecha_hora: new Date().toLocaleString(), usuario: usuarioActual.name, rol: usuarioActual.role, accion: accion, detalle: detalle };
-    await dbClient.from('auditoria').insert([log]);
-    auditoria.unshift(log); 
+function limpiarFormulario() {
+    document.getElementById('cliente').value = ""; document.getElementById('proyecto').value = "";
+    // CORRECCIÓN: Moderador puede limpiar su trabajador en el formulario
+    if(usuarioActual.role !== 'colaborador') document.getElementById('trabajador').value = "";
+    document.getElementById('horasPres').value = "0"; document.getElementById('horas').value = "0"; document.getElementById('valor').value = "0";
+    document.getElementById('fecha').valueAsDate = new Date(); document.getElementById('actividad').value = "DISEÑO";
+    editId = null;
+    document.getElementById('formTitle').innerText = "Registro de Avance"; document.getElementById('formularioRegistro').classList.remove('editing-mode');
+    document.getElementById('btnGuardar').innerText = "Registrar Actividad"; document.getElementById('btnCancelar').style.display = "none";
 }
 
-function descargarAuditoria() {
-    if(auditoria.length === 0) return alert("No hay registros de auditoría aún.");
-    const ws = XLSX.utils.json_to_sheet(auditoria);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Auditoria_Eventos");
-    XLSX.writeFile(wb, `SCITIC_Auditoria_${new Date().getTime()}.xlsx`);
+async function eliminar(id) {
+    if(usuarioActual.role !== 'admin') return;
+    const registro = datos.find(d => d.id === id);
+    if(confirm("¿Seguro que deseas eliminar permanentemente este registro de la nube?")) {
+        const { error } = await dbClient.from('registros').delete().eq('id', id);
+        if(!error) {
+            datos = datos.filter(d => d.id !== id);
+            recalcularProgresos();
+            await registrarAuditoria("ELIMINAR", `Se borró registro de ${registro.horas}h de ${registro.trabajador} en ${registro.proyecto}.`);
+            inicializarDatosGlobales();
+            if (editId === id) limpiarFormulario();
+        }
+    }
 }
 
-function abrirModalBorrado() { document.getElementById('deleteModal').classList.add('show'); }
+function editar(id) {
+    const d = datos.find(x => x.id === id); if (!d) return;
+    // CORRECCIÓN: Moderador se salta este return y sí puede editar a otros
+    if(usuarioActual.role === 'colaborador' && d.trabajador !== usuarioActual.name) return alert("No puedes editar el registro de otro compañero.");
+    
+    document.getElementById('cliente').value = d.cliente; document.getElementById('proyecto').value = d.proyecto;
+    document.getElementById('trabajador').value = d.trabajador; document.getElementById('horasPres').value = d.horas_pres || 0;
+    document.getElementById('fecha').value = d.fecha || new Date().toISOString().split('T')[0];
+    document.getElementById('horas').value = d.horas; document.getElementById('valor').value = d.valor;
+    document.getElementById('actividad').value = ["DISEÑO", "RRHH", "OBRAS"].includes(d.actividad) ? d.actividad : "DISEÑO";
+    editId = id;
+    document.getElementById('formTitle').innerText = "Editando Registro..."; document.getElementById('formularioRegistro').classList.add('editing-mode');
+    document.getElementById('btnGuardar').innerText = "Guardar Cambios"; document.getElementById('btnCancelar').style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// CORRECCIÓN: Funciones de Borrado Seguro Integradas
+function abrirModalBorrado() { 
+    document.getElementById('deleteModal').classList.add('show'); 
+}
 
 async function ejecutarBorradoMasivo() {
     const code = document.getElementById('confirmCode').value;
     if (code === 'ELIMINAR-TODO-SCITIC') {
-        document.getElementById('displayUserName').innerText = "⏳ Borrando...";
-        await dbClient.from('registros').delete().neq('id', '0');
+        document.getElementById('displayUserName').innerText = "⏳ Borrando Nube...";
+        await dbClient.from('registros').delete().neq('id', '0'); 
         await registrarAuditoria("BORRADO MASIVO", `El administrador vació la base de datos completa.`);
+        datos = [];
+        inicializarDatosGlobales();
+        document.getElementById('displayUserName').innerText = "👤 " + usuarioActual.name;
+        cerrarModal('deleteModal');
         alert("Todos los datos han sido borrados de Supabase.");
-        location.reload();
     } else {
         alert("Código de confirmación incorrecto.");
     }
