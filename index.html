@@ -20,6 +20,7 @@
             --border: #334155; --accent: #d97706;      
             --table-header-bg: #0f172a; --table-row-hover: #334155;
             --input-bg: #0f172a; --danger: #ef4444; --danger-bg: rgba(239, 68, 68, 0.1);
+            --success: #22c55e;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -94,8 +95,16 @@
         .modal.show { display: block; animation: modalFade 0.3s ease forwards; } .modal.show .modal-content { animation: modalPop 0.4s forwards; }
         .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 2.5rem; border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
 
-        .alert-item { animation: slideInCascade 0.4s forwards; opacity: 0; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s, transform 0.2s; }
+        .alert-item { animation: slideInCascade 0.4s forwards; opacity: 0; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 0.75rem 1rem; display: flex; flex-direction: column; cursor: pointer; transition: background-color 0.2s, transform 0.2s; margin-bottom: 10px;}
         .alert-item:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+        .alert-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
+        .alert-detail { font-size: 0.8rem; color: #fca5a5; background: rgba(0,0,0,0.2); padding: 5px 8px; border-radius: 4px; margin-top: 5px; }
+
+        /* Estilos para el Desglose Admin */
+        .admin-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 10px; }
+        .admin-project-card { border-left: 3px solid var(--primary); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; }
+        .worker-stat { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+        .worker-stat:last-child { border-bottom: none; }
 
         /* Clase para ocultar elementos a colaboradores */
         .oculto-por-rol { display: none !important; }
@@ -150,14 +159,12 @@
                     
                     <div class="form-group">
                         <label>Cliente</label>
-                        <!-- Se agrega el autocompletado de Clientes -->
                         <input id="cliente" list="clientesList" placeholder="Ej. INELECT">
                         <datalist id="clientesList"></datalist>
                     </div>
                     
                     <div class="form-group">
                         <label>Proyecto</label>
-                        <!-- Se agrega el autocompletado de Proyectos y el evento onchange -->
                         <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="autocompletarProyecto()">
                         <datalist id="proyectosList"></datalist>
                     </div>
@@ -169,7 +176,6 @@
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <!-- Ocultamos horas presup y valor a los colaboradores -->
                         <div class="form-group perm-financiero"><label>Horas Presup.</label><input type="number" id="horasPres" value="0"></div>
                         <div class="form-group perm-financiero"><label>Valor Hora</label><input type="number" id="valor" value="0"></div>
                     </div>
@@ -210,11 +216,17 @@
                     </div>
                     
                     <div class="card perm-financiero" style="margin-bottom: 0; border-top: 4px solid var(--danger); display: flex; flex-direction: column;">
-                        <h3 style="color: #fca5a5; display: flex; align-items: center; gap: 8px;">⚠️ Proyectos > 100% Avance</h3>
-                        <div id="alertasContainer" class="custom-scroll" style="flex: 1; overflow-y: auto; max-height: 250px; display: flex; flex-direction: column; gap: 10px;">
+                        <h3 style="color: #fca5a5; display: flex; align-items: center; gap: 8px;">⚠️ Alertas de Presupuesto</h3>
+                        <div id="alertasContainer" class="custom-scroll" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Nuevo Desglose Administrativo -->
+                <div class="card perm-admin-only" id="adminDesgloseContainer" style="display: none;">
+                    <h3>Desglose Administrativo (Horas y Costos)</h3>
+                    <div id="adminDesgloseContent" class="admin-view-grid"></div>
                 </div>
 
                 <div class="card">
@@ -224,7 +236,7 @@
                             <thead>
                                 <tr>
                                     <th>Fecha</th> <th>Proyecto</th> <th>Trabajador</th> <th>H. Trab</th>
-                                    <th class="perm-financiero">Pago</th> <th class="perm-financiero">% Avance</th>
+                                    <th class="perm-financiero">Pago</th> <th class="perm-financiero">% Avance (Histórico)</th>
                                     <th>Actividad</th> <th style="text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
@@ -272,6 +284,7 @@ const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let datos = [];
 let auditoria = [];
 let listaFiltradaGlobal = []; 
+let alertasDetalladasGlobales = []; // Nueva variable para almacenar alarmas precisas
 let editId = null;
 let usuarioActual = null;
 
@@ -297,7 +310,6 @@ async function iniciarSesion() {
     btn.innerText = "Verificando...";
     btn.disabled = true;
 
-    // Conexión a la tabla usuarios de Supabase
     const { data: userDb, error } = await dbClient.from('usuarios').select('*').eq('usuario', u).single();
 
     if (userDb && userDb.password === p) {
@@ -321,7 +333,6 @@ function cerrarSesion() {
 function aplicarPermisos() {
     document.querySelectorAll('.oculto-por-rol').forEach(el => el.classList.remove('oculto-por-rol'));
     if (usuarioActual.role === 'colaborador') {
-        // Oculta presupuestos y valor a colaboradores
         document.querySelectorAll('.perm-financiero, .perm-admin-only').forEach(el => el.classList.add('oculto-por-rol'));
         const inTrab = document.getElementById('trabajador');
         inTrab.value = usuarioActual.name;
@@ -346,7 +357,6 @@ function descargarAuditoria() {
     XLSX.writeFile(wb, `SCITIC_Auditoria_${new Date().getTime()}.xlsx`);
 }
 
-// --- CORE APP ---
 async function iniciarApp() {
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('appView').style.display = 'block';
@@ -372,31 +382,55 @@ async function iniciarApp() {
 
 function generarIdUnico() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 
+// MEJORA: Recálculo de progreso con línea de tiempo histórica y detección exacta de alarmas
 function recalcularProgresos() {
-    const proyectosMap = {};
-    datos.forEach(d => { proyectosMap[d.proyecto] = (proyectosMap[d.proyecto] || 0) + Number(d.horas); });
+    // 1. Ordenar cronológicamente para calcular el avance real paso a paso
+    datos.sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+
+    const acumulador = {};
+    const proyectosSuperados = new Set();
+    alertasDetalladasGlobales = [];
+
     datos.forEach(d => {
-        d.acum = proyectosMap[d.proyecto] || 0;
-        d.progreso = d.horas_pres > 0 ? ((d.acum / d.horas_pres) * 100).toFixed(1) : 0;
+        if (!acumulador[d.proyecto]) acumulador[d.proyecto] = 0;
+
+        let horasAntes = acumulador[d.proyecto];
+        acumulador[d.proyecto] += Number(d.horas);
+        let horasDespues = acumulador[d.proyecto];
+
+        // Se guarda el porcentaje exacto que tenía el proyecto EN ESE MOMENTO
+        d.acum = horasDespues;
+        d.progreso = d.horas_pres > 0 ? ((horasDespues / d.horas_pres) * 100).toFixed(1) : 0;
+
+        // Lógica de Alarma: Si ANTES estaba bien, y este registro rompió el 100%
+        if (d.horas_pres > 0 && horasAntes <= d.horas_pres && horasDespues > d.horas_pres && !proyectosSuperados.has(d.proyecto)) {
+            proyectosSuperados.add(d.proyecto);
+            let exceso = horasDespues - d.horas_pres;
+            alertasDetalladasGlobales.push({
+                proyecto: d.proyecto,
+                cliente: d.cliente,
+                trabajador: d.trabajador,
+                fecha: d.fecha,
+                horasPres: d.horas_pres,
+                exceso: exceso
+            });
+        }
     });
+
+    // 2. Volver a ordenar del más reciente al más antiguo para la tabla visual
+    datos.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
 }
 
-// NUEVA FUNCIÓN: Autocompletar cuando se escribe un proyecto existente
 function autocompletarProyecto() {
     const inputProy = document.getElementById('proyecto').value.trim().toUpperCase();
     if (!inputProy) return;
     
-    // Busca el último registro de ese proyecto en la base de datos
     const proyExistente = datos.find(d => d.proyecto.toUpperCase() === inputProy);
     
     if (proyExistente) {
-        // Autocompleta el cliente si el usuario no lo ha escrito
         const inputCliente = document.getElementById('cliente');
-        if (!inputCliente.value) {
-            inputCliente.value = proyExistente.cliente;
-        }
+        if (!inputCliente.value) inputCliente.value = proyExistente.cliente;
         
-        // Rellena los datos financieros (aunque el colaborador no los vea, se guardan en el sistema)
         document.getElementById('horasPres').value = proyExistente.horas_pres || 0;
         document.getElementById('valor').value = proyExistente.valor || 0;
     }
@@ -405,8 +439,6 @@ function autocompletarProyecto() {
 function inicializarDatosGlobales() {
     const trabajadoresGlobales = new Set();
     const mesesGlobales = new Set();
-    
-    // Conjuntos para los Datalists de registro
     const clientesForm = new Set();
     const proyectosForm = new Set();
 
@@ -417,7 +449,6 @@ function inicializarDatosGlobales() {
         if(d.proyecto) proyectosForm.add(d.proyecto);
     });
     
-    // Llenar listas de autocompletado en el formulario
     document.getElementById("clientesList").innerHTML = [...clientesForm].sort().map(c => `<option value="${c}">`).join('');
     document.getElementById("proyectosList").innerHTML = [...proyectosForm].sort().map(p => `<option value="${p}">`).join('');
 
@@ -460,7 +491,10 @@ function filtrar() {
     
     mostrar(listaFiltradaGlobal);
     graficar(listaFiltradaGlobal);
-    if(usuarioActual.role === 'admin') generarAlertas(listaFiltradaGlobal); 
+    if(usuarioActual.role === 'admin') {
+        generarAlertas(); 
+        generarDesgloseAdmin(listaFiltradaGlobal); // MEJORA: Generar desglose admin
+    }
 
     const datosParaCliente = datos.filter(d => (!ft || d.trabajador === ft) && (!fp || d.proyecto === fp));
     const clientesSet = new Set(datosParaCliente.map(d => d.cliente).filter(Boolean));
@@ -516,18 +550,16 @@ async function guardar() {
         valor: Number(document.getElementById('valor').value) || 0
     };
 
-    // MAGIA DE SEGURIDAD: Si es colaborador y el proyecto ya existe, obligamos al sistema a heredar los valores del Admin (incluso si el colaborador modificó el HTML oculto)
     if (usuarioActual.role === 'colaborador') {
         const proyExistente = datos.find(d => d.proyecto.toUpperCase() === obj.proyecto.toUpperCase());
         if (proyExistente) {
             obj.horas_pres = proyExistente.horas_pres;
             obj.valor = proyExistente.valor;
-            if(!obj.cliente) obj.cliente = proyExistente.cliente; // Fuerza el cliente real
+            if(!obj.cliente) obj.cliente = proyExistente.cliente; 
         }
     }
 
     obj.pago = obj.horas * obj.valor;
-
     let accionAuditoria = "";
 
     if (editId !== null) {
@@ -557,31 +589,82 @@ async function guardar() {
     limpiarFormulario();
 }
 
-function generarAlertas(lista) {
+// MEJORA: Alarmas detalladas con el usuario específico que causó el exceso
+function generarAlertas() {
     const container = document.getElementById('alertasContainer');
-    const proyectosUnicos = {};
-    lista.forEach(d => { if(!proyectosUnicos[d.proyecto]) { proyectosUnicos[d.proyecto] = d; } });
-    const criticos = Object.values(proyectosUnicos).filter(p => Number(p.progreso) > 100);
-
-    if (criticos.length === 0) {
-        container.innerHTML = `<div class="alert-item" style="cursor: default;"><span style="font-size: 1.5rem;">✅</span><br><p style="color: #4ade80; margin: 0.5rem 0 0; font-weight: 600;">Todos los proyectos están en presupuesto.</p></div>`;
+    
+    if (alertasDetalladasGlobales.length === 0) {
+        container.innerHTML = `<div class="alert-item" style="cursor: default; background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3);"><span style="font-size: 1.5rem;">✅</span><p style="color: var(--success); margin: 0.5rem 0 0; font-weight: 600;">Todos los proyectos están en presupuesto.</p></div>`;
         return;
     }
-    criticos.sort((a, b) => Number(b.progreso) - Number(a.progreso));
+
     let html = '';
-    criticos.forEach((p, i) => {
-        html += `<div class="alert-item" onclick="verDetalle('${p.proyecto}')" style="animation-delay: ${i * 0.05}s;"><div style="overflow: hidden; padding-right: 5px;"><strong style="color: var(--text-main); font-size: 0.95rem;">${p.proyecto}</strong><small style="color: var(--text-muted); display: block;">${p.cliente || 'Sin Cliente'}</small></div><span style="background: var(--danger); color: white; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700;">${p.progreso}%</span></div>`;
+    alertasDetalladasGlobales.forEach((al, i) => {
+        html += `
+        <div class="alert-item" onclick="verDetalle('${al.proyecto}')" style="animation-delay: ${i * 0.05}s;">
+            <div class="alert-header">
+                <strong>${al.proyecto}</strong>
+                <span style="background: var(--danger); color: white; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; font-size:0.75rem;">+${al.exceso} h</span>
+            </div>
+            <small style="color: var(--text-muted);">${al.cliente || 'Sin Cliente'}</small>
+            <div class="alert-detail">
+                🚨 <strong>${al.trabajador}</strong> superó el límite de ${al.horasPres}h el día <strong>${al.fecha}</strong>.
+            </div>
+        </div>`;
     });
     container.innerHTML = html;
 }
 
+// MEJORA: Generar Desglose Administrativo (Horas y Costos por persona)
+function generarDesgloseAdmin(lista) {
+    if(usuarioActual.role !== 'admin') return;
+    
+    const container = document.getElementById('adminDesgloseContainer');
+    const content = document.getElementById('adminDesgloseContent');
+    container.style.display = 'block';
+
+    const resumenAdmin = {};
+    lista.forEach(d => {
+        if (!resumenAdmin[d.proyecto]) {
+            resumenAdmin[d.proyecto] = { horasPres: d.horas_pres, trabajadores: {}, totalHoras: 0 };
+        }
+        if (!resumenAdmin[d.proyecto].trabajadores[d.trabajador]) {
+            resumenAdmin[d.proyecto].trabajadores[d.trabajador] = { horas: 0, costo: 0 };
+        }
+        resumenAdmin[d.proyecto].trabajadores[d.trabajador].horas += Number(d.horas);
+        resumenAdmin[d.proyecto].trabajadores[d.trabajador].costo += Number(d.pago);
+        resumenAdmin[d.proyecto].totalHoras += Number(d.horas);
+    });
+
+    let html = '';
+    for (const [proyecto, data] of Object.entries(resumenAdmin)) {
+        let colorClase = data.totalHoras > data.horasPres && data.horasPres > 0 ? "color: var(--danger)" : "color: var(--success)";
+        
+        html += `<div class="admin-project-card">
+            <h4 style="margin:0 0 10px 0; color: var(--primary)">${proyecto} 
+            <span style="font-size:11px; font-weight:normal; ${colorClase}; display:block; margin-top:4px;">(${data.totalHoras}h usadas / ${data.horasPres}h presup.)</span></h4>`;
+        
+        for (const [trabajador, stats] of Object.entries(data.trabajadores)) {
+            html += `<div class="worker-stat">
+                <span>👤 <span style="color: var(--text-main)">${trabajador}</span></span>
+                <span style="text-align: right"><strong>${stats.horas}h</strong> <br><small style="color: #60a5fa">$${stats.costo.toLocaleString('es-CO')}</small></span>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+    content.innerHTML = html;
+}
+
 function mostrar(lista) {
     let totalH = 0; let totalP = 0; const proyActivos = new Set(); let htmlTabla = "";
+    
+    // Para la tabla visual sí ordenamos del más nuevo al más viejo
     const listaOrdenada = [...lista].sort((a, b) => {
         const fechaA = new Date(a.fecha || 0); const fechaB = new Date(b.fecha || 0);
         if (fechaB.getTime() === fechaA.getTime()) return b.id.localeCompare(a.id);
         return fechaB - fechaA;
     });
+    
     const esAdmin = usuarioActual.role === 'admin';
 
     listaOrdenada.forEach((d, index) => {
@@ -594,7 +677,7 @@ function mostrar(lista) {
         <tr class="animated-row" style="animation-delay: ${animDelay}s;">
             <td style="color:var(--text-muted); font-size: 0.85rem; font-weight: 600;">${d.fecha || 'N/A'}</td>
             <td><span class="project-link" onclick="verDetalle('${d.proyecto}')">${d.proyecto}</span><br><small style="color:var(--text-muted)">${d.cliente}</small></td>
-            <td>${d.trabajador}</td><td>${d.horas} h</td>
+            <td>${d.trabajador}</td><td><strong>${d.horas} h</strong></td>
             ${esAdmin ? `<td style="color: #60a5fa; font-weight: 600;">$${Number(d.pago).toLocaleString('es-CO')}</td>` : ''}
             ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso, 100)}%; ${Number(d.progreso)>100 ? 'background:var(--danger);':''}"></div></div><small style="${Number(d.progreso)>100 ? 'color:var(--danger); font-weight:bold;':''}">${d.progreso}%</small></td>` : ''}
             <td><span class="badge bg-blue">${d.actividad}</span></td>
@@ -773,7 +856,7 @@ async function borrarTodo() {
     if(usuarioActual.role !== 'admin') return;
     if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar toda la base de datos de la nube? No hay vuelta atrás.")) {
         document.getElementById('displayUserName').innerText = "⏳ Borrando Nube...";
-        await dbClient.from('registros').delete().neq('id', '0'); // Borra todo
+        await dbClient.from('registros').delete().neq('id', '0'); 
         await registrarAuditoria("BORRADO MASIVO", `El administrador vació la base de datos completa.`);
         datos = [];
         inicializarDatosGlobales();
