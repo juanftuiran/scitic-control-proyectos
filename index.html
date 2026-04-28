@@ -243,11 +243,13 @@
 
 <script>
 // ==========================================
-// CONFIGURACIÓN DE SUPABASE
+// CONFIGURACIÓN DE SUPABASE (CORREGIDA)
 // ==========================================
 const SUPABASE_URL = 'https://qgrkvjvyiwxmbuyfnqea.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hRIpVDeHHVeAJZaRnSckQQ_szYcmZSn'; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Usamos dbClient en lugar de supabase para no chocar con la librería
+const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Usuarios locales
 const USERS_DB = {
@@ -313,7 +315,7 @@ async function registrarAuditoria(accion, detalle) {
         accion: accion,
         detalle: detalle
     };
-    await supabase.from('auditoria').insert([log]);
+    await dbClient.from('auditoria').insert([log]);
     auditoria.unshift(log); 
 }
 
@@ -334,11 +336,11 @@ async function iniciarApp() {
     aplicarPermisos();
 
     // 1. Cargar datos desde Supabase
-    const { data: registrosDb, error: err1 } = await supabase.from('registros').select('*');
+    const { data: registrosDb, error: err1 } = await dbClient.from('registros').select('*');
     if (registrosDb) datos = registrosDb;
     else console.error("Error cargando registros:", err1);
 
-    const { data: auditDb } = await supabase.from('auditoria').select('*').order('created_at', { ascending: false });
+    const { data: auditDb } = await dbClient.from('auditoria').select('*').order('created_at', { ascending: false });
     if (auditDb) auditoria = auditDb;
 
     recalcularProgresos();
@@ -476,14 +478,14 @@ async function guardar() {
                 obj.pago = obj.horas * obj.valor; 
                 obj.horas_pres = datos[index].horas_pres; 
             }
-            const { error } = await supabase.from('registros').update(obj).eq('id', editId);
+            const { error } = await dbClient.from('registros').update(obj).eq('id', editId);
             if(!error) {
                 datos[index] = obj;
                 accionAuditoria = `EDITAR: Modificó horas a ${obj.horas}h en proy. ${obj.proyecto}`;
             }
         }
     } else {
-        const { error } = await supabase.from('registros').insert([obj]);
+        const { error } = await dbClient.from('registros').insert([obj]);
         if(!error) {
             datos.push(obj);
             accionAuditoria = `CREAR: Registró ${obj.horas}h en proy. ${obj.proyecto}`;
@@ -639,7 +641,7 @@ function importarExcel() {
             });
         });
 
-        const { error } = await supabase.from('registros').insert(importados);
+        const { error } = await dbClient.from('registros').insert(importados);
         if(!error) {
             datos = datos.concat(importados);
             recalcularProgresos();
@@ -687,7 +689,7 @@ async function eliminar(id) {
     if(usuarioActual.role !== 'admin') return;
     const registro = datos.find(d => d.id === id);
     if(confirm("¿Seguro que deseas eliminar permanentemente este registro de la nube?")) {
-        const { error } = await supabase.from('registros').delete().eq('id', id);
+        const { error } = await dbClient.from('registros').delete().eq('id', id);
         if(!error) {
             datos = datos.filter(d => d.id !== id);
             recalcularProgresos();
@@ -716,7 +718,7 @@ async function borrarTodo() {
     if(usuarioActual.role !== 'admin') return;
     if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar toda la base de datos de la nube? No hay vuelta atrás.")) {
         document.getElementById('displayUserName').innerText = "⏳ Borrando Nube...";
-        await supabase.from('registros').delete().neq('id', '0'); // Borra todo
+        await dbClient.from('registros').delete().neq('id', '0'); // Borra todo
         await registrarAuditoria("BORRADO MASIVO", `El administrador vació la base de datos completa.`);
         datos = [];
         inicializarDatosGlobales();
