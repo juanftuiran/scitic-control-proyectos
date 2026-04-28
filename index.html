@@ -97,6 +97,7 @@
         .alert-item { animation: slideInCascade 0.4s forwards; opacity: 0; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s, transform 0.2s; }
         .alert-item:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
 
+        /* Clase para ocultar elementos a colaboradores */
         .oculto-por-rol { display: none !important; }
     </style>
 </head>
@@ -106,7 +107,7 @@
 <div id="loginView">
     <div class="login-box">
         <h2>🔒 Acceso SCITIC</h2>
-        <input type="text" id="inUser" placeholder="Usuario (admin, ketty, alvaro, juan)">
+        <input type="text" id="inUser" placeholder="Usuario">
         <input type="password" id="inPass" placeholder="Contraseña" onkeypress="if(event.key === 'Enter') iniciarSesion()">
         <button class="btn-primary" onclick="iniciarSesion()">Ingresar al Sistema</button>
         <p id="loginError" style="color: var(--danger); font-size: 0.85rem; display: none; margin-top: 1rem;">Usuario o clave incorrectos.</p>
@@ -146,25 +147,43 @@
             <aside>
                 <div class="card" id="formularioRegistro">
                     <h3 id="formTitle">Registro de Avance</h3>
-                    <div class="form-group"><label>Cliente</label><input id="cliente" placeholder="Ej. INELECT"></div>
-                    <div class="form-group"><label>Proyecto</label><input id="proyecto" placeholder="Ej. CASA LAGO"></div>
+                    
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <!-- Se agrega el autocompletado de Clientes -->
+                        <input id="cliente" list="clientesList" placeholder="Ej. INELECT">
+                        <datalist id="clientesList"></datalist>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Proyecto</label>
+                        <!-- Se agrega el autocompletado de Proyectos y el evento onchange -->
+                        <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="autocompletarProyecto()">
+                        <datalist id="proyectosList"></datalist>
+                    </div>
+                    
                     <div class="form-group">
                         <label>Trabajador</label>
                         <input id="trabajador" list="trabajadoresList" placeholder="Seleccione o escriba...">
                         <datalist id="trabajadoresList"></datalist>
                     </div>
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="form-group"><label>Horas Presup.</label><input type="number" id="horasPres" value="0"></div>
+                        <!-- Ocultamos horas presup y valor a los colaboradores -->
+                        <div class="form-group perm-financiero"><label>Horas Presup.</label><input type="number" id="horasPres" value="0"></div>
                         <div class="form-group perm-financiero"><label>Valor Hora</label><input type="number" id="valor" value="0"></div>
                     </div>
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div class="form-group"><label>Fecha</label><input type="date" id="fecha"></div>
                         <div class="form-group"><label>Horas Trab.</label><input type="number" id="horas" value="0"></div>
                     </div>
+                    
                     <div class="form-group">
                         <label>Actividad</label>
                         <select id="actividad"><option>DISEÑO</option><option>RRHH</option><option>OBRAS</option></select>
                     </div>
+                    
                     <div class="btn-group">
                         <button class="btn-accent" id="btnGuardar" onclick="guardar()">Registrar Actividad</button>
                         <button class="btn-secondary" id="btnCancelar" style="display:none;" onclick="limpiarFormulario()">Cancelar Edición</button>
@@ -243,21 +262,12 @@
 
 <script>
 // ==========================================
-// CONFIGURACIÓN DE SUPABASE (CORREGIDA)
+// CONFIGURACIÓN DE SUPABASE
 // ==========================================
 const SUPABASE_URL = 'https://qgrkvjvyiwxmbuyfnqea.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hRIpVDeHHVeAJZaRnSckQQ_szYcmZSn'; 
 
-// Usamos dbClient en lugar de supabase para no chocar con la librería
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Usuarios locales
-const USERS_DB = {
-    'admin': { pass: '123456', role: 'admin', name: 'Administrador' },
-    'ketty': { pass: '123456', role: 'colaborador', name: 'Ketty Torres' },
-    'alvaro': { pass: '123456', role: 'admin', name: 'Alvaro' },
-    'juan': { pass: '123456', role: 'colaborador', name: 'Juan Tuiran' }
-};
 
 let datos = [];
 let auditoria = [];
@@ -266,9 +276,9 @@ let editId = null;
 let usuarioActual = null;
 
 window.onload = function() {
-    const sesionActiva = sessionStorage.getItem('scitic_session');
-    if (sesionActiva && USERS_DB[sesionActiva]) {
-        usuarioActual = USERS_DB[sesionActiva];
+    const sesionGuardada = sessionStorage.getItem('scitic_session');
+    if (sesionGuardada) {
+        usuarioActual = JSON.parse(sesionGuardada);
         iniciarApp();
     } else {
         document.getElementById('loginView').style.display = 'flex';
@@ -276,17 +286,31 @@ window.onload = function() {
     }
 };
 
-function iniciarSesion() {
+async function iniciarSesion() {
     const u = document.getElementById('inUser').value.trim().toLowerCase();
     const p = document.getElementById('inPass').value.trim();
-    if (USERS_DB[u] && USERS_DB[u].pass === p) {
-        sessionStorage.setItem('scitic_session', u);
-        usuarioActual = USERS_DB[u];
-        document.getElementById('loginError').style.display = 'none';
+    const btn = document.querySelector('.login-box button');
+    const errorMsg = document.getElementById('loginError');
+    
+    if(!u || !p) return;
+    
+    btn.innerText = "Verificando...";
+    btn.disabled = true;
+
+    // Conexión a la tabla usuarios de Supabase
+    const { data: userDb, error } = await dbClient.from('usuarios').select('*').eq('usuario', u).single();
+
+    if (userDb && userDb.password === p) {
+        usuarioActual = { usuario: userDb.usuario, name: userDb.nombre, role: userDb.rol };
+        sessionStorage.setItem('scitic_session', JSON.stringify(usuarioActual));
+        errorMsg.style.display = 'none';
         iniciarApp();
     } else {
-        document.getElementById('loginError').style.display = 'block';
+        errorMsg.style.display = 'block';
     }
+    
+    btn.innerText = "Ingresar al Sistema";
+    btn.disabled = false;
 }
 
 function cerrarSesion() {
@@ -297,6 +321,7 @@ function cerrarSesion() {
 function aplicarPermisos() {
     document.querySelectorAll('.oculto-por-rol').forEach(el => el.classList.remove('oculto-por-rol'));
     if (usuarioActual.role === 'colaborador') {
+        // Oculta presupuestos y valor a colaboradores
         document.querySelectorAll('.perm-financiero, .perm-admin-only').forEach(el => el.classList.add('oculto-por-rol'));
         const inTrab = document.getElementById('trabajador');
         inTrab.value = usuarioActual.name;
@@ -308,13 +333,7 @@ function aplicarPermisos() {
 }
 
 async function registrarAuditoria(accion, detalle) {
-    const log = {
-        fecha_hora: new Date().toLocaleString(),
-        usuario: usuarioActual.name,
-        rol: usuarioActual.role,
-        accion: accion,
-        detalle: detalle
-    };
+    const log = { fecha_hora: new Date().toLocaleString(), usuario: usuarioActual.name, rol: usuarioActual.role, accion: accion, detalle: detalle };
     await dbClient.from('auditoria').insert([log]);
     auditoria.unshift(log); 
 }
@@ -327,15 +346,14 @@ function descargarAuditoria() {
     XLSX.writeFile(wb, `SCITIC_Auditoria_${new Date().getTime()}.xlsx`);
 }
 
-// --- CORE APP (CONECTADO A SUPABASE) ---
+// --- CORE APP ---
 async function iniciarApp() {
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('appView').style.display = 'block';
-    document.getElementById('displayUserName').innerText = "⏳ Conectando a Nube...";
+    document.getElementById('displayUserName').innerText = "⏳ Conectando...";
     
     aplicarPermisos();
 
-    // 1. Cargar datos desde Supabase
     const { data: registrosDb, error: err1 } = await dbClient.from('registros').select('*');
     if (registrosDb) datos = registrosDb;
     else console.error("Error cargando registros:", err1);
@@ -363,14 +381,46 @@ function recalcularProgresos() {
     });
 }
 
+// NUEVA FUNCIÓN: Autocompletar cuando se escribe un proyecto existente
+function autocompletarProyecto() {
+    const inputProy = document.getElementById('proyecto').value.trim().toUpperCase();
+    if (!inputProy) return;
+    
+    // Busca el último registro de ese proyecto en la base de datos
+    const proyExistente = datos.find(d => d.proyecto.toUpperCase() === inputProy);
+    
+    if (proyExistente) {
+        // Autocompleta el cliente si el usuario no lo ha escrito
+        const inputCliente = document.getElementById('cliente');
+        if (!inputCliente.value) {
+            inputCliente.value = proyExistente.cliente;
+        }
+        
+        // Rellena los datos financieros (aunque el colaborador no los vea, se guardan en el sistema)
+        document.getElementById('horasPres').value = proyExistente.horas_pres || 0;
+        document.getElementById('valor').value = proyExistente.valor || 0;
+    }
+}
+
 function inicializarDatosGlobales() {
     const trabajadoresGlobales = new Set();
     const mesesGlobales = new Set();
+    
+    // Conjuntos para los Datalists de registro
+    const clientesForm = new Set();
+    const proyectosForm = new Set();
+
     datos.forEach(d => { 
         if(d.trabajador) trabajadoresGlobales.add(d.trabajador); 
         if(d.fecha && d.fecha.length >= 7) mesesGlobales.add(d.fecha.substring(0,7));
+        if(d.cliente) clientesForm.add(d.cliente);
+        if(d.proyecto) proyectosForm.add(d.proyecto);
     });
     
+    // Llenar listas de autocompletado en el formulario
+    document.getElementById("clientesList").innerHTML = [...clientesForm].sort().map(c => `<option value="${c}">`).join('');
+    document.getElementById("proyectosList").innerHTML = [...proyectosForm].sort().map(p => `<option value="${p}">`).join('');
+
     let dlHtml = '';
     [...trabajadoresGlobales].sort().forEach(val => { dlHtml += `<option value="${val}">`; });
     document.getElementById("trabajadoresList").innerHTML = dlHtml;
@@ -450,22 +500,32 @@ async function guardar() {
     if(!trabajadorVal) return alert("Debe ingresar el nombre del trabajador.");
     if(!document.getElementById('proyecto').value) return alert("Debe ingresar el nombre del proyecto.");
     
-    // Mostramos estado de guardado
     const btn = document.getElementById('btnGuardar');
-    btn.innerText = "⏳ Guardando en Nube...";
+    btn.innerText = "⏳ Guardando...";
     btn.disabled = true;
 
     let obj = {
         id: editId !== null ? editId : generarIdUnico(),
-        cliente: document.getElementById('cliente').value,
-        proyecto: document.getElementById('proyecto').value,
+        cliente: document.getElementById('cliente').value.trim(),
+        proyecto: document.getElementById('proyecto').value.trim(),
         trabajador: trabajadorVal,
-        horas_pres: Number(document.getElementById('horasPres').value),
         fecha: document.getElementById('fecha').value,
         horas: Number(document.getElementById('horas').value),
-        valor: Number(document.getElementById('valor').value) || 0,
-        actividad: document.getElementById('actividad').value
+        actividad: document.getElementById('actividad').value,
+        horas_pres: Number(document.getElementById('horasPres').value) || 0,
+        valor: Number(document.getElementById('valor').value) || 0
     };
+
+    // MAGIA DE SEGURIDAD: Si es colaborador y el proyecto ya existe, obligamos al sistema a heredar los valores del Admin (incluso si el colaborador modificó el HTML oculto)
+    if (usuarioActual.role === 'colaborador') {
+        const proyExistente = datos.find(d => d.proyecto.toUpperCase() === obj.proyecto.toUpperCase());
+        if (proyExistente) {
+            obj.horas_pres = proyExistente.horas_pres;
+            obj.valor = proyExistente.valor;
+            if(!obj.cliente) obj.cliente = proyExistente.cliente; // Fuerza el cliente real
+        }
+    }
+
     obj.pago = obj.horas * obj.valor;
 
     let accionAuditoria = "";
@@ -473,11 +533,6 @@ async function guardar() {
     if (editId !== null) {
         const index = datos.findIndex(d => d.id === editId);
         if(index !== -1) {
-            if(usuarioActual.role === 'colaborador') {
-                obj.valor = datos[index].valor; 
-                obj.pago = obj.horas * obj.valor; 
-                obj.horas_pres = datos[index].horas_pres; 
-            }
             const { error } = await dbClient.from('registros').update(obj).eq('id', editId);
             if(!error) {
                 datos[index] = obj;
