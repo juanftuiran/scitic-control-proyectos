@@ -65,10 +65,12 @@
         .btn-accent { background: var(--accent); color: white; } .btn-accent:hover { filter: brightness(1.1); transform: translateY(-2px); }
         .btn-danger { background: rgba(153, 27, 27, 0.2); color: var(--danger); border: 1px solid #7f1d1d; } .btn-danger:hover { background: #7f1d1d; color: white; transform: translateY(-2px); }
 
-        .table-container { overflow-x: auto; width: 100%; margin-top: 1rem; border-radius: 8px; }
+        /* Contenedor de tabla con SCROLL VERTICAL */
+        .table-container { overflow-x: auto; overflow-y: auto; max-height: 450px; width: 100%; margin-top: 1rem; border-radius: 8px; position: relative; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th, td { white-space: nowrap; padding: 0.75rem 0.6rem; } 
-        th { background: var(--table-header-bg); text-align: left; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+        /* STICKY HEADER para que no se pierdan los títulos al bajar */
+        th { background: var(--table-header-bg); text-align: left; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4); }
         tr { transition: background-color 0.2s; } td { border-bottom: 1px solid var(--border); } tr:hover { background: var(--table-row-hover); }
 
         .project-link { color: var(--primary); cursor: pointer; text-decoration: underline; font-weight: 600; display: inline-block; transition: all 0.2s; }
@@ -84,7 +86,12 @@
         .action-btns { display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; }
         .action-btns button { background: rgba(255,255,255,0.05); padding: 4px 8px; margin: 0; border-radius: 4px; width: 100%; }
         .action-btns button:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
-        .custom-scroll::-webkit-scrollbar { width: 6px; } .custom-scroll::-webkit-scrollbar-track { background: var(--card-bg); } .custom-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        
+        /* ESTILO PARA LA BARRA DE SCROLL */
+        .custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; } 
+        .custom-scroll::-webkit-scrollbar-track { background: var(--card-bg); border-radius: 8px; } 
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 8px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
         @keyframes slideInCascade { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .animated-row { animation: slideInCascade 0.4s forwards; opacity: 0; }
@@ -100,8 +107,9 @@
         .alert-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
         .alert-detail { font-size: 0.8rem; color: #fca5a5; background: rgba(0,0,0,0.2); padding: 5px 8px; border-radius: 4px; margin-top: 5px; }
 
-        /* Estilos para el Desglose Admin */
-        .admin-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 10px; }
+        /* Estilos para el Desglose Admin CON SCROLL */
+        .admin-view-wrapper { max-height: 350px; overflow-y: auto; padding-right: 10px; margin-top: 10px; }
+        .admin-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         .admin-project-card { border-left: 3px solid var(--primary); background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; }
         .worker-stat { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px dashed var(--border); }
         .worker-stat:last-child { border-bottom: none; }
@@ -203,7 +211,6 @@
                         <button class="btn-primary" onclick="document.getElementById('excelFile').click()">📂 Importar Excel</button>
                         <button class="btn-secondary" onclick="exportarExcel()">💾 Exportar Vista Actual</button>
                         <button class="btn-secondary" style="border: 1px solid var(--accent); color: var(--accent);" onclick="descargarAuditoria()">📜 Descargar Auditoría</button>
-                        <!-- BOTÓN CORREGIDO: Borrado Seguro -->
                         <button class="btn-danger" style="margin-top: 15px;" onclick="abrirModalBorrado()">⚠️ Borrar Toda la Base</button>
                     </div>
                 </div>
@@ -226,12 +233,16 @@
 
                 <div class="card perm-admin-only" id="adminDesgloseContainer" style="display: none;">
                     <h3>Desglose Administrativo (Horas y Costos)</h3>
-                    <div id="adminDesgloseContent" class="admin-view-grid"></div>
+                    <!-- WRAPPER CON SCROLL AÑADIDO AQUI -->
+                    <div class="admin-view-wrapper custom-scroll">
+                        <div id="adminDesgloseContent" class="admin-view-grid"></div>
+                    </div>
                 </div>
 
                 <div class="card">
                     <h3>Historial de Registros</h3>
-                    <div class="table-container">
+                    <!-- CONTENEDOR DE TABLA CON SCROLL AÑADIDO AQUI -->
+                    <div class="table-container custom-scroll">
                         <table>
                             <thead>
                                 <tr>
@@ -269,12 +280,11 @@
             <small style="color: var(--text-muted); text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;">Resumen por Actividad</small>
             <div id="mActividades" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);"></div>
         </div>
-        <!-- CORRECCIÓN DE CERRAR MODAL -->
         <button class="btn-primary" style="width:100%; margin-top:30px; padding: 1rem;" onclick="cerrarModal('detalleModal')">Cerrar Detalles</button>
     </div>
 </div>
 
-<!-- NUEVO MODAL: Borrado Seguro -->
+<!-- Modal Borrado Seguro -->
 <div id="deleteModal" class="modal">
     <div class="modal-content" style="width: 400px;">
         <h3 style="color:var(--danger); margin-top:0;">⚠️ Acción Crítica</h3>
@@ -346,7 +356,6 @@ function cerrarSesion() {
     location.reload();
 }
 
-// CORRECCIÓN: Permisos ahora incluyen "moderador" para ocultar finanzas
 function aplicarPermisos() {
     document.querySelectorAll('.oculto-por-rol').forEach(el => el.classList.remove('oculto-por-rol'));
     
@@ -362,7 +371,6 @@ function aplicarPermisos() {
         inTrab.setAttribute('readonly', 'true');
         document.querySelectorAll('.perm-trabajador-filtro').forEach(el => el.classList.add('oculto-por-rol'));
     } else {
-        // Admin o Moderador sí pueden elegir trabajador
         document.getElementById('trabajador').removeAttribute('readonly');
     }
 }
@@ -488,7 +496,6 @@ function inicializarDatosGlobales() {
 function filtrar() {
     const fc = document.getElementById('fCliente').value;
     let ft = document.getElementById('fTrabajador').value;
-    // CORRECCIÓN: Moderador puede usar el filtro completo
     if (usuarioActual.role === 'colaborador') ft = usuarioActual.name;
     
     const fp = document.getElementById('fProyecto').value;
@@ -523,7 +530,6 @@ function filtrar() {
     const proyectosSet = new Set(datosParaProyecto.map(d => d.proyecto).filter(Boolean));
 
     llenarSelectManteniendoValor('fCliente', clientesSet, fc);
-    // CORRECCIÓN: Moderador también actualiza select de trabajadores
     if(usuarioActual.role !== 'colaborador') llenarSelectManteniendoValor('fTrabajador', trabajadoresSet, ft);
     llenarSelectManteniendoValor('fProyecto', proyectosSet, fp);
 }
@@ -541,7 +547,6 @@ function llenarSelectManteniendoValor(id, set, valorActual) {
 
 function limpiarFiltros() {
     document.getElementById('fCliente').value = "";
-    // CORRECCIÓN: Moderador puede limpiar trabajador
     if(usuarioActual.role !== 'colaborador') document.getElementById('fTrabajador').value = "";
     document.getElementById('fProyecto').value = "";
     document.getElementById('fMes').value = "";
@@ -571,7 +576,6 @@ async function guardar() {
         valor: Number(document.getElementById('valor').value) || 0
     };
 
-    // CORRECCIÓN: Colaborador Y Moderador heredan finanzas (ya que el moderador no ve los campos para digitarlos)
     if (usuarioActual.role !== 'admin') {
         const proyExistente = datos.find(d => d.proyecto.toUpperCase() === obj.proyecto.toUpperCase());
         if (proyExistente) {
@@ -691,7 +695,6 @@ function mostrar(lista) {
         if(d.proyecto) proyActivos.add(d.proyecto);
         const animDelay = Math.min(index * 0.02, 0.5); 
         
-        // CORRECCIÓN: Moderador también puede editar las filas de los demás.
         const puedeEditar = esAdmin || usuarioActual.role === 'moderador' || (d.trabajador === usuarioActual.name);
 
         htmlTabla += `
@@ -742,7 +745,6 @@ function verDetalle(nombre) {
     document.getElementById('detalleModal').classList.add('show');
 }
 
-// CORRECCIÓN: Función que puede cerrar cualquier modal por su ID
 function cerrarModal(modalId) { 
     const modal = document.getElementById(modalId); 
     if(!modal) return;
@@ -839,7 +841,6 @@ async function exportarExcel() {
 
 function limpiarFormulario() {
     document.getElementById('cliente').value = ""; document.getElementById('proyecto').value = "";
-    // CORRECCIÓN: Moderador puede limpiar su trabajador en el formulario
     if(usuarioActual.role !== 'colaborador') document.getElementById('trabajador').value = "";
     document.getElementById('horasPres').value = "0"; document.getElementById('horas').value = "0"; document.getElementById('valor').value = "0";
     document.getElementById('fecha').valueAsDate = new Date(); document.getElementById('actividad').value = "DISEÑO";
@@ -865,7 +866,6 @@ async function eliminar(id) {
 
 function editar(id) {
     const d = datos.find(x => x.id === id); if (!d) return;
-    // CORRECCIÓN: Moderador se salta este return y sí puede editar a otros
     if(usuarioActual.role === 'colaborador' && d.trabajador !== usuarioActual.name) return alert("No puedes editar el registro de otro compañero.");
     
     document.getElementById('cliente').value = d.cliente; document.getElementById('proyecto').value = d.proyecto;
@@ -879,7 +879,6 @@ function editar(id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// CORRECCIÓN: Funciones de Borrado Seguro Integradas
 function abrirModalBorrado() { 
     document.getElementById('deleteModal').classList.add('show'); 
 }
