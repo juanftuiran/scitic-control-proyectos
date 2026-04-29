@@ -133,14 +133,14 @@
         .oculto-por-rol { display: none !important; }
         /* --- ESTILOS PARA EL LOGO --- */
         .logo-login {
-            width: 120px; /* Ajusta este número si lo quieres más grande o más pequeño */
+            width: 120px; 
             height: auto;
             margin-bottom: 1rem;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); /* Le da una sombra elegante */
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); 
         }
 
         .logo-header {
-            width: 35px; /* Tamaño pequeño para la esquina superior */
+            width: 35px; 
             height: auto;
             margin-right: 12px;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
@@ -220,8 +220,9 @@
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group perm-financiero"><label>H. Presup.</label><input type="number" id="horasPres" value="0"></div>
-                        <div class="form-group perm-financiero"><label>Valor/Hora</label><input type="number" id="valor" value="0"></div>
+                        <!-- Se cambió la clase de perm-financiero a perm-mod-admin para habilitarlo a moderadores -->
+                        <div class="form-group perm-mod-admin"><label>H. Presup.</label><input type="number" id="horasPres" value="0"></div>
+                        <div class="form-group perm-mod-admin"><label>Valor/Hora</label><input type="number" id="valor" value="0"></div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -247,7 +248,6 @@
                         <button class="btn-secondary" onclick="document.getElementById('excelFile').click()">📂 Subir Excel</button>
                         <button class="btn-secondary" onclick="exportarExcel()">💾 Descargar Reporte</button>
                         <button class="btn-secondary" style="color: #60a5fa;" onclick="descargarAuditoria()">📜 Registro Auditoría</button>
-                        <!-- BOTÓN DE BORRAR ELIMINADO POR SEGURIDAD -->
                     </div>
                 </div>
             </aside>
@@ -381,14 +381,19 @@ function aplicarPermisos() {
     if (usuarioActual.role !== 'admin') {
         document.querySelectorAll('.perm-admin-only').forEach(el => el.classList.add('oculto-por-rol'));
     }
+    
+    // Aquí es donde ocultamos la información financiera (estadísticas y gráficas) para moderadores y colaboradores
     if (usuarioActual.role === 'colaborador' || usuarioActual.role === 'moderador') {
         document.querySelectorAll('.perm-financiero').forEach(el => el.classList.add('oculto-por-rol'));
     }
+    
+    // Aquí restringimos al colaborador para que no vea la edición avanzada ni modifique su nombre
     if (usuarioActual.role === 'colaborador') {
         const inTrab = document.getElementById('trabajador');
         inTrab.value = usuarioActual.name;
         inTrab.setAttribute('readonly', 'true');
         document.querySelectorAll('.perm-trabajador-filtro').forEach(el => el.classList.add('oculto-por-rol'));
+        document.querySelectorAll('.perm-mod-admin').forEach(el => el.classList.add('oculto-por-rol')); // Ocultar edición avanzada a colaborador
     } else {
         document.getElementById('trabajador').removeAttribute('readonly');
     }
@@ -595,7 +600,9 @@ async function guardar() {
         valor: Number(document.getElementById('valor').value) || 0
     };
 
-    if (usuarioActual.role !== 'admin') {
+    // Cambiado: Ahora solo limitamos la sobreescritura a los "colaboradores". 
+    // Administradores y Moderadores pueden asignar o cambiar Presupuesto y Valor/Hora sin problema.
+    if (usuarioActual.role === 'colaborador') {
         const proyExistente = datos.find(d => d.proyecto.toUpperCase() === obj.proyecto.toUpperCase());
         if (proyExistente) {
             obj.horas_pres = proyExistente.horas_pres;
@@ -659,7 +666,6 @@ function generarAlertas() {
     container.innerHTML = html;
 }
 
-// NUEVA FUNCIÓN: Filtrar directo desde la tarjeta de desglose administrativo
 function filtrarDesdeDesglose(proyecto) {
     document.getElementById('fProyecto').value = proyecto;
     filtrar();
@@ -690,7 +696,6 @@ function generarDesgloseAdmin(lista) {
     for (const [proyecto, data] of Object.entries(resumenAdmin)) {
         let colorClase = data.totalHoras > data.horasPres && data.horasPres > 0 ? "color: #fca5a5" : "color: var(--success)";
         
-        // El título (h4) ahora tiene la clase admin-project-title y el evento onclick
         html += `<div class="admin-project-card">
             <h4 class="admin-project-title" onclick="filtrarDesdeDesglose('${proyecto}')">
                 ${proyecto} 
