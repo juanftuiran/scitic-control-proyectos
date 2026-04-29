@@ -37,7 +37,8 @@
 
         #loginView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gradient); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-box { padding: 3rem; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; }
-        .login-box h2 { margin-top: 0; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8rem; margin-bottom: 2.5rem; letter-spacing: -0.5px; }
+        
+        .login-box h2 { margin-top: 0; background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8rem; margin-bottom: 2.5rem; letter-spacing: -0.5px; }
         .login-box input { margin-bottom: 1.2rem; padding: 1rem; font-size: 1rem; text-align: center; border-radius: 12px; }
 
         header { padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; }
@@ -116,13 +117,11 @@
         .alert-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; }
         .alert-detail { font-size: 0.85rem; color: #fca5a5; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; margin-top: 8px; line-height: 1.4; }
 
-        /* Estilos Desglose Admin Mejorados y Clickeables */
         .admin-view-wrapper { max-height: 400px; overflow-y: auto; padding-right: 15px; margin-top: 15px; }
         .admin-view-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
         .admin-project-card { background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 1.2rem; border-radius: 12px; transition: transform 0.2s, background 0.2s; }
         .admin-project-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
         
-        /* Título de proyecto clickeable */
         .admin-project-title { margin:0 0 12px 0; color: #fff; cursor: pointer; transition: color 0.2s, transform 0.2s; display: inline-block; }
         .admin-project-title:hover { color: var(--primary-hover); transform: translateX(3px); }
         
@@ -131,20 +130,9 @@
         .worker-name { color: var(--text-main); font-weight: 500; display: flex; align-items: center; gap: 8px; }
 
         .oculto-por-rol { display: none !important; }
-        /* --- ESTILOS PARA EL LOGO --- */
-        .logo-login {
-            width: 120px; 
-            height: auto;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); 
-        }
-
-        .logo-header {
-            width: 35px; 
-            height: auto;
-            margin-right: 12px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
+        
+        .logo-login { width: 120px; height: auto; margin-bottom: 1rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+        .logo-header { width: 35px; height: auto; margin-right: 12px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
     </style>
 </head>
 
@@ -152,9 +140,7 @@
 
 <div id="loginView">
     <div class="login-box glass-panel">
-    <!-- Aquí está tu nuevo logo -->
     <img src="logo.png" alt="Logo SCITIC" class="logo-login">
-    
     <h2>SCITIC Access</h2>
     <input type="text" id="inUser" placeholder="Usuario">
         <input type="password" id="inPass" placeholder="Contraseña" onkeypress="if(event.key === 'Enter') iniciarSesion()">
@@ -166,7 +152,6 @@
 <div id="appView" style="display: none;">
     <header>
     <div class="header-title">
-        <!-- Reemplazamos el símbolo por el logo -->
         <img src="logo.png" alt="Logo SCITIC" class="logo-header"> 
         SCITIC S.A.S
     </div>
@@ -202,25 +187,24 @@
                     <h3 id="formTitle">Nuevo Registro</h3>
                     
                     <div class="form-group">
+                        <label>Trabajador</label>
+                        <input id="trabajador" list="trabajadoresList" placeholder="Seleccione personal..." onchange="manejarCambiosFormulario()">
+                        <datalist id="trabajadoresList"></datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Proyecto</label>
+                        <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="manejarCambiosFormulario()">
+                        <datalist id="proyectosList"></datalist>
+                    </div>
+
+                    <div class="form-group">
                         <label>Cliente</label>
-                        <input id="cliente" list="clientesList" placeholder="Ej. INELECT">
+                        <input id="cliente" list="clientesList" placeholder="Ej. INELECT" onchange="manejarCambiosFormulario()">
                         <datalist id="clientesList"></datalist>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Proyecto</label>
-                        <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="autocompletarProyecto()">
-                        <datalist id="proyectosList"></datalist>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Trabajador</label>
-                        <input id="trabajador" list="trabajadoresList" placeholder="Seleccione personal...">
-                        <datalist id="trabajadoresList"></datalist>
-                    </div>
-                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <!-- Se cambió la clase de perm-financiero a perm-mod-admin para habilitarlo a moderadores -->
                         <div class="form-group perm-mod-admin"><label>H. Presup.</label><input type="number" id="horasPres" value="0"></div>
                         <div class="form-group perm-mod-admin"><label>Valor/Hora</label><input type="number" id="valor" value="0"></div>
                     </div>
@@ -237,7 +221,8 @@
                     
                     <div class="btn-group">
                         <button class="btn-primary" id="btnGuardar" onclick="guardar()">Guardar Actividad</button>
-                        <button class="btn-secondary" id="btnCancelar" style="display:none;" onclick="limpiarFormulario()">Cancelar Edición</button>
+                        <button class="btn-secondary" id="btnLimpiar" onclick="limpiarFormulario()">🧹 Limpiar Campos</button>
+                        <button class="btn-secondary" id="btnCancelar" style="display:none; border-color: var(--danger); color: #fca5a5;" onclick="limpiarFormulario()">❌ Cancelar Edición</button>
                     </div>
                 </div>
 
@@ -382,18 +367,16 @@ function aplicarPermisos() {
         document.querySelectorAll('.perm-admin-only').forEach(el => el.classList.add('oculto-por-rol'));
     }
     
-    // Aquí es donde ocultamos la información financiera (estadísticas y gráficas) para moderadores y colaboradores
     if (usuarioActual.role === 'colaborador' || usuarioActual.role === 'moderador') {
         document.querySelectorAll('.perm-financiero').forEach(el => el.classList.add('oculto-por-rol'));
     }
     
-    // Aquí restringimos al colaborador para que no vea la edición avanzada ni modifique su nombre
     if (usuarioActual.role === 'colaborador') {
         const inTrab = document.getElementById('trabajador');
         inTrab.value = usuarioActual.name;
         inTrab.setAttribute('readonly', 'true');
         document.querySelectorAll('.perm-trabajador-filtro').forEach(el => el.classList.add('oculto-por-rol'));
-        document.querySelectorAll('.perm-mod-admin').forEach(el => el.classList.add('oculto-por-rol')); // Ocultar edición avanzada a colaborador
+        document.querySelectorAll('.perm-mod-admin').forEach(el => el.classList.add('oculto-por-rol')); 
     } else {
         document.getElementById('trabajador').removeAttribute('readonly');
     }
@@ -429,6 +412,7 @@ async function iniciarApp() {
 
     recalcularProgresos();
     document.getElementById('fecha').valueAsDate = new Date();
+    
     inicializarDatosGlobales();
 
     document.getElementById('displayUserName').innerText = usuarioActual.name;
@@ -446,10 +430,12 @@ function recalcularProgresos() {
     alertasDetalladasGlobales = [];
 
     datos.forEach(d => {
+        if(!d.proyecto) return;
+
         if (!acumulador[d.proyecto]) acumulador[d.proyecto] = 0;
 
         let horasAntes = acumulador[d.proyecto];
-        acumulador[d.proyecto] += Number(d.horas);
+        acumulador[d.proyecto] += Number(d.horas || 0);
         let horasDespues = acumulador[d.proyecto];
 
         d.acum = horasDespues;
@@ -460,9 +446,9 @@ function recalcularProgresos() {
             let exceso = horasDespues - d.horas_pres;
             alertasDetalladasGlobales.push({
                 proyecto: d.proyecto,
-                cliente: d.cliente,
-                trabajador: d.trabajador,
-                fecha: d.fecha,
+                cliente: d.cliente || 'N/A',
+                trabajador: d.trabajador || 'N/A',
+                fecha: d.fecha || 'N/A',
                 horasPres: d.horas_pres,
                 exceso: exceso
             });
@@ -471,41 +457,61 @@ function recalcularProgresos() {
     datos.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
 }
 
-function autocompletarProyecto() {
-    const inputProy = document.getElementById('proyecto').value.trim().toUpperCase();
-    if (!inputProy) return;
-    
-    const proyExistente = datos.find(d => d.proyecto.toUpperCase() === inputProy);
-    
-    if (proyExistente) {
-        const inputCliente = document.getElementById('cliente');
-        if (!inputCliente.value) inputCliente.value = proyExistente.cliente;
-        
-        document.getElementById('horasPres').value = proyExistente.horas_pres || 0;
-        document.getElementById('valor').value = proyExistente.valor || 0;
+// ==========================================
+// FUNCIÓN BLINDADA CON .TRIM() EN TODOS LADOS
+// ==========================================
+function manejarCambiosFormulario() {
+    const inputTrab = (document.getElementById('trabajador').value || '').trim().toUpperCase();
+    const inputProy = (document.getElementById('proyecto').value || '').trim().toUpperCase();
+    const inputCliente = (document.getElementById('cliente').value || '').trim().toUpperCase();
+
+    // 1. AUTOCOMPLETAR EXACTO (Actualiza siempre el cliente cuando detecta un proyecto existente)
+    if (inputProy) {
+        const proyExistente = datos.find(d => (d.proyecto || '').trim().toUpperCase() === inputProy);
+        if (proyExistente) {
+            document.getElementById('cliente').value = (proyExistente.cliente || "").trim();
+            document.getElementById('horasPres').value = proyExistente.horas_pres || 0;
+            document.getElementById('valor').value = proyExistente.valor || 0;
+        }
     }
+
+    // 2. FILTRAR DATALISTS (Limpiando espacios)
+    let datosSugerencias = datos;
+
+    if (inputTrab) {
+        datosSugerencias = datosSugerencias.filter(d => (d.trabajador || '').trim().toUpperCase() === inputTrab);
+    }
+    
+    if (inputCliente) {
+        datosSugerencias = datosSugerencias.filter(d => (d.cliente || '').trim().toUpperCase() === inputCliente);
+    }
+
+    const clientesSet = new Set();
+    const proyectosSet = new Set();
+    const trabajadoresSet = new Set();
+
+    datos.forEach(d => { if(d.trabajador) trabajadoresSet.add(d.trabajador.trim()); });
+    
+    datosSugerencias.forEach(d => {
+        if (d.cliente) clientesSet.add(d.cliente.trim());
+        if (d.proyecto) proyectosSet.add(d.proyecto.trim());
+    });
+
+    if (proyectosSet.size === 0) datos.forEach(d => { if (d.proyecto) proyectosSet.add(d.proyecto.trim()); });
+    if (clientesSet.size === 0) datos.forEach(d => { if (d.cliente) clientesSet.add(d.cliente.trim()); });
+
+    document.getElementById("clientesList").innerHTML = [...clientesSet].sort().map(c => `<option value="${c}"></option>`).join('');
+    document.getElementById("proyectosList").innerHTML = [...proyectosSet].sort().map(p => `<option value="${p}"></option>`).join('');
+    document.getElementById("trabajadoresList").innerHTML = [...trabajadoresSet].sort().map(t => `<option value="${t}"></option>`).join('');
 }
 
 function inicializarDatosGlobales() {
-    const trabajadoresGlobales = new Set();
     const mesesGlobales = new Set();
-    const clientesForm = new Set();
-    const proyectosForm = new Set();
-
+    
     datos.forEach(d => { 
-        if(d.trabajador) trabajadoresGlobales.add(d.trabajador); 
         if(d.fecha && d.fecha.length >= 7) mesesGlobales.add(d.fecha.substring(0,7));
-        if(d.cliente) clientesForm.add(d.cliente);
-        if(d.proyecto) proyectosForm.add(d.proyecto);
     });
     
-    document.getElementById("clientesList").innerHTML = [...clientesForm].sort().map(c => `<option value="${c}">`).join('');
-    document.getElementById("proyectosList").innerHTML = [...proyectosForm].sort().map(p => `<option value="${p}">`).join('');
-
-    let dlHtml = '';
-    [...trabajadoresGlobales].sort().forEach(val => { dlHtml += `<option value="${val}">`; });
-    document.getElementById("trabajadoresList").innerHTML = dlHtml;
-
     let fMes = document.getElementById("fMes");
     let valMesActual = fMes.value;
     let htmlMeses = '<option value="">Todos los meses</option>';
@@ -514,6 +520,8 @@ function inicializarDatosGlobales() {
         htmlMeses += `<option value="${val}" ${selected}>${val}</option>`;
     });
     fMes.innerHTML = htmlMeses;
+    
+    manejarCambiosFormulario();
     filtrar();
 }
 
@@ -527,13 +535,14 @@ function filtrar() {
     const fBusqueda = document.getElementById('fBusqueda').value.toLowerCase();
 
     listaFiltradaGlobal = datos.filter(d => {
-        const matchCliente = !fc || d.cliente === fc;
-        const matchTrabajador = !ft || d.trabajador === ft;
-        const matchProyecto = !fp || d.proyecto === fp;
-        const matchMes = !fMes || (d.fecha && d.fecha.substring(0,7) === fMes);
+        const matchCliente = !fc || (d.cliente || '').trim() === fc;
+        const matchTrabajador = !ft || (d.trabajador || '').trim() === ft;
+        const matchProyecto = !fp || (d.proyecto || '').trim() === fp;
+        const matchMes = !fMes || ((d.fecha || '') && (d.fecha || '').substring(0,7) === fMes);
+        
         let matchBusqueda = true;
         if (fBusqueda) {
-            const textoFila = `${d.cliente} ${d.proyecto} ${d.trabajador} ${d.actividad}`.toLowerCase();
+            const textoFila = `${d.cliente || ''} ${d.proyecto || ''} ${d.trabajador || ''} ${d.actividad || ''}`.toLowerCase();
             matchBusqueda = textoFila.includes(fBusqueda);
         }
         return matchCliente && matchTrabajador && matchProyecto && matchMes && matchBusqueda;
@@ -546,12 +555,14 @@ function filtrar() {
         generarDesgloseAdmin(listaFiltradaGlobal); 
     }
 
-    const datosParaCliente = datos.filter(d => (!ft || d.trabajador === ft) && (!fp || d.proyecto === fp));
-    const clientesSet = new Set(datosParaCliente.map(d => d.cliente).filter(Boolean));
-    const datosParaTrabajador = datos.filter(d => (!fc || d.cliente === fc) && (!fp || d.proyecto === fp));
-    const trabajadoresSet = new Set(datosParaTrabajador.map(d => d.trabajador).filter(Boolean));
-    const datosParaProyecto = datos.filter(d => (!fc || d.cliente === fc) && (!ft || d.trabajador === ft));
-    const proyectosSet = new Set(datosParaProyecto.map(d => d.proyecto).filter(Boolean));
+    const datosParaCliente = datos.filter(d => (!ft || (d.trabajador || '').trim() === ft) && (!fp || (d.proyecto || '').trim() === fp));
+    const clientesSet = new Set(datosParaCliente.map(d => (d.cliente || '').trim()).filter(Boolean));
+    
+    const datosParaTrabajador = datos.filter(d => (!fc || (d.cliente || '').trim() === fc) && (!fp || (d.proyecto || '').trim() === fp));
+    const trabajadoresSet = new Set(datosParaTrabajador.map(d => (d.trabajador || '').trim()).filter(Boolean));
+    
+    const datosParaProyecto = datos.filter(d => (!fc || (d.cliente || '').trim() === fc) && (!ft || (d.trabajador || '').trim() === ft));
+    const proyectosSet = new Set(datosParaProyecto.map(d => (d.proyecto || '').trim()).filter(Boolean));
 
     llenarSelectManteniendoValor('fCliente', clientesSet, fc);
     if(usuarioActual.role !== 'colaborador') llenarSelectManteniendoValor('fTrabajador', trabajadoresSet, ft);
@@ -581,8 +592,14 @@ function limpiarFiltros() {
 async function guardar() {
     let trabajadorVal = document.getElementById('trabajador').value;
     if(usuarioActual.role === 'colaborador') trabajadorVal = usuarioActual.name;
+    
+    // Limpiamos los espacios en blanco antes de guardar
+    trabajadorVal = (trabajadorVal || '').trim();
+    const proyectoVal = (document.getElementById('proyecto').value || '').trim();
+    const clienteVal = (document.getElementById('cliente').value || '').trim();
+
     if(!trabajadorVal) return alert("Debe ingresar el nombre del personal.");
-    if(!document.getElementById('proyecto').value) return alert("Debe ingresar el nombre del proyecto.");
+    if(!proyectoVal) return alert("Debe ingresar el nombre del proyecto.");
     
     const btn = document.getElementById('btnGuardar');
     btn.innerText = "Procesando...";
@@ -590,24 +607,22 @@ async function guardar() {
 
     let obj = {
         id: editId !== null ? editId : generarIdUnico(),
-        cliente: document.getElementById('cliente').value.trim(),
-        proyecto: document.getElementById('proyecto').value.trim(),
+        cliente: clienteVal,
+        proyecto: proyectoVal,
         trabajador: trabajadorVal,
         fecha: document.getElementById('fecha').value,
-        horas: Number(document.getElementById('horas').value),
+        horas: Number(document.getElementById('horas').value) || 0,
         actividad: document.getElementById('actividad').value,
         horas_pres: Number(document.getElementById('horasPres').value) || 0,
         valor: Number(document.getElementById('valor').value) || 0
     };
 
-    // Cambiado: Ahora solo limitamos la sobreescritura a los "colaboradores". 
-    // Administradores y Moderadores pueden asignar o cambiar Presupuesto y Valor/Hora sin problema.
     if (usuarioActual.role === 'colaborador') {
-        const proyExistente = datos.find(d => d.proyecto.toUpperCase() === obj.proyecto.toUpperCase());
+        const proyExistente = datos.find(d => (d.proyecto || '').trim().toUpperCase() === obj.proyecto.toUpperCase());
         if (proyExistente) {
-            obj.horas_pres = proyExistente.horas_pres;
-            obj.valor = proyExistente.valor;
-            if(!obj.cliente) obj.cliente = proyExistente.cliente; 
+            obj.horas_pres = proyExistente.horas_pres || 0;
+            obj.valor = proyExistente.valor || 0;
+            if(!obj.cliente) obj.cliente = (proyExistente.cliente || "").trim(); 
         }
     }
 
@@ -681,15 +696,18 @@ function generarDesgloseAdmin(lista) {
 
     const resumenAdmin = {};
     lista.forEach(d => {
-        if (!resumenAdmin[d.proyecto]) {
-            resumenAdmin[d.proyecto] = { horasPres: d.horas_pres, trabajadores: {}, totalHoras: 0 };
+        if (!d.proyecto) return;
+        const proyTrim = d.proyecto.trim();
+        if (!resumenAdmin[proyTrim]) {
+            resumenAdmin[proyTrim] = { horasPres: d.horas_pres || 0, trabajadores: {}, totalHoras: 0 };
         }
-        if (!resumenAdmin[d.proyecto].trabajadores[d.trabajador]) {
-            resumenAdmin[d.proyecto].trabajadores[d.trabajador] = { horas: 0, costo: 0 };
+        const trab = (d.trabajador || 'Desconocido').trim();
+        if (!resumenAdmin[proyTrim].trabajadores[trab]) {
+            resumenAdmin[proyTrim].trabajadores[trab] = { horas: 0, costo: 0 };
         }
-        resumenAdmin[d.proyecto].trabajadores[d.trabajador].horas += Number(d.horas);
-        resumenAdmin[d.proyecto].trabajadores[d.trabajador].costo += Number(d.pago);
-        resumenAdmin[d.proyecto].totalHoras += Number(d.horas);
+        resumenAdmin[proyTrim].trabajadores[trab].horas += Number(d.horas || 0);
+        resumenAdmin[proyTrim].trabajadores[trab].costo += Number(d.pago || 0);
+        resumenAdmin[proyTrim].totalHoras += Number(d.horas || 0);
     });
 
     let html = '';
@@ -718,28 +736,28 @@ function mostrar(lista) {
     
     const listaOrdenada = [...lista].sort((a, b) => {
         const fechaA = new Date(a.fecha || 0); const fechaB = new Date(b.fecha || 0);
-        if (fechaB.getTime() === fechaA.getTime()) return b.id.localeCompare(a.id);
+        if (fechaB.getTime() === fechaA.getTime()) return (b.id||'').localeCompare(a.id||'');
         return fechaB - fechaA;
     });
     
     const esAdmin = usuarioActual.role === 'admin';
 
     listaOrdenada.forEach((d, index) => {
-        totalH += Number(d.horas); totalP += Number(d.pago);
-        if(d.proyecto) proyActivos.add(d.proyecto);
+        totalH += Number(d.horas || 0); totalP += Number(d.pago || 0);
+        if(d.proyecto) proyActivos.add(d.proyecto.trim());
         const animDelay = Math.min(index * 0.02, 0.5); 
         
-        const puedeEditar = esAdmin || usuarioActual.role === 'moderador' || (d.trabajador === usuarioActual.name);
+        const puedeEditar = esAdmin || usuarioActual.role === 'moderador' || ((d.trabajador || '').trim() === usuarioActual.name.trim());
 
         htmlTabla += `
         <tr class="animated-row" style="animation-delay: ${animDelay}s;">
             <td style="color:var(--text-muted); font-size: 0.85rem; font-weight: 500;">${d.fecha || 'N/A'}</td>
-            <td><span class="project-link" onclick="verDetalle('${d.proyecto}')">${d.proyecto}</span><br><small style="color:var(--text-muted)">${d.cliente}</small></td>
-            <td style="font-weight: 500;">${d.trabajador}</td>
-            <td><strong style="color:#fff;">${d.horas} h</strong></td>
-            ${esAdmin ? `<td style="color: #60a5fa; font-weight: 600;">$${Number(d.pago).toLocaleString('es-CO')}</td>` : ''}
-            ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso, 100)}%; ${Number(d.progreso)>100 ? 'background:linear-gradient(135deg, #ef4444, #dc2626);':''}"></div></div><small style="${Number(d.progreso)>100 ? 'color:#fca5a5; font-weight:bold;':''}">${d.progreso}%</small></td>` : ''}
-            <td><span class="badge bg-blue">${d.actividad}</span></td>
+            <td><span class="project-link" onclick="verDetalle('${(d.proyecto||'').trim()}')">${(d.proyecto||'').trim()||'N/A'}</span><br><small style="color:var(--text-muted)">${(d.cliente||'').trim()||''}</small></td>
+            <td style="font-weight: 500;">${(d.trabajador||'').trim()||'N/A'}</td>
+            <td><strong style="color:#fff;">${d.horas||0} h</strong></td>
+            ${esAdmin ? `<td style="color: #60a5fa; font-weight: 600;">$${Number(d.pago||0).toLocaleString('es-CO')}</td>` : ''}
+            ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso||0, 100)}%; ${Number(d.progreso||0)>100 ? 'background:linear-gradient(135deg, #ef4444, #dc2626);':''}"></div></div><small style="${Number(d.progreso||0)>100 ? 'color:#fca5a5; font-weight:bold;':''}">${d.progreso||0}%</small></td>` : ''}
+            <td><span class="badge bg-blue">${d.actividad||'N/A'}</span></td>
             <td><div class="action-btns">
                     ${puedeEditar ? `<button onclick="editar('${d.id}')" style="color: var(--accent); font-weight: 600;">Editar</button>` : ''}
                     ${esAdmin ? `<button onclick="eliminar('${d.id}')" style="color: #ef4444; font-weight: 600;">Borrar</button>` : ''}
@@ -759,7 +777,7 @@ function animarNumero(id, finalValue, sufijo, esMoneda = false) {
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 3); // Efecto más suave
+        const easeOut = 1 - Math.pow(1 - progress, 3);
         const currentVal = Math.floor(easeOut * finalValue);
         obj.innerHTML = esMoneda ? sufijo + currentVal.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + currentVal : currentVal + sufijo); 
         if (progress < 1) window.requestAnimationFrame(step);
@@ -769,12 +787,13 @@ function animarNumero(id, finalValue, sufijo, esMoneda = false) {
 }
 
 function verDetalle(nombre) {
-    const registros = datos.filter(d => d.proyecto === nombre);
+    if (!nombre) return;
+    const registros = datos.filter(d => (d.proyecto||'').trim() === nombre);
     if(registros.length === 0) return;
     document.getElementById('modalNombreProy').innerText = nombre;
-    document.getElementById('modalCliente').innerText = registros[0].cliente;
+    document.getElementById('modalCliente').innerText = (registros[0].cliente || '').trim();
     let h = 0, c = 0; let act = { DISEÑO: 0, RRHH: 0, OBRAS: 0 };
-    registros.forEach(r => { h += Number(r.horas); c += Number(r.pago); if(act[r.actividad] !== undefined) act[r.actividad] += Number(r.horas); });
+    registros.forEach(r => { h += Number(r.horas||0); c += Number(r.pago||0); if(act[r.actividad] !== undefined) act[r.actividad] += Number(r.horas||0); });
     document.getElementById('mHoras').innerText = h + " h";
     document.getElementById('mCosto').innerText = "$" + c.toLocaleString('es-CO');
     document.getElementById('mActividades').innerHTML = Object.entries(act).map(([k,v]) => `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;"><span style="font-weight: 600; color: #fff;"><span class="badge bg-blue">${k}</span></span><span style="font-size: 1.1rem; color: #60a5fa; font-weight: 600;">${v} h</span></div>`).join("");
@@ -790,12 +809,16 @@ function cerrarModal(modalId) {
 
 function graficar(listaFiltrada) {
     const ctx = document.getElementById("grafico"); const resumen = {};
-    listaFiltrada.forEach(d => resumen[d.proyecto] = (resumen[d.proyecto] || 0) + Number(d.horas));
+    listaFiltrada.forEach(d => {
+        if(d.proyecto) {
+            const p = d.proyecto.trim();
+            resumen[p] = (resumen[p] || 0) + Number(d.horas || 0);
+        }
+    });
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = 'Inter';
     if (window.chart) window.chart.destroy();
     
-    // Gradiente para las barras
     let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
     gradient.addColorStop(0, '#3b82f6'); gradient.addColorStop(1, '#1e3a8a');
 
@@ -840,7 +863,7 @@ function importarExcel() {
                 if (esDatoBasura(r.Cliente) && esDatoBasura(r.Proyecto)) return; 
                 if (!r.Proyecto && !r.Trabajador) return;
                 importados.push({
-                    id: generarIdUnico(), cliente: r.Cliente || "", proyecto: r.Proyecto || "", trabajador: r.Trabajador || sheetName, 
+                    id: generarIdUnico(), cliente: (r.Cliente || "").trim(), proyecto: (r.Proyecto || "").trim(), trabajador: (r.Trabajador || sheetName).trim(), 
                     horas_pres: Number(r["Horas Presupuestadas"]) || 0, fecha: formatExcelDate(r.Fecha) || "", horas: Number(r["Horas Trabajadas"]) || 0,
                     valor: Number(r["Valor Hora"]) || 0, actividad: r.Actividad || "DISEÑO", pago: Number(r["Pago Día"]) || (Number(r["Horas Trabajadas"]) * Number(r["Valor Hora"])) || 0,
                 });
@@ -867,7 +890,7 @@ async function exportarExcel() {
     if (listaFiltradaGlobal.length === 0) return alert("No hay datos para exportar.");
     const esAdmin = usuarioActual.role === 'admin';
     const datosSalida = listaFiltradaGlobal.map(d => {
-        let fila = { "Fecha": d.fecha, "Cliente": d.cliente, "Proyecto": d.proyecto, "Trabajador": d.trabajador, "Actividad": d.actividad, "Horas Trabajadas": d.horas };
+        let fila = { "Fecha": d.fecha, "Cliente": (d.cliente||'').trim(), "Proyecto": (d.proyecto||'').trim(), "Trabajador": (d.trabajador||'').trim(), "Actividad": d.actividad, "Horas Trabajadas": d.horas };
         if(esAdmin) {
             fila["Horas Presupuestadas"] = d.horas_pres; fila["Valor Hora"] = d.valor;
             fila["Pago Día"] = d.pago; fila["Horas Acumuladas"] = d.acum;
@@ -882,13 +905,27 @@ async function exportarExcel() {
 }
 
 function limpiarFormulario() {
-    document.getElementById('cliente').value = ""; document.getElementById('proyecto').value = "";
-    if(usuarioActual.role !== 'colaborador') document.getElementById('trabajador').value = "";
-    document.getElementById('horasPres').value = "0"; document.getElementById('horas').value = "0"; document.getElementById('valor').value = "0";
-    document.getElementById('fecha').valueAsDate = new Date(); document.getElementById('actividad').value = "DISEÑO";
+    document.getElementById('cliente').value = ""; 
+    document.getElementById('proyecto').value = "";
+    if(usuarioActual.role !== 'colaborador') {
+        document.getElementById('trabajador').value = "";
+    }
+    document.getElementById('horasPres').value = "0"; 
+    document.getElementById('horas').value = "0"; 
+    document.getElementById('valor').value = "0";
+    document.getElementById('fecha').valueAsDate = new Date(); 
+    document.getElementById('actividad').value = "DISEÑO";
+    
     editId = null;
-    document.getElementById('formTitle').innerText = "Nuevo Registro"; document.getElementById('formularioRegistro').classList.remove('editing-mode');
-    document.getElementById('btnGuardar').innerText = "Guardar Actividad"; document.getElementById('btnCancelar').style.display = "none";
+    document.getElementById('formTitle').innerText = "Nuevo Registro"; 
+    document.getElementById('formularioRegistro').classList.remove('editing-mode');
+    document.getElementById('btnGuardar').innerText = "Guardar Actividad"; 
+    
+    document.getElementById('btnLimpiar').style.display = "block"; 
+    document.getElementById('btnCancelar').style.display = "none"; 
+    
+    // Recalcular las listas desplegables vacías (o filtradas por el trabajador si es colaborador)
+    manejarCambiosFormulario();
 }
 
 async function eliminar(id) {
@@ -908,16 +945,25 @@ async function eliminar(id) {
 
 function editar(id) {
     const d = datos.find(x => x.id === id); if (!d) return;
-    if(usuarioActual.role === 'colaborador' && d.trabajador !== usuarioActual.name) return alert("Permiso denegado.");
+    if(usuarioActual.role === 'colaborador' && (d.trabajador||'').trim() !== usuarioActual.name.trim()) return alert("Permiso denegado.");
     
-    document.getElementById('cliente').value = d.cliente; document.getElementById('proyecto').value = d.proyecto;
-    document.getElementById('trabajador').value = d.trabajador; document.getElementById('horasPres').value = d.horas_pres || 0;
+    document.getElementById('cliente').value = (d.cliente || '').trim(); 
+    document.getElementById('proyecto').value = (d.proyecto || '').trim();
+    document.getElementById('trabajador').value = (d.trabajador || '').trim(); 
+    document.getElementById('horasPres').value = d.horas_pres || 0;
     document.getElementById('fecha').value = d.fecha || new Date().toISOString().split('T')[0];
-    document.getElementById('horas').value = d.horas; document.getElementById('valor').value = d.valor;
+    document.getElementById('horas').value = d.horas || 0; 
+    document.getElementById('valor').value = d.valor || 0;
     document.getElementById('actividad').value = ["DISEÑO", "RRHH", "OBRAS"].includes(d.actividad) ? d.actividad : "DISEÑO";
+    
     editId = id;
-    document.getElementById('formTitle').innerText = "Editando Actividad"; document.getElementById('formularioRegistro').classList.add('editing-mode');
-    document.getElementById('btnGuardar').innerText = "Actualizar Registro"; document.getElementById('btnCancelar').style.display = "block";
+    document.getElementById('formTitle').innerText = "Editando Actividad"; 
+    document.getElementById('formularioRegistro').classList.add('editing-mode');
+    document.getElementById('btnGuardar').innerText = "Actualizar Registro"; 
+    
+    document.getElementById('btnLimpiar').style.display = "none";
+    document.getElementById('btnCancelar').style.display = "block";
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
