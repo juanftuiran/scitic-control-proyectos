@@ -131,6 +131,20 @@
         .worker-name { color: var(--text-main); font-weight: 500; display: flex; align-items: center; gap: 8px; }
 
         .oculto-por-rol { display: none !important; }
+        /* --- ESTILOS PARA EL LOGO --- */
+        .logo-login {
+            width: 120px; /* Ajusta este número si lo quieres más grande o más pequeño */
+            height: auto;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); /* Le da una sombra elegante */
+        }
+
+        .logo-header {
+            width: 35px; /* Tamaño pequeño para la esquina superior */
+            height: auto;
+            margin-right: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
     </style>
 </head>
 
@@ -138,8 +152,11 @@
 
 <div id="loginView">
     <div class="login-box glass-panel">
-        <h2>SCITIC Access</h2>
-        <input type="text" id="inUser" placeholder="Usuario">
+    <!-- Aquí está tu nuevo logo -->
+    <img src="logo.png" alt="Logo SCITIC" class="logo-login">
+    
+    <h2>SCITIC Access</h2>
+    <input type="text" id="inUser" placeholder="Usuario">
         <input type="password" id="inPass" placeholder="Contraseña" onkeypress="if(event.key === 'Enter') iniciarSesion()">
         <button class="btn-primary" onclick="iniciarSesion()">Ingresar al Sistema</button>
         <p id="loginError" style="color: var(--danger); font-size: 0.85rem; display: none; margin-top: 1.5rem; font-weight: 500;">Credenciales incorrectas.</p>
@@ -148,9 +165,11 @@
 
 <div id="appView" style="display: none;">
     <header>
-        <div class="header-title">
-            <span style="font-size: 1.5rem;">❖</span> SCITIC S.A.S
-        </div>
+    <div class="header-title">
+        <!-- Reemplazamos el símbolo por el logo -->
+        <img src="logo.png" alt="Logo SCITIC" class="logo-header"> 
+        SCITIC S.A.S
+    </div>
         <div class="user-info">
             <span id="displayUserName" style="color: #fff;">Cargando...</span>
             <span id="displayUserRole" class="badge bg-blue">ROL</span>
