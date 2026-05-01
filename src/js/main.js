@@ -373,8 +373,8 @@ function generarAlertas() {
         html += `
         <div class="alert-item" onclick="verDetalle('${al.proyecto}')" style="animation-delay: ${i * 0.05}s;">
             <div class="alert-header">
-                <strong style="color: #fff; font-size: 1.05rem;">${al.proyecto}</strong>
-                <span style="background: rgba(239,68,68,0.2); color: #fca5a5; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size:0.75rem; border: 1px solid rgba(239,68,68,0.3);">+${al.exceso} h</span>
+                <strong style="color: var(--scitic-dark); font-size: 1.05rem;">${al.proyecto}</strong>
+                <span style="background: var(--danger-bg); color: var(--danger); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size:0.75rem; border: 1px solid rgba(239,68,68,0.3);">+${al.exceso} h</span>
             </div>
             <small style="color: var(--text-muted);">${al.cliente || 'Sin Cliente'}</small>
             <div class="alert-detail">
@@ -416,7 +416,7 @@ function generarDesgloseAdmin(lista) {
 
     let html = '';
     for (const [proyecto, data] of Object.entries(resumenAdmin)) {
-        let colorClase = data.totalHoras > data.horasPres && data.horasPres > 0 ? "color: #fca5a5" : "color: var(--success)";
+        let colorClase = data.totalHoras > data.horasPres && data.horasPres > 0 ? "color: var(--danger)" : "color: var(--success)";
         
         html += `<div class="admin-project-card">
             <h4 class="admin-project-title" onclick="filtrarDesdeDesglose('${proyecto}')">
@@ -427,7 +427,7 @@ function generarDesgloseAdmin(lista) {
         for (const [trabajador, stats] of Object.entries(data.trabajadores)) {
             html += `<div class="worker-stat">
                 <span class="worker-name"><span style="color:var(--text-muted)">👤</span> ${trabajador}</span>
-                <span style="text-align: right"><strong>${stats.horas}h</strong> <br><small style="color: #60a5fa">$${stats.costo.toLocaleString('es-CO')}</small></span>
+                <span style="text-align: right"><strong>${stats.horas}h</strong> <br><small style="color: var(--primary)">$${stats.costo.toLocaleString('es-CO')}</small></span>
             </div>`;
         }
         html += `</div>`;
@@ -458,13 +458,13 @@ function mostrar(lista) {
             <td style="color:var(--text-muted); font-size: 0.85rem; font-weight: 500;">${d.fecha || 'N/A'}</td>
             <td><span class="project-link" onclick="verDetalle('${(d.proyecto||'').trim()}')">${(d.proyecto||'').trim()||'N/A'}</span><br><small style="color:var(--text-muted)">${(d.cliente||'').trim()||''}</small></td>
             <td style="font-weight: 500;">${(d.trabajador||'').trim()||'N/A'}</td>
-            <td><strong style="color:#fff;">${d.horas||0} h</strong></td>
-            ${esAdmin ? `<td style="color: #60a5fa; font-weight: 600;">$${Number(d.pago||0).toLocaleString('es-CO')}</td>` : ''}
-            ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso||0, 100)}%; ${Number(d.progreso||0)>100 ? 'background:linear-gradient(135deg, #ef4444, #dc2626);':''}"></div></div><small style="${Number(d.progreso||0)>100 ? 'color:#fca5a5; font-weight:bold;':''}">${d.progreso||0}%</small></td>` : ''}
+            <td><strong style="color: var(--scitic-dark);">${d.horas||0} h</strong></td>
+            ${esAdmin ? `<td style="color: var(--primary); font-weight: 600;">$${Number(d.pago||0).toLocaleString('es-CO')}</td>` : ''}
+            ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso||0, 100)}%; ${Number(d.progreso||0)>100 ? 'background:linear-gradient(135deg, #ef4444, #dc2626);':''}"></div></div><small style="${Number(d.progreso||0)>100 ? 'color: var(--danger); font-weight:bold;':''}">${d.progreso||0}%</small></td>` : ''}
             <td><span class="badge bg-blue">${d.actividad||'N/A'}</span></td>
             <td><div class="action-btns">
                     ${puedeEditar ? `<button onclick="editar('${d.id}')" style="color: var(--accent); font-weight: 600;">Editar</button>` : ''}
-                    ${esAdmin ? `<button onclick="eliminar('${d.id}')" style="color: #ef4444; font-weight: 600;">Borrar</button>` : ''}
+                    ${esAdmin ? `<button onclick="eliminar('${d.id}')" style="color: var(--danger); font-weight: 600;">Borrar</button>` : ''}
             </div></td>
         </tr>`;
     });
@@ -500,7 +500,7 @@ function verDetalle(nombre) {
     registros.forEach(r => { h += Number(r.horas||0); c += Number(r.pago||0); if(act[r.actividad] !== undefined) act[r.actividad] += Number(r.horas||0); });
     document.getElementById('mHoras').innerText = h + " h";
     document.getElementById('mCosto').innerText = "$" + c.toLocaleString('es-CO');
-    document.getElementById('mActividades').innerHTML = Object.entries(act).map(([k,v]) => `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;"><span style="font-weight: 600; color: #fff;"><span class="badge bg-blue">${k}</span></span><span style="font-size: 1.1rem; color: #60a5fa; font-weight: 600;">${v} h</span></div>`).join("");
+    document.getElementById('mActividades').innerHTML = Object.entries(act).map(([k,v]) => `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;"><span style="font-weight: 600; color: var(--scitic-dark);"><span class="badge bg-blue">${k}</span></span><span style="font-size: 1.1rem; color: var(--primary); font-weight: 600;">${v} h</span></div>`).join("");
     document.getElementById('detalleModal').classList.add('show');
 }
 
@@ -527,11 +527,11 @@ function graficar(listaFiltrada) {
     if (window.chart) window.chart.destroy();
     
     let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, '#3b82f6'); gradient.addColorStop(1, '#1e3a8a');
+    gradient.addColorStop(0, '#ea580c'); gradient.addColorStop(1, '#c2410c');
 
     window.chart = new Chart(ctx, {
-        type: 'bar', data: { labels: Object.keys(resumen), datasets: [{ label: 'Horas', data: Object.values(resumen), backgroundColor: gradient, hoverBackgroundColor: '#60a5fa', borderRadius: 6, borderSkipped: false }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#fff', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
+        type: 'bar', data: { labels: Object.keys(resumen), datasets: [{ label: 'Horas', data: Object.values(resumen), backgroundColor: gradient, hoverBackgroundColor: '#f97316', borderRadius: 6, borderSkipped: false }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#ffffff', titleColor: '#1e293b', bodyColor: '#64748b', padding: 12, cornerRadius: 8, borderColor: '#cbd5e1', borderWidth: 1 } }, scales: { y: { grid: { color: '#e2e8f0' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
     });
 }
 

@@ -33,7 +33,7 @@
         SCITIC S.A.S
     </div>
         <div class="user-info">
-            <span id="displayUserName" style="color: #fff;">Cargando...</span>
+            <span id="displayUserName" style="color: var(--scitic-dark);">Cargando...</span>
             <span id="displayUserRole" class="badge bg-blue">ROL</span>
             <button class="btn-secondary" style="padding: 0.4rem 1.2rem; width: auto; font-size: 0.8rem; border-radius: 8px;" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
@@ -99,7 +99,7 @@
                     <div class="btn-group">
                         <button class="btn-primary" id="btnGuardar" onclick="guardar()">Guardar Actividad</button>
                         <button class="btn-secondary" id="btnLimpiar" onclick="limpiarFormulario()">🧹 Limpiar Campos</button>
-                        <button class="btn-secondary" id="btnCancelar" style="display:none; border-color: var(--danger); color: #fca5a5;" onclick="limpiarFormulario()">❌ Cancelar Edición</button>
+                        <button class="btn-secondary" id="btnCancelar" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormulario()">❌ Cancelar Edición</button>
                     </div>
                 </section>
 
@@ -109,7 +109,7 @@
                         <input type="file" id="excelFile" style="display:none" onchange="importarExcel()" accept=".xlsx, .xls">
                         <button class="btn-secondary" onclick="document.getElementById('excelFile').click()">📂 Subir Excel</button>
                         <button class="btn-secondary" onclick="exportarExcel()">💾 Descargar Reporte</button>
-                        <button class="btn-secondary" style="color: #60a5fa;" onclick="descargarAuditoria()">📜 Registro Auditoría</button>
+                        <button class="btn-secondary" style="color: var(--primary);" onclick="descargarAuditoria()">📜 Registro Auditoría</button>
                     </div>
                 </section>
             </aside>
@@ -122,7 +122,7 @@
                     </section>
                     
                     <section class="card glass-panel perm-financiero" style="margin-bottom: 0; border-top: 3px solid var(--danger); display: flex; flex-direction: column;">
-                        <h3 style="color: #fca5a5; display: flex; align-items: center; gap: 8px; border-bottom:none;">⚠️ Alertas</h3>
+                        <h3 style="color: var(--danger); display: flex; align-items: center; gap: 8px; border-bottom:none;">⚠️ Alertas</h3>
                         <div id="alertasContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
                         </div>
@@ -158,13 +158,13 @@
 
 <div id="detalleModal" class="modal">
     <div class="modal-content">
-        <h2 id="modalNombreProy" style="color: #fff; margin-top:0; font-size: 1.8rem; letter-spacing: -0.5px;"></h2>
-        <p id="modalCliente" style="color: var(--primary-hover); font-weight: 500; margin-top: -10px;"></p>
+        <h2 id="modalNombreProy" style="color: var(--scitic-dark); margin-top:0; font-size: 1.8rem; letter-spacing: -0.5px;"></h2>
+        <p id="modalCliente" style="color: var(--primary); font-weight: 500; margin-top: -10px;"></p>
         
         <div id="modalStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
-            <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);">
+            <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);">
                 <small style="color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Horas Totales</small>
-                <p id="mHoras" style="font-size: 1.8rem; font-weight:700; color: #fff; margin: 8px 0 0;"></p>
+                <p id="mHoras" style="font-size: 1.8rem; font-weight:700; color: var(--scitic-dark); margin: 8px 0 0;"></p>
             </div>
             <div class="perm-financiero" style="background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.2);">
                 <small style="color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Costo Generado</small>
@@ -173,7 +173,7 @@
         </div>
         <div style="margin-top: 25px;">
             <small style="color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 12px; letter-spacing: 0.5px;">Resumen de Actividades</small>
-            <div id="mActividades" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);"></div>
+            <div id="mActividades" style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);"></div>
         </div>
         <button class="btn-secondary" style="width:100%; margin-top:30px; padding: 1rem; border-radius: 12px;" onclick="cerrarModal('detalleModal')">Cerrar</button>
     </div>
