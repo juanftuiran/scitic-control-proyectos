@@ -411,7 +411,11 @@ async function iniciarApp() {
     if (auditDb) auditoria = auditDb;
 
     recalcularProgresos();
-    document.getElementById('fecha').valueAsDate = new Date();
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
     
     inicializarDatosGlobales();
 
@@ -913,7 +917,11 @@ function limpiarFormulario() {
     document.getElementById('horasPres').value = "0"; 
     document.getElementById('horas').value = "0"; 
     document.getElementById('valor').value = "0";
-    document.getElementById('fecha').valueAsDate = new Date(); 
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
     document.getElementById('actividad').value = "DISEÑO";
     
     editId = null;
