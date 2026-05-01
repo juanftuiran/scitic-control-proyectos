@@ -100,6 +100,7 @@ async function iniciarApp() {
     document.getElementById('displayUserName').innerText = "Cargando...";
     
     aplicarPermisos();
+    aplicarPermisosWidget();
 
     const { data: registrosDb, error: err1 } = await dbClient.from('registros').select('*');
     if (registrosDb) datos = registrosDb;
@@ -258,6 +259,7 @@ function filtrar() {
         generarAlertas(); 
         generarDesgloseAdmin(listaFiltradaGlobal); 
     }
+    generarPendientes();
 
     const datosParaCliente = datos.filter(d => (!ft || (d.trabajador || '').trim() === ft) && (!fp || (d.proyecto || '').trim() === fp));
     const clientesSet = new Set(datosParaCliente.map(d => (d.cliente || '').trim()).filter(Boolean));
@@ -687,13 +689,23 @@ function editar(id) {
 }
 
 // ==========================================
-// 8. UTILIDADES DE UX (Clear Buttons)
+// 8. UTILIDADES DE UX (Clear Buttons & Widgets)
 // ==========================================
 function clearInput(inputId) {
     const inp = document.getElementById(inputId);
     if (!inp) return;
     inp.value = '';
     toggleClearBtn(inp);
+    
+    // Si se limpia "proyecto", también limpiar "cliente"
+    if (inputId === 'proyecto') {
+        const clienteInp = document.getElementById('cliente');
+        if (clienteInp) {
+            clienteInp.value = '';
+            toggleClearBtn(clienteInp);
+        }
+    }
+    
     manejarCambiosFormulario();
     inp.focus();
 }
@@ -706,4 +718,105 @@ function toggleClearBtn(inputEl) {
     } else {
         btn.classList.remove('visible');
     }
+}
+
+// ==========================================
+// 9. WIDGET TABS (Alertas / Pendientes)
+// ==========================================
+function switchWidget(panel) {
+    const panelAlertas = document.getElementById('widgetAlertas');
+    const panelPendientes = document.getElementById('widgetPendientes');
+    const tabAlertas = document.getElementById('tabAlertas');
+    const tabPendientes = document.getElementById('tabPendientes');
+    
+    if (panel === 'alertas') {
+        panelAlertas.style.display = 'block';
+        panelPendientes.style.display = 'none';
+        tabAlertas.classList.add('active');
+        tabPendientes.classList.remove('active');
+    } else {
+        panelAlertas.style.display = 'none';
+        panelPendientes.style.display = 'block';
+        tabAlertas.classList.remove('active');
+        tabPendientes.classList.add('active');
+    }
+}
+
+function aplicarPermisosWidget() {
+    const tabAlertas = document.getElementById('tabAlertas');
+    
+    if (usuarioActual.role === 'colaborador' || usuarioActual.role === 'moderador') {
+        // Colaboradores/moderadores: solo ven Pendientes, ocultar tab de Alertas
+        tabAlertas.style.display = 'none';
+        switchWidget('pendientes');
+    } else {
+        // Admin: ve ambas tabs, empieza en Alertas
+        tabAlertas.style.display = '';
+        switchWidget('alertas');
+    }
+}
+
+function generarPendientes() {
+    const container = document.getElementById('pendientesContainer');
+    if (!container) return;
+    
+    // Obtener todos los trabajadores conocidos
+    const todosLosTrabajadores = new Set();
+    datos.forEach(d => {
+        if (d.trabajador) todosLosTrabajadores.add(d.trabajador.trim());
+    });
+    
+    if (todosLosTrabajadores.size < 2) {
+        container.innerHTML = `<div style="text-align: center; padding: 20px;"><span style="font-size: 2rem;">✅</span><p style="color: var(--text-muted); margin: 8px 0 0; font-weight: 500;">No hay suficientes trabajadores para comparar.</p></div>`;
+        return;
+    }
+    
+    // Agrupar registros por fecha
+    const registrosPorFecha = {};
+    datos.forEach(d => {
+        if (!d.fecha || !d.trabajador) return;
+        if (!registrosPorFecha[d.fecha]) registrosPorFecha[d.fecha] = new Set();
+        registrosPorFecha[d.fecha].add(d.trabajador.trim());
+    });
+    
+    // Filtrar solo fechas recientes (últimos 60 días) y con al menos 2 registros
+    const hoy = new Date();
+    const hace60Dias = new Date(hoy.getTime() - 60 * 24 * 60 * 60 * 1000);
+    
+    const pendientes = [];
+    const fechasOrdenadas = Object.keys(registrosPorFecha).sort().reverse();
+    
+    for (const fecha of fechasOrdenadas) {
+        const fechaDate = new Date(fecha);
+        if (fechaDate < hace60Dias) continue;
+        
+        const trabajadoresConRegistro = registrosPorFecha[fecha];
+        // Solo alertar si al menos 2 trabajadores registraron ese día (indica día laborable)
+        if (trabajadoresConRegistro.size < 2) continue;
+        
+        const faltantes = [];
+        todosLosTrabajadores.forEach(t => {
+            if (!trabajadoresConRegistro.has(t)) faltantes.push(t);
+        });
+        
+        if (faltantes.length > 0 && faltantes.length < todosLosTrabajadores.size) {
+            pendientes.push({ fecha, faltantes, totalActivos: trabajadoresConRegistro.size });
+        }
+    }
+    
+    if (pendientes.length === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 20px;"><span style="font-size: 2rem;">🎉</span><p style="color: var(--success); margin: 8px 0 0; font-weight: 600;">Todos los registros están al día.</p></div>`;
+        return;
+    }
+    
+    // Mostrar máximo 15 fechas
+    let html = '';
+    pendientes.slice(0, 15).forEach(p => {
+        html += `<div class="pendiente-item">
+            <div class="pendiente-fecha">📅 ${p.fecha} — ${p.totalActivos} registraron, ${p.faltantes.length} sin registro</div>
+            <div class="pendiente-nombres">Falta: <strong>${p.faltantes.join(', ')}</strong></div>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
 }

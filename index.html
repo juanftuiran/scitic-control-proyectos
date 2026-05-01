@@ -130,10 +130,22 @@
                         <canvas id="grafico" style="cursor: pointer;"></canvas>
                     </section>
                     
-                    <section class="card glass-panel perm-financiero" style="margin-bottom: 0; border-top: 3px solid var(--danger); display: flex; flex-direction: column;">
-                        <h3 style="color: var(--danger); display: flex; align-items: center; gap: 8px; border-bottom:none;">⚠️ Alertas</h3>
-                        <div id="alertasContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
-                            <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
+                    <section class="card glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column;">
+                        <div class="widget-tabs" id="widgetTabs">
+                            <button class="widget-tab active" onclick="switchWidget('alertas')" id="tabAlertas">⚠️ Alertas</button>
+                            <button class="widget-tab" onclick="switchWidget('pendientes')" id="tabPendientes">📋 Pendientes</button>
+                        </div>
+                        
+                        <div id="widgetAlertas" class="widget-panel">
+                            <div id="alertasContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
+                            </div>
+                        </div>
+                        
+                        <div id="widgetPendientes" class="widget-panel" style="display: none;">
+                            <div id="pendientesContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
+                                <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando registros pendientes...</p>
+                            </div>
                         </div>
                     </section>
                 </div>
