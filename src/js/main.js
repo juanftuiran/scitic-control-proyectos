@@ -768,6 +768,12 @@ function generarPendientes() {
     const container = document.getElementById('pendientesContainer');
     if (!container) return;
     
+    // 1. Determinar el mes a analizar (filtro seleccionado o mes actual)
+    let mesAnalisis = document.getElementById('fMes').value;
+    if (!mesAnalisis) {
+        mesAnalisis = new Date().toISOString().substring(0, 7); // YYYY-MM (Mes actual)
+    }
+
     if (trabajadoresActivosParaPendientes.length < 2) {
         container.innerHTML = `<div style="text-align: center; padding: 20px;"><span style="font-size: 2rem;">✅</span><p style="color: var(--text-muted); margin: 8px 0 0; font-weight: 500;">No hay suficientes trabajadores activos para comparar.</p></div>`;
         return;
@@ -787,8 +793,11 @@ function generarPendientes() {
     const fechasOrdenadas = Object.keys(registrosPorFecha).sort().reverse();
     
     for (const fecha of fechasOrdenadas) {
+        // FILTRO DE MES: Solo evaluamos fechas que coincidan con el mes de análisis
+        if (!fecha.startsWith(mesAnalisis)) continue;
+
         const fechaDate = new Date(fecha);
-        if (fechaDate < hace60DiasAlertas) continue;
+        if (fechaDate < hace60DiasAlertas && !document.getElementById('fMes').value) continue;
         
         const trabajadoresConRegistro = registrosPorFecha[fecha];
         
