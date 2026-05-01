@@ -118,16 +118,8 @@ async function iniciarApp() {
     }
 
     recalcularProgresos();
-    const inputFecha = document.getElementById('fecha');
-    inputFecha.valueAsDate = new Date();
+    document.getElementById('fecha').valueAsDate = new Date();
     
-    // Listener para actualizar pendientes si cambia la fecha del formulario
-    inputFecha.addEventListener('change', () => {
-        if (!document.getElementById('fMes').value) {
-            generarPendientes();
-        }
-    });
-
     inicializarDatosGlobales();
 
     document.getElementById('displayUserName').innerText = usuarioActual.name;
@@ -776,16 +768,21 @@ function generarPendientes() {
     const container = document.getElementById('pendientesContainer');
     if (!container) return;
     
-    // 1. Determinar el mes a analizar (filtro seleccionado o mes del campo fecha de registro)
+    // 1. Determinar el mes a analizar
     let mesAnalisis = document.getElementById('fMes').value;
-    if (!mesAnalisis) {
-        const fechaRegistro = document.getElementById('fecha').value;
-        if (fechaRegistro) {
-            mesAnalisis = fechaRegistro.substring(0, 7); // YYYY-MM
-        } else {
-            const d = new Date();
-            mesAnalisis = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    
+    // Si no hay filtro, buscamos el mes más reciente con registros en la base de datos
+    if (!mesAnalisis && datos.length > 0) {
+        const fechas = datos.map(d => d.fecha).filter(Boolean).sort().reverse();
+        if (fechas.length > 0) {
+            mesAnalisis = fechas[0].substring(0, 7); // YYYY-MM del registro más nuevo
         }
+    }
+
+    // Fallback al mes actual si no hay datos ni filtros
+    if (!mesAnalisis) {
+        const d = new Date();
+        mesAnalisis = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 
     if (trabajadoresActivosParaPendientes.length < 2) {
