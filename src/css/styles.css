@@ -282,7 +282,131 @@ tr:hover td { background: var(--table-row-hover); color: #fff; }
 /* Utilidades */
 .oculto-por-rol { display: none !important; }
 
-/* Animaciones */
+/* =========================================================
+   8. INPUT CLEARABLE (Botón × para limpiar campos)
+   ========================================================= */
+.input-clearable {
+    position: relative;
+    width: 100%;
+}
+.input-clearable input {
+    padding-right: 2.5rem;
+}
+.btn-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    border-radius: 50%;
+    display: none; /* oculto por defecto, visible cuando hay texto */
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    box-shadow: none;
+}
+.btn-clear:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+    transform: translateY(-50%) scale(1.1);
+}
+.btn-clear.visible {
+    display: flex;
+}
+
+/* =========================================================
+   9. ANIMACIONES
+   ========================================================= */
 @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .animated-row { animation: slideUpFade 0.4s ease forwards; opacity: 0; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* =========================================================
+   10. RESPONSIVE DESIGN
+   ========================================================= */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1200px) {
+    .chart-alert-container { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1024px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .container { padding: 1.5rem 1rem; }
+}
+
+/* Tablets pequeñas */
+@media (max-width: 768px) {
+    header { 
+        padding: 1rem 1.2rem; 
+        flex-direction: column; 
+        gap: 10px; 
+        text-align: center; 
+    }
+    .header-title { font-size: 1.1rem; }
+    .user-info { 
+        font-size: 0.85rem; 
+        gap: 10px; 
+        flex-wrap: wrap; 
+        justify-content: center; 
+    }
+    
+    .dashboard-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .stat-card { padding: 1.2rem; }
+    .stat-card p { font-size: 1.5rem; }
+    
+    .filters-card { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .card { padding: 1.2rem; margin-bottom: 1.2rem; }
+    
+    .admin-view-grid { grid-template-columns: 1fr; }
+    
+    th, td { padding: 0.8rem 0.6rem; font-size: 0.8rem; }
+    
+    .modal-content { padding: 2rem 1.5rem; }
+}
+
+/* Móviles */
+@media (max-width: 480px) {
+    header { padding: 0.8rem 1rem; }
+    .header-title { font-size: 1rem; }
+    .logo-header { width: 32px; }
+    .user-info { font-size: 0.8rem; gap: 8px; }
+    
+    .container { padding: 1rem 0.75rem; }
+    
+    .dashboard-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+    .stat-card { padding: 1rem; }
+    .stat-card p { font-size: 1.3rem; }
+    
+    .filters-card { grid-template-columns: 1fr; }
+    
+    .card { padding: 1rem; border-radius: 12px; }
+    h3 { font-size: 1rem; }
+    
+    .btn-group { gap: 0.6rem; }
+    button { padding: 0.75rem; font-size: 0.9rem; }
+    
+    .table-container { max-height: 350px; }
+    th, td { padding: 0.7rem 0.5rem; font-size: 0.75rem; }
+    .action-btns { flex-direction: row; gap: 4px; }
+    .action-btns button { font-size: 0.7rem; padding: 4px 8px; }
+    
+    .chart-alert-container { gap: 1rem; }
+    canvas { max-height: 200px; }
+    
+    .modal-content { padding: 1.5rem 1rem; border-radius: 16px; }
+    
+    .login-box { padding: 2rem 1.5rem; max-width: 90%; }
+    .logo-login { width: 100px; }
+    .login-box h2 { font-size: 1.4rem; }
+}

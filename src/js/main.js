@@ -636,6 +636,9 @@ function limpiarFormulario() {
     
     // Recalcular las listas desplegables vacías (o filtradas por el trabajador si es colaborador)
     manejarCambiosFormulario();
+    
+    // Ocultar botones × de limpieza
+    document.querySelectorAll('.btn-clear').forEach(btn => btn.classList.remove('visible'));
 }
 
 async function eliminar(id) {
@@ -675,4 +678,32 @@ function editar(id) {
     document.getElementById('btnCancelar').style.display = "block";
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Mostrar botones × en campos que tengan valor
+    ['trabajador', 'proyecto', 'cliente'].forEach(id => {
+        const inp = document.getElementById(id);
+        if (inp) toggleClearBtn(inp);
+    });
+}
+
+// ==========================================
+// 8. UTILIDADES DE UX (Clear Buttons)
+// ==========================================
+function clearInput(inputId) {
+    const inp = document.getElementById(inputId);
+    if (!inp) return;
+    inp.value = '';
+    toggleClearBtn(inp);
+    manejarCambiosFormulario();
+    inp.focus();
+}
+
+function toggleClearBtn(inputEl) {
+    const btn = inputEl.parentElement.querySelector('.btn-clear');
+    if (!btn) return;
+    if (inputEl.value.trim().length > 0) {
+        btn.classList.add('visible');
+    } else {
+        btn.classList.remove('visible');
+    }
 }

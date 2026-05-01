@@ -65,19 +65,28 @@
                     
                     <div class="form-group">
                         <label>Trabajador</label>
-                        <input id="trabajador" list="trabajadoresList" placeholder="Seleccione personal..." onchange="manejarCambiosFormulario()">
+                        <div class="input-clearable">
+                            <input id="trabajador" list="trabajadoresList" placeholder="Seleccione personal..." onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
+                            <button type="button" class="btn-clear" onclick="clearInput('trabajador')" title="Limpiar campo">×</button>
+                        </div>
                         <datalist id="trabajadoresList"></datalist>
                     </div>
 
                     <div class="form-group">
                         <label>Proyecto</label>
-                        <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="manejarCambiosFormulario()">
+                        <div class="input-clearable">
+                            <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
+                            <button type="button" class="btn-clear" onclick="clearInput('proyecto')" title="Limpiar campo">×</button>
+                        </div>
                         <datalist id="proyectosList"></datalist>
                     </div>
 
                     <div class="form-group">
                         <label>Cliente</label>
-                        <input id="cliente" list="clientesList" placeholder="Ej. INELECT" onchange="manejarCambiosFormulario()">
+                        <div class="input-clearable">
+                            <input id="cliente" list="clientesList" placeholder="Ej. INELECT" onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
+                            <button type="button" class="btn-clear" onclick="clearInput('cliente')" title="Limpiar campo">×</button>
+                        </div>
                         <datalist id="clientesList"></datalist>
                     </div>
                     
