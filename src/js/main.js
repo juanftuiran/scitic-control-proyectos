@@ -1,5 +1,5 @@
 // ==========================================
-1. CONFIGURACIÓN Y VARIABLES GLOBALES
+// 1. CONFIGURACIÓN Y VARIABLES GLOBALES
 // ==========================================
 const SUPABASE_URL = 'https://qgrkvjvyiwxmbuyfnqea.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hRIpVDeHHVeAJZaRnSckQQ_szYcmZSn'; 
@@ -159,7 +159,7 @@ function recalcularProgresos() {
 }
 
 // ==========================================
-4. EVENTOS Y UTILIDADES DE FORMULARIO
+// 4. EVENTOS Y UTILIDADES DE FORMULARIO
 // ==========================================
 function manejarCambiosFormulario() {
     const inputTrab = (document.getElementById('trabajador').value || '').trim().toUpperCase();
@@ -531,7 +531,7 @@ function graficar(listaFiltrada) {
 
     window.chart = new Chart(ctx, {
         type: 'bar', data: { labels: Object.keys(resumen), datasets: [{ label: 'Horas', data: Object.values(resumen), backgroundColor: gradient, hoverBackgroundColor: '#f97316', borderRadius: 6, borderSkipped: false }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#ffffff', titleColor: '#1e293b', bodyColor: '#64748b', padding: 12, cornerRadius: 8, borderColor: '#cbd5e1', borderWidth: 1 } }, scales: { y: { grid: { color: '#e2e8f0' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.95)', titleColor: '#fff', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
     });
 }
 
