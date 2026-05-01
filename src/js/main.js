@@ -771,7 +771,8 @@ function generarPendientes() {
     // 1. Determinar el mes a analizar (filtro seleccionado o mes actual)
     let mesAnalisis = document.getElementById('fMes').value;
     if (!mesAnalisis) {
-        mesAnalisis = new Date().toISOString().substring(0, 7); // YYYY-MM (Mes actual)
+        const d = new Date();
+        mesAnalisis = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 
     if (trabajadoresActivosParaPendientes.length < 2) {
@@ -825,7 +826,7 @@ function generarPendientes() {
     let html = '';
     pendientes.slice(0, 15).forEach(p => {
         html += `<div class="pendiente-item">
-            <div class="pendiente-fecha">📅 ${p.fecha} — ${p.totalActivos} registraron, ${p.faltantes.length} sin registro</div>
+            <div class="pendiente-fecha">📅 ${p.fecha}</div>
             <div class="pendiente-nombres">Falta: <strong>${p.faltantes.join(', ')}</strong></div>
         </div>`;
     });
