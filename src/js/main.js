@@ -760,18 +760,33 @@ function generarPendientes() {
     const container = document.getElementById('pendientesContainer');
     if (!container) return;
     
-    // Obtener todos los trabajadores conocidos
-    const todosLosTrabajadores = new Set();
+    const hoy = new Date();
+    const hace30Dias = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const hace60DiasAlertas = new Date(hoy.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // 1. Mapear la última fecha de registro de cada trabajador
+    const ultimaConexion = {};
     datos.forEach(d => {
-        if (d.trabajador) todosLosTrabajadores.add(d.trabajador.trim());
+        if (d.trabajador && d.fecha) {
+            const t = d.trabajador.trim();
+            if (!ultimaConexion[t] || d.fecha > ultimaConexion[t]) {
+                ultimaConexion[t] = d.fecha;
+            }
+        }
+    });
+
+    // 2. Filtrar trabajadores "Activos" (vistos en los últimos 30 días)
+    const trabajadoresActivos = Object.keys(ultimaConexion).filter(t => {
+        const fechaUltima = new Date(ultimaConexion[t]);
+        return fechaUltima >= hace30Dias;
     });
     
-    if (todosLosTrabajadores.size < 2) {
-        container.innerHTML = `<div style="text-align: center; padding: 20px;"><span style="font-size: 2rem;">✅</span><p style="color: var(--text-muted); margin: 8px 0 0; font-weight: 500;">No hay suficientes trabajadores para comparar.</p></div>`;
+    if (trabajadoresActivos.length < 2) {
+        container.innerHTML = `<div style="text-align: center; padding: 20px;"><span style="font-size: 2rem;">✅</span><p style="color: var(--text-muted); margin: 8px 0 0; font-weight: 500;">No hay suficientes trabajadores activos para comparar.</p></div>`;
         return;
     }
     
-    // Agrupar registros por fecha
+    // 3. Agrupar registros existentes por fecha
     const registrosPorFecha = {};
     datos.forEach(d => {
         if (!d.fecha || !d.trabajador) return;
@@ -779,27 +794,30 @@ function generarPendientes() {
         registrosPorFecha[d.fecha].add(d.trabajador.trim());
     });
     
-    // Filtrar solo fechas recientes (últimos 60 días) y con al menos 2 registros
-    const hoy = new Date();
-    const hace60Dias = new Date(hoy.getTime() - 60 * 24 * 60 * 60 * 1000);
-    
     const pendientes = [];
     const fechasOrdenadas = Object.keys(registrosPorFecha).sort().reverse();
     
     for (const fecha of fechasOrdenadas) {
         const fechaDate = new Date(fecha);
-        if (fechaDate < hace60Dias) continue;
+        if (fechaDate < hace60DiasAlertas) continue;
         
         const trabajadoresConRegistro = registrosPorFecha[fecha];
-        // Solo alertar si al menos 2 trabajadores registraron ese día (indica día laborable)
+        
+        // Solo evaluamos días donde al menos 2 personas registraron (día laborable probable)
         if (trabajadoresConRegistro.size < 2) continue;
         
         const faltantes = [];
-        todosLosTrabajadores.forEach(t => {
-            if (!trabajadoresConRegistro.has(t)) faltantes.push(t);
+        trabajadoresActivos.forEach(t => {
+            if (!trabajadoresConRegistro.has(t)) {
+                // REGLA CLAVE: Solo alertar si la fecha evaluada es ANTERIOR o IGUAL a su último registro
+                // Si la fecha es posterior a su último registro, asumimos que ya no está o está de baja.
+                if (fecha <= ultimaConexion[t]) {
+                    faltantes.push(t);
+                }
+            }
         });
         
-        if (faltantes.length > 0 && faltantes.length < todosLosTrabajadores.size) {
+        if (faltantes.length > 0 && faltantes.length < trabajadoresActivos.length) {
             pendientes.push({ fecha, faltantes, totalActivos: trabajadoresConRegistro.size });
         }
     }
