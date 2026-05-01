@@ -10,14 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./src/css/styles.css">
 </head>
 
 <body>
 
 <div id="loginView">
     <div class="login-box glass-panel">
-    <img src="logo.png" alt="Logo SCITIC" class="logo-login">
+    <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-login">
     <h2>SCITIC Access</h2>
     <input type="text" id="inUser" placeholder="Usuario">
         <input type="password" id="inPass" placeholder="Contraseña" onkeypress="if(event.key === 'Enter') iniciarSesion()">
@@ -29,7 +29,7 @@
 <div id="appView" style="display: none;">
     <header>
     <div class="header-title">
-        <img src="logo.png" alt="Logo SCITIC" class="logo-header"> 
+        <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-header"> 
         SCITIC S.A.S
     </div>
         <div class="user-info">
@@ -179,6 +179,6 @@
     </div>
 </div>
 
-<script src="app.js"></script>
+<script src="./src/js/main.js" defer></script>
 </body>
 </html>
