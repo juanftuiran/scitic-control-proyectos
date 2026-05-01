@@ -12,6 +12,7 @@ let listaFiltradaGlobal = [];
 let alertasDetalladasGlobales = []; 
 let editId = null;
 let usuarioActual = null;
+let trabajadoresActivosParaPendientes = []; 
 
 // ==========================================
 // 2. INICIALIZACIÓN Y AUTENTICACIÓN
@@ -108,6 +109,13 @@ async function iniciarApp() {
 
     const { data: auditDb } = await dbClient.from('auditoria').select('*').order('created_at', { ascending: false });
     if (auditDb) auditoria = auditDb;
+
+    const { data: usersDb } = await dbClient.from('usuarios').select('nombre, rol');
+    if (usersDb) {
+        trabajadoresActivosParaPendientes = usersDb
+            .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
+            .map(u => u.nombre.trim());
+    }
 
     recalcularProgresos();
     document.getElementById('fecha').valueAsDate = new Date();
@@ -760,33 +768,12 @@ function generarPendientes() {
     const container = document.getElementById('pendientesContainer');
     if (!container) return;
     
-    const hoy = new Date();
-    const hace30Dias = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const hace60DiasAlertas = new Date(hoy.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-    // 1. Mapear la última fecha de registro de cada trabajador
-    const ultimaConexion = {};
-    datos.forEach(d => {
-        if (d.trabajador && d.fecha) {
-            const t = d.trabajador.trim();
-            if (!ultimaConexion[t] || d.fecha > ultimaConexion[t]) {
-                ultimaConexion[t] = d.fecha;
-            }
-        }
-    });
-
-    // 2. Filtrar trabajadores "Activos" (vistos en los últimos 30 días)
-    const trabajadoresActivos = Object.keys(ultimaConexion).filter(t => {
-        const fechaUltima = new Date(ultimaConexion[t]);
-        return fechaUltima >= hace30Dias;
-    });
-    
-    if (trabajadoresActivos.length < 2) {
+    if (trabajadoresActivosParaPendientes.length < 2) {
         container.innerHTML = `<div style="text-align: center; padding: 20px;"><span style="font-size: 2rem;">✅</span><p style="color: var(--text-muted); margin: 8px 0 0; font-weight: 500;">No hay suficientes trabajadores activos para comparar.</p></div>`;
         return;
     }
     
-    // 3. Agrupar registros existentes por fecha
+    // Agrupar registros existentes por fecha
     const registrosPorFecha = {};
     datos.forEach(d => {
         if (!d.fecha || !d.trabajador) return;
@@ -794,6 +781,8 @@ function generarPendientes() {
         registrosPorFecha[d.fecha].add(d.trabajador.trim());
     });
     
+    const hoy = new Date();
+    const hace60DiasAlertas = new Date(hoy.getTime() - 60 * 24 * 60 * 60 * 1000);
     const pendientes = [];
     const fechasOrdenadas = Object.keys(registrosPorFecha).sort().reverse();
     
@@ -807,17 +796,13 @@ function generarPendientes() {
         if (trabajadoresConRegistro.size < 2) continue;
         
         const faltantes = [];
-        trabajadoresActivos.forEach(t => {
+        trabajadoresActivosParaPendientes.forEach(t => {
             if (!trabajadoresConRegistro.has(t)) {
-                // REGLA CLAVE: Solo alertar si la fecha evaluada es ANTERIOR o IGUAL a su último registro
-                // Si la fecha es posterior a su último registro, asumimos que ya no está o está de baja.
-                if (fecha <= ultimaConexion[t]) {
-                    faltantes.push(t);
-                }
+                faltantes.push(t);
             }
         });
         
-        if (faltantes.length > 0 && faltantes.length < trabajadoresActivos.length) {
+        if (faltantes.length > 0 && faltantes.length < trabajadoresActivosParaPendientes.length) {
             pendientes.push({ fecha, faltantes, totalActivos: trabajadoresConRegistro.size });
         }
     }
