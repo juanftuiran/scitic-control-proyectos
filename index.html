@@ -9,11 +9,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="./src/css/styles.css">
+    <link rel="stylesheet" href="./src/css/toast.css">
 </head>
 
 <body>
+
+<div id="global-loader" style="display: none;">
+    <div class="spinner"></div>
+    <p id="loader-text">Procesando...</p>
+</div>
 
 <div id="loginView">
     <div class="login-box glass-panel">
@@ -33,6 +38,10 @@
         SCITIC S.A.S
     </div>
         <div class="user-info">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>SISTEMA ONLINE</span>
+            </div>
             <span id="displayUserName" style="color: var(--scitic-dark);">Cargando...</span>
             <span id="displayUserRole" class="badge bg-blue">ROL</span>
             <button class="btn-secondary" style="padding: 0.4rem 1.2rem; width: auto; font-size: 0.8rem; border-radius: 8px;" onclick="cerrarSesion()">Cerrar Sesión</button>
@@ -44,6 +53,13 @@
             <div class="stat-card glass-panel"><h4>Horas Filtradas</h4><p id="stat-horas">0</p></div>
             <div class="stat-card glass-panel perm-financiero"><h4>Ejecución Presupuesto</h4><p id="stat-presupuesto">$0</p></div>
             <div class="stat-card glass-panel"><h4>Proyectos Activos</h4><p id="stat-proyectos">0</p></div>
+        </section>
+
+        <section class="card glass-panel" id="topWorkersContainer" style="display: none; margin-bottom: 2rem;">
+            <h3>Top Contribuidores del Mes</h3>
+            <div id="topWorkersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <!-- Dynamically populated -->
+            </div>
         </section>
 
         <section class="card glass-panel">
@@ -200,6 +216,9 @@
     </div>
 </div>
 
+<script src="./src/js/components/Toast.js"></script>
+<script src="./src/js/store/appState.js"></script>
+<script src="./src/js/services/api.js"></script>
 <script src="./src/js/main.js" defer></script>
 </body>
 </html>
