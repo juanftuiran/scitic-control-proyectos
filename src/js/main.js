@@ -28,10 +28,11 @@ function hideLoader() {
 // ==========================================
 // 2. INICIALIZACIÓN Y AUTENTICACIÓN
 // ==========================================
-window.onload = function () {
-    const sesionGuardada = sessionStorage.getItem('scitic_session');
-    if (sesionGuardada) {
-        usuarioActual = JSON.parse(sesionGuardada);
+window.onload = async function () {
+    // Verificar sesión activa de Supabase Auth
+    const sesion = await window.API.getSession();
+    if (sesion) {
+        usuarioActual = sesion;
         iniciarApp();
     } else {
         document.getElementById('loginView').style.display = 'flex';
@@ -52,12 +53,11 @@ async function iniciarSesion() {
     showLoader("Autenticando...");
 
     try {
-        // Login seguro via RPC — password se valida en el servidor, nunca llega al cliente
+        // Supabase Auth — password se valida en el servidor
         const result = await window.API.login(u, p);
 
-        if (result && result.valido) {
-            usuarioActual = { usuario: u, name: result.nombre, role: result.rol };
-            sessionStorage.setItem('scitic_session', JSON.stringify(usuarioActual));
+        if (result) {
+            usuarioActual = result;
             errorMsg.style.display = 'none';
             Toast.success(`Bienvenido, ${usuarioActual.name}`);
             iniciarApp();
@@ -72,8 +72,8 @@ async function iniciarSesion() {
     }
 }
 
-function cerrarSesion() {
-    sessionStorage.removeItem('scitic_session');
+async function cerrarSesion() {
+    await window.API.logout();
     location.reload();
 }
 

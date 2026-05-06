@@ -3,29 +3,70 @@ const SUPABASE_KEY = 'sb_publishable_hRIpVDeHHVeAJZaRnSckQQ_szYcmZSn';
 
 class APIService {
     constructor() {
-        // Obtenemos el cliente global de supabase
         this.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
-    // Login seguro via RPC — la contraseña NUNCA llega al cliente
-    async login(usuario, password) {
+    // ==========================================
+    // AUTH — Supabase Authentication nativo
+    // ==========================================
+
+    // Login con Supabase Auth (email + password)
+    async login(email, password) {
         try {
-            const { data, error } = await this.db.rpc('validar_credenciales', {
-                p_usuario: usuario,
-                p_password: password
+            const { data, error } = await this.db.auth.signInWithPassword({
+                email: email,
+                password: password
             });
             if (error) throw error;
-            return data; // Retorna { valido, nombre, rol } o null
+
+            // Obtener perfil (nombre, rol) de la tabla perfiles
+            const { data: perfil, error: perfilError } = await this.db
+                .from('perfiles')
+                .select('nombre, rol')
+                .eq('id', data.user.id)
+                .single();
+            if (perfilError) throw perfilError;
+
+            return { usuario: email, name: perfil.nombre, role: perfil.rol };
         } catch (error) {
-            console.error("Error en login RPC:", error);
+            console.error("Error en login:", error);
             return null;
         }
     }
 
+    // Cerrar sesión
+    async logout() {
+        await this.db.auth.signOut();
+    }
+
+    // Verificar sesión activa al cargar la app
+    async getSession() {
+        try {
+            const { data: { session } } = await this.db.auth.getSession();
+            if (!session) return null;
+
+            const { data: perfil, error } = await this.db
+                .from('perfiles')
+                .select('nombre, rol')
+                .eq('id', session.user.id)
+                .single();
+            if (error) throw error;
+
+            return { usuario: session.user.email, name: perfil.nombre, role: perfil.rol };
+        } catch (error) {
+            console.error("Error verificando sesión:", error);
+            return null;
+        }
+    }
+
+    // ==========================================
+    // USUARIOS — Lista de perfiles (sin password)
+    // ==========================================
+
     async getUsuarios() {
         try {
-            // Selección explícita — excluye 'password' por seguridad
-            const { data, error } = await this.db.from('usuarios').select('id, usuario, nombre, rol');
+            // Lee perfiles (nombre + rol) — sin acceso a password
+            const { data, error } = await this.db.from('perfiles').select('nombre, rol');
             if (error) throw error;
             return data;
         } catch (error) {
@@ -35,9 +76,12 @@ class APIService {
         }
     }
 
+    // ==========================================
+    // REGISTROS & AUDITORIA — Sin cambios
+    // ==========================================
+
     async getRegistros() {
         try {
-            // Selección explícita de columnas de registros
             const { data, error } = await this.db.from('registros').select('id, cliente, proyecto, trabajador, fecha, horas, actividad, horas_pres, valor, pago');
             if (error) throw error;
             return data;
@@ -50,7 +94,6 @@ class APIService {
 
     async getAuditoria() {
         try {
-            // Selección explícita de columnas de auditoría
             const { data, error } = await this.db.from('auditoria').select('id, fecha_hora, usuario, rol, accion, detalle, created_at').order('created_at', { ascending: false });
             if (error) throw error;
             return data;
