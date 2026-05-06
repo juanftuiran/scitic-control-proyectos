@@ -7,9 +7,25 @@ class APIService {
         this.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
+    // Login seguro via RPC — la contraseña NUNCA llega al cliente
+    async login(usuario, password) {
+        try {
+            const { data, error } = await this.db.rpc('validar_credenciales', {
+                p_usuario: usuario,
+                p_password: password
+            });
+            if (error) throw error;
+            return data; // Retorna { valido, nombre, rol } o null
+        } catch (error) {
+            console.error("Error en login RPC:", error);
+            return null;
+        }
+    }
+
     async getUsuarios() {
         try {
-            const { data, error } = await this.db.from('usuarios').select('*');
+            // Selección explícita — excluye 'password' por seguridad
+            const { data, error } = await this.db.from('usuarios').select('id, usuario, nombre, rol');
             if (error) throw error;
             return data;
         } catch (error) {
@@ -21,7 +37,8 @@ class APIService {
 
     async getRegistros() {
         try {
-            const { data, error } = await this.db.from('registros').select('*');
+            // Selección explícita de columnas de registros
+            const { data, error } = await this.db.from('registros').select('id, cliente, proyecto, trabajador, fecha, horas, actividad, horas_pres, valor, pago');
             if (error) throw error;
             return data;
         } catch (error) {
@@ -33,7 +50,8 @@ class APIService {
 
     async getAuditoria() {
         try {
-            const { data, error } = await this.db.from('auditoria').select('*').order('created_at', { ascending: false });
+            // Selección explícita de columnas de auditoría
+            const { data, error } = await this.db.from('auditoria').select('id, fecha_hora, usuario, rol, accion, detalle, created_at').order('created_at', { ascending: false });
             if (error) throw error;
             return data;
         } catch (error) {

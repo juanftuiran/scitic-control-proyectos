@@ -52,10 +52,11 @@ async function iniciarSesion() {
     showLoader("Autenticando...");
 
     try {
-        const { data: userDb, error } = await window.API.db.from('usuarios').select('*').eq('usuario', u).single();
+        // Login seguro via RPC — password se valida en el servidor, nunca llega al cliente
+        const result = await window.API.login(u, p);
 
-        if (userDb && userDb.password === p) {
-            usuarioActual = { usuario: userDb.usuario, name: userDb.nombre, role: userDb.rol };
+        if (result && result.valido) {
+            usuarioActual = { usuario: u, name: result.nombre, role: result.rol };
             sessionStorage.setItem('scitic_session', JSON.stringify(usuarioActual));
             errorMsg.style.display = 'none';
             Toast.success(`Bienvenido, ${usuarioActual.name}`);
