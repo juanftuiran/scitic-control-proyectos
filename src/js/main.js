@@ -1067,8 +1067,8 @@ function switchModule(moduleName) {
         if(!document.getElementById('gastoFecha').value) {
             document.getElementById('gastoFecha').value = getFechaColombiaString();
         }
-        if(!document.getElementById('fechaPagoLote').value) {
-            document.getElementById('fechaPagoLote').value = getFechaColombiaString();
+        if(document.getElementById('pagoFecha') && !document.getElementById('pagoFecha').value) {
+            document.getElementById('pagoFecha').value = getFechaColombiaString();
         }
         filtrarGastos(); // Aplicar filtros al entrar
     }
