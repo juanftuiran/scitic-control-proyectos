@@ -49,7 +49,14 @@
     </header>
 
     <div class="container">
-        <section class="dashboard-grid" id="statsContainer">
+        <!-- Navegación entre módulos -->
+        <div class="module-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn-primary" id="tabHoras" onclick="switchModule('horas')">⏱️ Módulo de Horas</button>
+            <button class="btn-secondary" id="tabGastos" onclick="switchModule('gastos')">💸 Módulo de Gastos</button>
+        </div>
+
+        <div id="horasModule">
+            <section class="dashboard-grid" id="statsContainer">
             <div class="stat-card glass-panel"><h4>Horas Filtradas</h4><p id="stat-horas">0</p></div>
             <div class="stat-card glass-panel perm-financiero"><h4>Ejecución Presupuesto</h4><p id="stat-presupuesto">$0</p></div>
             <div class="stat-card glass-panel"><h4>Proyectos Activos</h4><p id="stat-proyectos">0</p></div>
@@ -190,6 +197,144 @@
                 </section>
             </main>
         </div>
+        </div> <!-- Fin de horasModule -->
+
+        <!-- Nuevo Módulo de Gastos -->
+        <div id="gastosModule" style="display: none;">
+            
+            <section class="dashboard-grid perm-mod-admin" id="statsGastosContainer">
+                <div class="stat-card glass-panel" style="border-left: 4px solid var(--primary);"><h4>Total Filtrado</h4><p id="stat-gastos-total">$0</p></div>
+                <div class="stat-card glass-panel" style="border-left: 4px solid var(--success);"><h4>Total Pagado</h4><p id="stat-gastos-pagado">$0</p></div>
+                <div class="stat-card glass-panel" style="border-left: 4px solid #f97316;"><h4>Total Pendiente</h4><p id="stat-gastos-pendiente">$0</p></div>
+            </section>
+
+            <section class="card glass-panel perm-mod-admin">
+                <h3>Filtros de Gastos</h3>
+                <div class="filters-card">
+                    <div class="form-group form-group-filter"><label>Mes</label><select id="fMesGasto" onchange="filtrarGastos()"><option value="">Todos los meses</option></select></div>
+                    <div class="form-group form-group-filter"><label>Trabajador</label><select id="fTrabajadorGasto" onchange="filtrarGastos()"><option value="">Todos</option></select></div>
+                    <div class="form-group form-group-filter"><label>Proyecto</label><select id="fProyectoGasto" onchange="filtrarGastos()"><option value="">Todos</option></select></div>
+                    <div class="form-group form-group-filter"><button class="btn-secondary" onclick="limpiarFiltrosGastos()">Resetear</button></div>
+                </div>
+            </section>
+
+            <div class="main-layout">
+                <aside>
+                    <section class="card glass-panel" id="formularioGasto">
+                        <h3 id="formTitleGasto">Registrar Gasto</h3>
+                        
+                        <div class="form-group">
+                            <label>Trabajador</label>
+                            <input id="gastoTrabajador" list="trabajadoresList" placeholder="Seleccione personal...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Proyecto</label>
+                            <input id="gastoProyecto" list="proyectosList" placeholder="Ej. CASA LAGO">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" id="gastoFecha">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ítem / Concepto</label>
+                            <select id="gastoItem">
+                                <option>Transporte</option>
+                                <option>Alimentación</option>
+                                <option>Hospedaje</option>
+                                <option>Materiales</option>
+                                <option>Otro</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group">
+                                <label>Cantidad</label>
+                                <input type="number" id="gastoCantidad" value="1" min="1" oninput="calcularTotalGasto()">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor Unitario</label>
+                                <input type="number" id="gastoValor" value="0" min="0" oninput="calcularTotalGasto()">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Total</label>
+                            <input type="number" id="gastoTotal" value="0" readonly style="background: rgba(0,0,0,0.05); font-weight: bold; color: var(--scitic-dark);">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observaciones</label>
+                            <textarea id="gastoObservaciones" rows="3" placeholder="Detalles de facturas, destinos, etc..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); font-family: inherit; font-size: 0.95rem; resize: vertical; box-sizing: border-box;"></textarea>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn-primary" id="btnGuardarGasto" onclick="guardarGasto()">💾 Guardar Gasto</button>
+                            <button class="btn-secondary" id="btnLimpiarGasto" onclick="limpiarFormularioGasto()">🧹 Limpiar</button>
+                            <button class="btn-secondary" id="btnCancelarGasto" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormularioGasto()">❌ Cancelar Edición</button>
+                        </div>
+                    </section>
+                </aside>
+
+                <main>
+                    <section class="card glass-panel perm-mod-admin" style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="margin:0;">Análisis de Gastos</h3>
+                            <div class="widget-tabs" style="width: auto; margin-bottom: 0;">
+                                <button class="widget-tab active" id="btnChartProyecto" onclick="cambiarGraficoGastos('proyecto')">Por Proyecto</button>
+                                <button class="widget-tab" id="btnChartItem" onclick="cambiarGraficoGastos('item')">Por Categoría</button>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-alert-container">
+                            <div style="width: 100%;">
+                                <canvas id="graficoGastos" style="cursor: pointer; max-height: 250px;"></canvas>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.2rem; overflow-y: auto; max-height: 250px;" class="custom-scroll">
+                                <h4 style="margin-bottom: 15px; color: #f97316; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">⚠️ Pendientes de Pago</h4>
+                                <div id="tablaPendientesGastos"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card glass-panel">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="margin: 0;">Historial de Gastos y Viáticos</h3>
+                            <div class="perm-mod-admin" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <label for="fechaPagoLote" style="margin:0; font-size:0.8rem; font-weight:600; color: var(--text-muted);">Fecha Pago:</label>
+                                <input type="date" id="fechaPagoLote" style="padding: 0.4rem; border-radius: 8px; width: 140px; border: 1px solid var(--input-border); background: var(--input-bg); color: #fff;">
+                                <button class="btn-primary" onclick="marcarGastosPagados()" style="background: var(--success); border-color: var(--success); padding: 0.5rem 1rem;">✅ Marcar PAGADOS</button>
+                            </div>
+                        </div>
+                        <div class="table-container custom-scroll" style="max-height: 450px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="perm-mod-admin" style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllGastos" onchange="toggleSelectAllGastos()"></th>
+                                        <th>Fecha</th> 
+                                        <th>Personal</th> 
+                                        <th>Proyecto</th> 
+                                        <th>Ítem</th>
+                                        <th style="text-align: center;">Cant.</th>
+                                        <th style="text-align: right;">V. Unitario</th>
+                                        <th style="text-align: right;">Total</th>
+                                        <th>Estado</th>
+                                        <th>Observaciones</th>
+                                        <th style="text-align: center;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaGastos">
+                                    <!-- Dinámico -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -216,9 +361,17 @@
     </div>
 </div>
 
-<script src="./src/js/components/Toast.js"></script>
-<script src="./src/js/store/appState.js"></script>
-<script src="./src/js/services/api.js"></script>
-<script src="./src/js/main.js" defer></script>
+<div id="obsModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color: var(--scitic-dark);">Observaciones del Gasto</h3>
+        <p id="obsContent" style="font-size: 1rem; color: var(--text-main); line-height: 1.6; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px; border: 1px solid var(--input-border); white-space: pre-wrap;"></p>
+        <button class="btn-secondary" style="width:100%; margin-top:20px; padding: 1rem; border-radius: 12px;" onclick="cerrarModal('obsModal')">Cerrar</button>
+    </div>
+</div>
+
+<script src="./src/js/components/Toast.js?v=5"></script>
+<script src="./src/js/store/appState.js?v=5"></script>
+<script src="./src/js/services/api.js?v=5"></script>
+<script src="./src/js/main.js?v=5"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@ class AppStore {
     constructor() {
         this.state = {
             datos: [],
+            gastosDatos: [],
             auditoria: [],
             listaFiltradaGlobal: [],
             alertasDetalladasGlobales: [],

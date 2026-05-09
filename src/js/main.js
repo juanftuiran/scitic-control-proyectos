@@ -3,6 +3,7 @@
 // ==========================================
 
 Object.defineProperty(window, 'datos', { get: () => window.Store.state.datos, set: (v) => window.Store.setState({datos: v}) });
+Object.defineProperty(window, 'gastosDatos', { get: () => window.Store.state.gastosDatos, set: (v) => window.Store.setState({gastosDatos: v}) });
 Object.defineProperty(window, 'auditoria', { get: () => window.Store.state.auditoria, set: (v) => window.Store.setState({auditoria: v}) });
 Object.defineProperty(window, 'listaFiltradaGlobal', { get: () => window.Store.state.listaFiltradaGlobal, set: (v) => window.Store.setState({listaFiltradaGlobal: v}) });
 Object.defineProperty(window, 'alertasDetalladasGlobales', { get: () => window.Store.state.alertasDetalladasGlobales, set: (v) => window.Store.setState({alertasDetalladasGlobales: v}) });
@@ -129,6 +130,9 @@ async function iniciarApp() {
     const auditDb = await window.API.getAuditoria();
     if (auditDb) auditoria = auditDb;
 
+    const gastosDb = await window.API.getGastos();
+    if (gastosDb) gastosDatos = gastosDb;
+
     const usersDb = await window.API.getUsuarios();
     if (usersDb) {
         trabajadoresActivosParaPendientes = usersDb
@@ -137,9 +141,10 @@ async function iniciarApp() {
     }
 
     recalcularProgresos();
-    document.getElementById('fecha').valueAsDate = new Date();
+    document.getElementById('fecha').value = getFechaColombiaString();
 
     inicializarDatosGlobales();
+    inicializarDatosGlobalesGastos();
 
     document.getElementById('displayUserName').innerText = usuarioActual.name;
     document.getElementById('displayUserRole').innerText = usuarioActual.role;
@@ -506,15 +511,26 @@ function mostrar(lista) {
 
 function animarNumero(id, finalValue, sufijo, esMoneda = false) {
     const obj = document.getElementById(id); if (!obj) return;
+    
+    // Safety check for NaN
+    let val = finalValue;
+    if (isNaN(val) || val === null || val === undefined) val = 0;
+
+    // Si el elemento no es visible (display:none), no animamos para evitar que se quede congelado
+    if (obj.offsetParent === null) {
+        obj.innerHTML = esMoneda ? sufijo + val.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + val : val + sufijo);
+        return;
+    }
+
     let startTimestamp = null; const duration = 800;
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentVal = Math.floor(easeOut * finalValue);
+        const currentVal = Math.floor(easeOut * val);
         obj.innerHTML = esMoneda ? sufijo + currentVal.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + currentVal : currentVal + sufijo);
         if (progress < 1) window.requestAnimationFrame(step);
-        else obj.innerHTML = esMoneda ? sufijo + finalValue.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + finalValue : finalValue + sufijo);
+        else obj.innerHTML = esMoneda ? sufijo + val.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + val : val + sufijo);
     };
     window.requestAnimationFrame(step);
 }
@@ -544,7 +560,10 @@ function cerrarModal(modalId) {
 // 6. UI Y GRÁFICOS
 // ==========================================
 function graficar(listaFiltrada) {
-    const ctx = document.getElementById("grafico"); const resumen = {};
+    const ctx = document.getElementById("grafico"); 
+    if(!ctx || ctx.offsetParent === null) return; // No graficar si está oculto
+
+    const resumen = {};
     listaFiltrada.forEach(d => {
         if (d.proyecto) {
             const p = d.proyecto.trim();
@@ -651,7 +670,7 @@ function limpiarFormulario() {
     document.getElementById('horasPres').value = "0";
     document.getElementById('horas').value = "0";
     document.getElementById('valor').value = "0";
-    document.getElementById('fecha').valueAsDate = new Date();
+    document.getElementById('fecha').value = getFechaColombiaString();
     document.getElementById('actividad').value = "DISEÑO";
 
     editId = null;
@@ -863,4 +882,468 @@ function generarPendientes() {
     });
 
     container.innerHTML = html;
+}
+
+// ==========================================
+// 10. MÓDULO DE GASTOS
+// ==========================================
+let editIdGasto = null;
+let listaFiltradaGastos = [];
+let tipoGraficoGastos = 'proyecto';
+
+function cambiarGraficoGastos(tipo) {
+    tipoGraficoGastos = tipo;
+    
+    document.getElementById('btnChartProyecto').classList.remove('active');
+    document.getElementById('btnChartItem').classList.remove('active');
+    
+    if (tipo === 'proyecto') {
+        document.getElementById('btnChartProyecto').classList.add('active');
+    } else {
+        document.getElementById('btnChartItem').classList.add('active');
+    }
+    
+    if (usuarioActual.role === 'admin' || usuarioActual.role === 'moderador') {
+        graficarGastos(listaFiltradaGastos);
+    }
+}
+
+function getFechaColombiaString() {
+    const d = new Date();
+    // Colombia es UTC-5. Obtenemos el tiempo UTC actual y le restamos 5 horas.
+    const colTime = new Date(d.getTime() - (5 * 3600000));
+    return colTime.toISOString().split('T')[0];
+}
+
+function inicializarDatosGlobalesGastos() {
+    const meses = new Set();
+    const trabajadores = new Set();
+    const proyectos = new Set();
+
+    gastosDatos.forEach(g => {
+        if (g.fecha && g.fecha.length >= 7) meses.add(g.fecha.substring(0, 7));
+        if (g.trabajador) trabajadores.add(g.trabajador.trim());
+        if (g.proyecto) proyectos.add(g.proyecto.trim());
+    });
+
+    let fMes = document.getElementById("fMesGasto");
+    // Por defecto mes actual
+    const mesActual = getFechaColombiaString().substring(0, 7);
+    
+    let htmlMeses = '<option value="">Todos (Histórico)</option>';
+    [...meses].sort().reverse().forEach(val => {
+        const selected = val === mesActual ? 'selected' : '';
+        htmlMeses += `<option value="${val}" ${selected}>${val}</option>`;
+    });
+    // Si el mes actual no está en los datos, agregarlo
+    if(!meses.has(mesActual)) {
+        htmlMeses += `<option value="${mesActual}" selected>${mesActual}</option>`;
+    }
+    fMes.innerHTML = htmlMeses;
+
+    llenarSelectManteniendoValor('fTrabajadorGasto', trabajadores, '');
+    llenarSelectManteniendoValor('fProyectoGasto', proyectos, '');
+
+    filtrarGastos();
+}
+
+function filtrarGastos() {
+    let fMes = document.getElementById('fMesGasto').value;
+    let fTrabajador = document.getElementById('fTrabajadorGasto').value;
+    let fProyecto = document.getElementById('fProyectoGasto').value;
+
+    if (usuarioActual.role === 'colaborador') fTrabajador = usuarioActual.name;
+
+    listaFiltradaGastos = gastosDatos.filter(g => {
+        const matchMes = !fMes || (g.fecha && g.fecha.substring(0, 7) === fMes);
+        const matchTrabajador = !fTrabajador || (g.trabajador && g.trabajador.trim() === fTrabajador);
+        const matchProyecto = !fProyecto || (g.proyecto && g.proyecto.trim() === fProyecto);
+        return matchMes && matchTrabajador && matchProyecto;
+    });
+
+    // Ordenar descendente por fecha, luego por id como fallback
+    listaFiltradaGastos.sort((a, b) => {
+        const fechaA = new Date(a.fecha || 0);
+        const fechaB = new Date(b.fecha || 0);
+        if (fechaB.getTime() === fechaA.getTime()) {
+            return (b.id || '').localeCompare(a.id || '');
+        }
+        return fechaB - fechaA;
+    });
+
+    mostrarGastos(listaFiltradaGastos);
+    if (usuarioActual.role === 'admin' || usuarioActual.role === 'moderador') {
+        graficarGastos(listaFiltradaGastos);
+        generarTablaPendientesGastos(listaFiltradaGastos);
+    }
+}
+
+function generarTablaPendientesGastos(lista) {
+    const contenedor = document.getElementById('tablaPendientesGastos');
+    if (!contenedor) return;
+
+    const pendientes = {};
+    let totalPendienteGlobal = 0;
+
+    lista.forEach(g => {
+        if (g.estado === 'PENDIENTE') {
+            const p = (g.proyecto || 'N/A').trim();
+            pendientes[p] = (pendientes[p] || 0) + Number(g.total || 0);
+            totalPendienteGlobal += Number(g.total || 0);
+        }
+    });
+
+    if (Object.keys(pendientes).length === 0) {
+        contenedor.innerHTML = `<p style="text-align: center; color: var(--success); font-size: 0.85rem; margin-top: 20px;">Todo está pagado 🎉</p>`;
+        return;
+    }
+
+    let html = '';
+    const proyectosOrdenados = Object.entries(pendientes).sort((a, b) => b[1] - a[1]);
+
+    proyectosOrdenados.forEach(([proy, total]) => {
+        html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+            <span style="color: var(--text-main); font-weight: 500;">${proy}</span>
+            <span style="color: #f97316; font-weight: 700;">$${total.toLocaleString('es-CO')}</span>
+        </div>`;
+    });
+    
+    html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0 0; font-size: 0.9rem; margin-top: 5px;">
+            <span style="color: var(--text-muted); font-weight: 700;">TOTAL DEUDA</span>
+            <span style="color: #ef4444; font-weight: 800;">$${totalPendienteGlobal.toLocaleString('es-CO')}</span>
+        </div>`;
+
+    contenedor.innerHTML = html;
+}
+
+function limpiarFiltrosGastos() {
+    const mesActual = getFechaColombiaString().substring(0, 7);
+    document.getElementById('fMesGasto').value = mesActual;
+    document.getElementById('fTrabajadorGasto').value = "";
+    document.getElementById('fProyectoGasto').value = "";
+    filtrarGastos();
+}
+
+function switchModule(moduleName) {
+    const horasModule = document.getElementById('horasModule');
+    const gastosModule = document.getElementById('gastosModule');
+    const tabHoras = document.getElementById('tabHoras');
+    const tabGastos = document.getElementById('tabGastos');
+
+    if (moduleName === 'horas') {
+        horasModule.style.display = 'block';
+        gastosModule.style.display = 'none';
+        tabHoras.classList.add('btn-primary');
+        tabHoras.classList.remove('btn-secondary');
+        tabGastos.classList.add('btn-secondary');
+        tabGastos.classList.remove('btn-primary');
+    } else {
+        horasModule.style.display = 'none';
+        gastosModule.style.display = 'block';
+        tabGastos.classList.add('btn-primary');
+        tabGastos.classList.remove('btn-secondary');
+        tabHoras.classList.add('btn-secondary');
+        tabHoras.classList.remove('btn-primary');
+        
+        if (usuarioActual.role === 'colaborador') {
+            document.getElementById('gastoTrabajador').value = usuarioActual.name;
+            document.getElementById('gastoTrabajador').setAttribute('readonly', 'true');
+        }
+        if(!document.getElementById('gastoFecha').value) {
+            document.getElementById('gastoFecha').value = getFechaColombiaString();
+        }
+        if(!document.getElementById('fechaPagoLote').value) {
+            document.getElementById('fechaPagoLote').value = getFechaColombiaString();
+        }
+        filtrarGastos(); // Aplicar filtros al entrar
+    }
+}
+
+function calcularTotalGasto() {
+    const cantidad = parseFloat(document.getElementById('gastoCantidad').value) || 0;
+    const valor = parseFloat(document.getElementById('gastoValor').value) || 0;
+    document.getElementById('gastoTotal').value = cantidad * valor;
+}
+
+function limpiarFormularioGasto() {
+    if (usuarioActual.role !== 'colaborador') {
+        document.getElementById('gastoTrabajador').value = '';
+    }
+    document.getElementById('gastoProyecto').value = '';
+    document.getElementById('gastoFecha').value = getFechaColombiaString();
+    document.getElementById('gastoItem').selectedIndex = 0;
+    document.getElementById('gastoCantidad').value = 1;
+    document.getElementById('gastoValor').value = 0;
+    document.getElementById('gastoTotal').value = 0;
+    document.getElementById('gastoObservaciones').value = '';
+
+    editIdGasto = null;
+    document.getElementById('formTitleGasto').innerText = "Registrar Gasto";
+    document.getElementById('btnGuardarGasto').innerText = "💾 Guardar Gasto";
+    document.getElementById('btnLimpiarGasto').style.display = "block";
+    document.getElementById('btnCancelarGasto').style.display = "none";
+}
+
+async function guardarGasto() {
+    let trabajador = document.getElementById('gastoTrabajador').value.trim();
+    if (usuarioActual.role === 'colaborador') trabajador = usuarioActual.name;
+    const proyecto = document.getElementById('gastoProyecto').value.trim();
+    const fecha = document.getElementById('gastoFecha').value;
+    const item = document.getElementById('gastoItem').value;
+    const cantidad = parseFloat(document.getElementById('gastoCantidad').value) || 0;
+    const valor_unitario = parseFloat(document.getElementById('gastoValor').value) || 0;
+    const total = cantidad * valor_unitario;
+    const observaciones = document.getElementById('gastoObservaciones').value.trim();
+
+    if (!trabajador) return Toast.warning("Debe ingresar el trabajador.");
+    if (!item) return Toast.warning("Debe seleccionar un ítem.");
+    if (total <= 0) return Toast.warning("El total debe ser mayor a 0.");
+
+    showLoader("Guardando gasto...");
+
+    const gasto = {
+        trabajador,
+        proyecto,
+        fecha,
+        item,
+        cantidad,
+        valor_unitario,
+        total,
+        observaciones,
+        estado: 'PENDIENTE'
+    };
+
+    if (editIdGasto !== null) {
+        // Edit mode
+        const success = await window.API.actualizarGasto(editIdGasto, gasto);
+        if (success) {
+            Toast.success("Gasto actualizado exitosamente.");
+            const index = gastosDatos.findIndex(g => g.id === editIdGasto);
+            if(index !== -1) gastosDatos[index] = { ...gastosDatos[index], ...gasto };
+            filtrarGastos();
+            limpiarFormularioGasto();
+            registrarAuditoria("GASTO_EDITAR", `Se editó gasto de ${item} por $${total} para ${trabajador}.`);
+        }
+    } else {
+        // Create mode
+        const success = await window.API.crearGasto(gasto);
+        if (success) {
+            Toast.success("Gasto registrado exitosamente.");
+            const gastosDb = await window.API.getGastos();
+            if (gastosDb) gastosDatos = gastosDb;
+            filtrarGastos();
+            limpiarFormularioGasto();
+            registrarAuditoria("GASTO_CREAR", `Se registró gasto de ${item} por $${total} para ${trabajador}.`);
+        }
+    }
+    hideLoader();
+}
+
+function editarGasto(id) {
+    const g = gastosDatos.find(x => x.id === id); 
+    if (!g) return;
+    if (usuarioActual.role === 'colaborador' && (g.trabajador || '').trim() !== usuarioActual.name.trim()) return Toast.error("Permiso denegado.");
+
+    document.getElementById('gastoTrabajador').value = (g.trabajador || '').trim();
+    document.getElementById('gastoProyecto').value = (g.proyecto || '').trim();
+    document.getElementById('gastoFecha').value = g.fecha || getFechaColombiaString();
+    document.getElementById('gastoItem').value = g.item || "Transporte";
+    document.getElementById('gastoCantidad').value = g.cantidad || 1;
+    document.getElementById('gastoValor').value = g.valor_unitario || 0;
+    document.getElementById('gastoTotal').value = g.total || 0;
+    document.getElementById('gastoObservaciones').value = g.observaciones || "";
+
+    editIdGasto = id;
+    document.getElementById('formTitleGasto').innerText = "Editando Gasto";
+    document.getElementById('btnGuardarGasto').innerText = "Actualizar Registro";
+    document.getElementById('btnLimpiarGasto').style.display = "none";
+    document.getElementById('btnCancelarGasto').style.display = "block";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function mostrarGastos(lista) {
+    let html = '';
+    const esAdmin = usuarioActual.role === 'admin' || usuarioActual.role === 'moderador';
+    let totalGeneral = 0;
+    let totalPagado = 0;
+    let totalPendiente = 0;
+
+    lista.forEach(g => {
+        totalGeneral += Number(g.total || 0);
+        if(g.estado === 'PAGO') totalPagado += Number(g.total || 0);
+        else totalPendiente += Number(g.total || 0);
+
+        const rowStyle = g.estado === 'PAGO' ? 'background: rgba(16, 185, 129, 0.05);' : '';
+        const badgeClass = g.estado === 'PAGO' ? 'bg-green' : 'bg-orange';
+        const checkboxHtml = g.estado === 'PENDIENTE' ? `<input type="checkbox" class="gasto-chk" value="${g.id}">` : `<span style="color:var(--success)">✓</span>`;
+
+        let obs = g.observaciones || '';
+        let obsTrun = obs;
+        let btnObs = '';
+        if(obs.length > 25) {
+            obsTrun = obs.substring(0, 25) + '...';
+            btnObs = `<button onclick="verObservacionesGasto('${encodeURIComponent(obs)}')" style="color:var(--primary); font-size:0.75rem; padding:0; background:none; text-decoration:underline;">Ver más</button>`;
+        }
+
+        const puedeEditar = esAdmin || ((g.trabajador || '').trim() === usuarioActual.name.trim());
+
+        html += `
+        <tr style="${rowStyle}">
+            <td class="perm-mod-admin" style="text-align: center;">${checkboxHtml}</td>
+            <td style="font-size: 0.85rem;">${g.fecha}</td>
+            <td style="font-weight: 500;">${g.trabajador}</td>
+            <td>${g.proyecto || 'N/A'}</td>
+            <td>${g.item}</td>
+            <td style="text-align: center;">${g.cantidad}</td>
+            <td style="text-align: right;">$${Number(g.valor_unitario).toLocaleString('es-CO')}</td>
+            <td style="text-align: right; font-weight: bold; color: var(--scitic-dark);">$${Number(g.total).toLocaleString('es-CO')}</td>
+            <td>
+                <span class="badge ${badgeClass}" style="${g.estado === 'PAGO' ? 'background: #10b981; color: white;' : 'background: #f97316; color: white;'}">
+                    ${g.estado} ${g.fecha_pago ? `(${g.fecha_pago})` : ''}
+                </span>
+            </td>
+            <td><small>${obsTrun}</small> <br> ${btnObs}</td>
+            <td style="text-align: center;">
+                <div class="action-btns" style="flex-direction: column; gap: 4px;">
+                    ${puedeEditar ? `<button onclick="editarGasto('${g.id}')" style="color: var(--accent); font-weight: 600;">Editar</button>` : ''}
+                    ${(esAdmin || g.estado === 'PENDIENTE') ? `<button onclick="eliminarGasto('${g.id}')" style="color: var(--danger); font-weight: 600;">Eliminar</button>` : ''}
+                </div>
+            </td>
+        </tr>
+        `;
+    });
+
+    document.getElementById('tablaGastos').innerHTML = html;
+    animarNumero('stat-gastos-total', totalGeneral, "$", true);
+    animarNumero('stat-gastos-pagado', totalPagado, "$", true);
+    animarNumero('stat-gastos-pendiente', totalPendiente, "$", true);
+
+    aplicarPermisos();
+}
+
+function verObservacionesGasto(obsEncoded) {
+    document.getElementById('obsContent').innerText = decodeURIComponent(obsEncoded);
+    document.getElementById('obsModal').classList.add('show');
+}
+
+function graficarGastos(lista) {
+    const ctx = document.getElementById("graficoGastos"); 
+    if(!ctx || ctx.offsetParent === null) return; // No graficar si está oculto
+
+    const resumen = {};
+    lista.forEach(g => {
+        let clave = tipoGraficoGastos === 'proyecto' ? (g.proyecto || 'N/A').trim() : (g.item || 'Otros').trim();
+        resumen[clave] = (resumen[clave] || 0) + Number(g.total || 0);
+    });
+
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = 'Inter';
+    if (window.chartGastos) window.chartGastos.destroy();
+
+    let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, '#10b981'); gradient.addColorStop(1, '#059669'); // Verde success
+
+    const typeChart = tipoGraficoGastos === 'proyecto' ? 'bar' : 'doughnut';
+
+    let config = {
+        type: typeChart, 
+        data: { 
+            labels: Object.keys(resumen), 
+            datasets: [{ 
+                label: 'Gastos ($)', 
+                data: Object.values(resumen), 
+                backgroundColor: tipoGraficoGastos === 'proyecto' ? gradient : ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'], 
+                hoverBackgroundColor: tipoGraficoGastos === 'proyecto' ? '#34d399' : undefined, 
+                borderRadius: tipoGraficoGastos === 'proyecto' ? 6 : 0,
+                borderWidth: tipoGraficoGastos === 'proyecto' ? 0 : 2,
+                borderColor: '#020617'
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { 
+                    display: tipoGraficoGastos === 'item',
+                    position: 'right',
+                    labels: { color: '#f8fafc', font: { family: 'Inter' } }
+                }, 
+                tooltip: { 
+                    callbacks: { label: function(context) { return '$' + context.raw.toLocaleString('es-CO'); } },
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', titleColor: '#fff', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8 
+                } 
+            }, 
+            scales: tipoGraficoGastos === 'proyecto' ? { 
+                y: { 
+                    grid: { color: 'rgba(255,255,255,0.05)' }, 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString('es-CO');
+                        }
+                    }
+                }, 
+                x: { grid: { display: false } } 
+            } : undefined,
+            onClick: (e, items) => { 
+                if (items.length > 0 && tipoGraficoGastos === 'proyecto') { 
+                    document.getElementById('fProyectoGasto').value = window.chartGastos.data.labels[items[0].index]; 
+                    filtrarGastos(); 
+                } 
+            } 
+        }
+    };
+
+    window.chartGastos = new Chart(ctx, config);
+}
+
+function toggleSelectAllGastos() {
+    const selectAll = document.getElementById('selectAllGastos').checked;
+    document.querySelectorAll('.gasto-chk').forEach(chk => {
+        chk.checked = selectAll;
+    });
+}
+
+async function marcarGastosPagados() {
+    const seleccionados = Array.from(document.querySelectorAll('.gasto-chk:checked')).map(chk => chk.value);
+    if (seleccionados.length === 0) return Toast.warning("Seleccione al menos un gasto pendiente.");
+    
+    const fechaPago = document.getElementById('fechaPagoLote').value;
+    if (!fechaPago) return Toast.warning("Por favor, asigne la fecha de pago.");
+    
+    if (confirm(`¿Marcar ${seleccionados.length} gasto(s) como PAGADO(S) con fecha de pago ${fechaPago}?`)) {
+        showLoader("Actualizando estado...");
+        let exitoCount = 0;
+
+        for (const id of seleccionados) {
+            const success = await window.API.actualizarGasto(id, { estado: 'PAGO', fecha_pago: fechaPago });
+            if (success) exitoCount++;
+        }
+
+        Toast.success(`Se marcaron ${exitoCount} gastos como pagados.`);
+        
+        // Recargar datos
+        const gastosDb = await window.API.getGastos();
+        if (gastosDb) gastosDatos = gastosDb;
+        filtrarGastos();
+        document.getElementById('selectAllGastos').checked = false;
+        
+        registrarAuditoria("GASTO_PAGO", `Se pagaron ${exitoCount} gastos con fecha ${fechaPago}.`);
+        hideLoader();
+    }
+}
+
+async function eliminarGasto(id) {
+    if (confirm("¿Seguro que deseas eliminar permanentemente este gasto?")) {
+        showLoader("Eliminando gasto...");
+        const success = await window.API.eliminarGasto(id);
+        if (success) {
+            gastosDatos = gastosDatos.filter(g => g.id !== id);
+            filtrarGastos();
+            Toast.success("Gasto eliminado.");
+            registrarAuditoria("GASTO_ELIMINAR", `Se eliminó un registro de gasto.`);
+        }
+        hideLoader();
+    }
 }

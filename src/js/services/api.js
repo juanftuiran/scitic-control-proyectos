@@ -77,6 +77,58 @@ class APIService {
     }
 
     // ==========================================
+    // GASTOS (Viáticos y extras)
+    // ==========================================
+
+    async getGastos() {
+        try {
+            const { data, error } = await this.db.from('gastos').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("Error fetching gastos:", error);
+            Toast.error("Error cargando gastos.");
+            return [];
+        }
+    }
+
+    async crearGasto(gasto) {
+        try {
+            const { error } = await this.db.from('gastos').insert([gasto]);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("Error creating gasto:", error);
+            Toast.error("Error al registrar el gasto: " + error.message);
+            return false;
+        }
+    }
+
+    async actualizarGasto(id, updates) {
+        try {
+            const { error } = await this.db.from('gastos').update(updates).eq('id', id);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("Error updating gasto:", error);
+            Toast.error("Error al actualizar gasto: " + error.message);
+            return false;
+        }
+    }
+
+    async eliminarGasto(id) {
+        try {
+            const { error } = await this.db.from('gastos').delete().eq('id', id);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("Error deleting gasto:", error);
+            Toast.error("Error al eliminar gasto: " + error.message);
+            return false;
+        }
+    }
+
+    // ==========================================
     // REGISTROS & AUDITORIA — Sin cambios
     // ==========================================
 
