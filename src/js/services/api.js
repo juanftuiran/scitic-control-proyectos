@@ -65,14 +65,25 @@ class APIService {
 
     async getUsuarios() {
         try {
-            // Lee perfiles (nombre + rol) — sin acceso a password
-            const { data, error } = await this.db.from('perfiles').select('nombre, rol');
+            // Lee perfiles (nombre + rol + saldo_favor) — sin acceso a password
+            const { data, error } = await this.db.from('perfiles').select('nombre, rol, saldo_favor');
             if (error) throw error;
             return data;
         } catch (error) {
             console.error("Error fetching usuarios:", error);
             Toast.error("Error cargando usuarios.");
             return [];
+        }
+    }
+
+    async actualizarSaldoFavor(nombreTrabajador, nuevoSaldo) {
+        try {
+            const { error } = await this.db.from('perfiles').update({ saldo_favor: nuevoSaldo }).eq('nombre', nombreTrabajador);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("Error updating saldo_favor:", error);
+            return false;
         }
     }
 

@@ -135,6 +135,7 @@ async function iniciarApp() {
 
     const usersDb = await window.API.getUsuarios();
     if (usersDb) {
+        window.usuariosGlobal = usersDb;
         trabajadoresActivosParaPendientes = usersDb
             .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
             .map(u => u.nombre.trim());
@@ -943,6 +944,7 @@ function inicializarDatosGlobalesGastos() {
 
     llenarSelectManteniendoValor('fTrabajadorGasto', trabajadores, '');
     llenarSelectManteniendoValor('fProyectoGasto', proyectos, '');
+    llenarSelectManteniendoValor('pagoTrabajador', trabajadores, '');
 
     filtrarGastos();
 }
@@ -1012,6 +1014,19 @@ function generarTablaPendientesGastos(lista) {
             <span style="color: var(--text-muted); font-weight: 700;">TOTAL DEUDA</span>
             <span style="color: #ef4444; font-weight: 800;">$${totalPendienteGlobal.toLocaleString('es-CO')}</span>
         </div>`;
+
+    const trabajadoresConSaldo = (window.usuariosGlobal || []).filter(u => Number(u.saldo_favor) > 0);
+    if (trabajadoresConSaldo.length > 0) {
+        html += `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <h5 style="color: var(--success); margin: 0 0 10px 0; font-size: 0.8rem; text-transform: uppercase;">Saldos a Favor</h5>`;
+        trabajadoresConSaldo.forEach(t => {
+            html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 0.8rem;">
+                <span style="color: var(--text-main); font-weight: 500;">👤 ${t.nombre}</span>
+                <span style="color: var(--success); font-weight: 700;">$${Number(t.saldo_favor).toLocaleString('es-CO')}</span>
+            </div>`;
+        });
+        html += `</div>`;
+    }
 
     contenedor.innerHTML = html;
 }
@@ -1110,8 +1125,29 @@ async function guardarGasto() {
         valor_unitario,
         total,
         observaciones,
-        estado: 'PENDIENTE'
+        estado: 'PENDIENTE',
+        monto_pagado: 0
     };
+
+    if (editIdGasto === null) {
+        const workerProfile = (window.usuariosGlobal || []).find(u => u.nombre.trim() === trabajador);
+        if (workerProfile && workerProfile.saldo_favor > 0) {
+            let sf = Number(workerProfile.saldo_favor);
+            if (sf >= gasto.total) {
+                gasto.monto_pagado = gasto.total;
+                gasto.estado = 'PAGO';
+                gasto.fecha_pago = fecha;
+                workerProfile.saldo_favor = sf - gasto.total;
+                await window.API.actualizarSaldoFavor(trabajador, sf - gasto.total);
+                Toast.success("Gasto cubierto automáticamente con Saldo a Favor.");
+            } else {
+                gasto.monto_pagado = sf;
+                workerProfile.saldo_favor = 0;
+                await window.API.actualizarSaldoFavor(trabajador, 0);
+                Toast.success("Se aplicó Saldo a Favor al gasto. Queda saldo pendiente.");
+            }
+        }
+    }
 
     if (editIdGasto !== null) {
         // Edit mode
@@ -1171,12 +1207,17 @@ function mostrarGastos(lista) {
 
     lista.forEach(g => {
         totalGeneral += Number(g.total || 0);
-        if(g.estado === 'PAGO') totalPagado += Number(g.total || 0);
-        else totalPendiente += Number(g.total || 0);
+        let deudaReal = Number(g.total) - Number(g.monto_pagado || 0);
+        if(g.estado === 'PAGO') {
+            totalPagado += Number(g.total || 0);
+        } else {
+            totalPendiente += deudaReal;
+            totalPagado += Number(g.monto_pagado || 0);
+        }
 
         const rowStyle = g.estado === 'PAGO' ? 'background: rgba(16, 185, 129, 0.05);' : '';
         const badgeClass = g.estado === 'PAGO' ? 'bg-green' : 'bg-orange';
-        const checkboxHtml = g.estado === 'PENDIENTE' ? `<input type="checkbox" class="gasto-chk" value="${g.id}">` : `<span style="color:var(--success)">✓</span>`;
+        const checkboxHtml = g.estado === 'PENDIENTE' ? `<span style="color:var(--danger)">⏳</span>` : `<span style="color:var(--success)">✓</span>`;
 
         let obs = g.observaciones || '';
         let obsTrun = obs;
@@ -1197,7 +1238,10 @@ function mostrarGastos(lista) {
             <td>${g.item}</td>
             <td style="text-align: center;">${g.cantidad}</td>
             <td style="text-align: right;">$${Number(g.valor_unitario).toLocaleString('es-CO')}</td>
-            <td style="text-align: right; font-weight: bold; color: var(--scitic-dark);">$${Number(g.total).toLocaleString('es-CO')}</td>
+            <td style="text-align: right; font-weight: bold; color: var(--scitic-dark);">
+                $${Number(g.total).toLocaleString('es-CO')}
+                ${g.monto_pagado > 0 && g.estado === 'PENDIENTE' ? `<br><small style="color:var(--success)">Abono: $${Number(g.monto_pagado).toLocaleString('es-CO')}</small><br><small style="color:var(--danger)">Resta: $${(Number(g.total) - Number(g.monto_pagado)).toLocaleString('es-CO')}</small>` : ''}
+            </td>
             <td>
                 <span class="badge ${badgeClass}" style="${g.estado === 'PAGO' ? 'background: #10b981; color: white;' : 'background: #f97316; color: white;'}">
                     ${g.estado} ${g.fecha_pago ? `(${g.fecha_pago})` : ''}
@@ -1305,31 +1349,65 @@ function toggleSelectAllGastos() {
     });
 }
 
-async function marcarGastosPagados() {
-    const seleccionados = Array.from(document.querySelectorAll('.gasto-chk:checked')).map(chk => chk.value);
-    if (seleccionados.length === 0) return Toast.warning("Seleccione al menos un gasto pendiente.");
-    
-    const fechaPago = document.getElementById('fechaPagoLote').value;
-    if (!fechaPago) return Toast.warning("Por favor, asigne la fecha de pago.");
-    
-    if (confirm(`¿Marcar ${seleccionados.length} gasto(s) como PAGADO(S) con fecha de pago ${fechaPago}?`)) {
-        showLoader("Actualizando estado...");
+async function procesarPagoAutomatico() {
+    const trabajador = document.getElementById('pagoTrabajador').value;
+    const fechaPago = document.getElementById('pagoFecha').value;
+    const monto = parseFloat(document.getElementById('pagoMonto').value);
+
+    if (!trabajador) return Toast.warning("Seleccione un trabajador.");
+    if (!fechaPago) return Toast.warning("Seleccione la fecha de pago.");
+    if (isNaN(monto) || monto <= 0) return Toast.warning("Ingrese un monto válido a pagar.");
+
+    // Obtener todos los gastos PENDIENTES del trabajador, ordenados desde el más antiguo
+    const gastosPendientes = gastosDatos
+        .filter(g => g.estado === 'PENDIENTE' && (g.trabajador || '').trim() === trabajador)
+        .sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+
+    if (gastosPendientes.length === 0) {
+        return Toast.warning(`No hay gastos pendientes para ${trabajador}.`);
+    }
+
+    if (confirm(`¿Proceder con el pago automático de $${monto.toLocaleString('es-CO')} para ${trabajador} con fecha ${fechaPago}?`)) {
+        showLoader("Procesando pago...");
+        let saldoDisponible = monto;
         let exitoCount = 0;
 
-        for (const id of seleccionados) {
-            const success = await window.API.actualizarGasto(id, { estado: 'PAGO', fecha_pago: fechaPago });
-            if (success) exitoCount++;
+        for (const gastoObj of gastosPendientes) {
+            if (saldoDisponible <= 0) break;
+
+            let deudaActual = Number(gastoObj.total || 0) - Number(gastoObj.monto_pagado || 0);
+
+            if (saldoDisponible >= deudaActual) {
+                saldoDisponible -= deudaActual;
+                const success = await window.API.actualizarGasto(gastoObj.id, { estado: 'PAGO', fecha_pago: fechaPago, monto_pagado: gastoObj.total });
+                if (success) exitoCount++;
+            } else {
+                const nuevoMonto = Number(gastoObj.monto_pagado || 0) + saldoDisponible;
+                saldoDisponible = 0;
+                const success = await window.API.actualizarGasto(gastoObj.id, { estado: 'PENDIENTE', monto_pagado: nuevoMonto });
+                if (success) exitoCount++;
+            }
         }
 
-        Toast.success(`Se marcaron ${exitoCount} gastos como pagados.`);
-        
+        // Si sobró saldo, se agrega como saldo a favor
+        if (saldoDisponible > 0) {
+            const workerProfile = (window.usuariosGlobal || []).find(u => u.nombre.trim() === trabajador);
+            let saldoActual = workerProfile ? Number(workerProfile.saldo_favor || 0) : 0;
+            const nuevoSaldo = saldoActual + saldoDisponible;
+            if (workerProfile) workerProfile.saldo_favor = nuevoSaldo;
+            await window.API.actualizarSaldoFavor(trabajador, nuevoSaldo);
+            Toast.success(`Pago procesado. Se agregaron $${saldoDisponible.toLocaleString('es-CO')} como saldo a favor.`);
+        } else {
+            Toast.success(`Se procesaron pagos en ${exitoCount} gastos.`);
+        }
+
         // Recargar datos
         const gastosDb = await window.API.getGastos();
         if (gastosDb) gastosDatos = gastosDb;
         filtrarGastos();
-        document.getElementById('selectAllGastos').checked = false;
+        document.getElementById('pagoMonto').value = '';
         
-        registrarAuditoria("GASTO_PAGO", `Se pagaron ${exitoCount} gastos con fecha ${fechaPago}.`);
+        registrarAuditoria("GASTO_PAGO", `Pago auto de $${monto} para ${trabajador} en ${exitoCount} registros.`);
         hideLoader();
     }
 }

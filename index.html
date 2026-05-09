@@ -302,17 +302,36 @@
                     <section class="card glass-panel">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
                             <h3 style="margin: 0;">Historial de Gastos y Viáticos</h3>
-                            <div class="perm-mod-admin" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                                <label for="fechaPagoLote" style="margin:0; font-size:0.8rem; font-weight:600; color: var(--text-muted);">Fecha Pago:</label>
-                                <input type="date" id="fechaPagoLote" style="padding: 0.4rem; border-radius: 8px; width: 140px; border: 1px solid var(--input-border); background: var(--input-bg); color: #fff;">
-                                <button class="btn-primary" onclick="marcarGastosPagados()" style="background: var(--success); border-color: var(--success); padding: 0.5rem 1rem;">✅ Marcar PAGADOS</button>
+                            <div class="perm-mod-admin" style="background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); width: 100%; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+                                <h4 style="margin: 0; color: var(--success); width: 100%;">💸 Realizar Pago / Abono a Trabajador</h4>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <label for="pagoTrabajador" style="font-size:0.8rem; font-weight:600; color: var(--text-muted);">Trabajador:</label>
+                                    <select id="pagoTrabajador" style="padding: 0.4rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); color: #fff; min-width: 150px;">
+                                        <option value="">Seleccione...</option>
+                                    </select>
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <label for="pagoFecha" style="font-size:0.8rem; font-weight:600; color: var(--text-muted);">Fecha de Pago:</label>
+                                    <input type="date" id="pagoFecha" style="padding: 0.4rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); color: #fff;">
+                                </div>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <label for="pagoMonto" style="font-size:0.8rem; font-weight:600; color: var(--text-muted);">Monto a Pagar ($):</label>
+                                    <input type="number" id="pagoMonto" placeholder="Ej. 150000" style="padding: 0.4rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); color: #fff; width: 140px;">
+                                </div>
+
+                                <div>
+                                    <button class="btn-primary" onclick="procesarPagoAutomatico()" style="background: var(--success); border-color: var(--success); padding: 0.5rem 1rem;">✅ Procesar Pago</button>
+                                </div>
                             </div>
                         </div>
                         <div class="table-container custom-scroll" style="max-height: 450px; overflow-y: auto;">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th class="perm-mod-admin" style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllGastos" onchange="toggleSelectAllGastos()"></th>
+                                        <th class="perm-mod-admin" style="width: 40px; text-align: center;">-</th>
                                         <th>Fecha</th> 
                                         <th>Personal</th> 
                                         <th>Proyecto</th> 
