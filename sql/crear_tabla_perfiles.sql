@@ -13,7 +13,12 @@ CREATE TABLE IF NOT EXISTS public.perfiles (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. Activar RLS
+-- 2. Conceder permisos explícitos (Requisito Supabase)
+GRANT SELECT ON public.perfiles TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.perfiles TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.perfiles TO service_role;
+
+-- 3. Activar RLS
 ALTER TABLE public.perfiles ENABLE ROW LEVEL SECURITY;
 
 -- 3. Políticas: usuarios autenticados pueden leer todos los perfiles
