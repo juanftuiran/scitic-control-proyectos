@@ -121,7 +121,11 @@
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group"><label>Fecha</label><input type="date" id="fecha"></div>
-                        <div class="form-group"><label>Horas</label><input type="number" id="horas" value="0"></div>
+                        <div class="form-group">
+                            <label>Horas <span id="horasPreview" style="font-size:0.75rem; color: var(--primary); font-weight:600; margin-left:4px;"></span></label>
+                            <input type="text" id="horas" value="0" placeholder="Ej: 1:30 o 1.5" oninput="actualizarPreviewHoras(this.value)" autocomplete="off">
+                            <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 3px; display: block;">Formato: <strong>H:MM</strong> (ej. 1:30) o decimal (ej. 1.5)</small>
+                        </div>
                     </div>
                     
                     <div class="form-group">

@@ -27,6 +27,89 @@ function hideLoader() {
 }
 
 // ==========================================
+// 1.6. CONVERSIÓN DE TIEMPO HH:MM ↔ DECIMAL
+// ==========================================
+/**
+ * Convierte un string de tiempo a horas decimales.
+ * Acepta: '1:30' → 1.5 | '1.5' → 1.5 | '90' → 1.5 (si >24, interpreta como minutos) | '1h30m' → 1.5
+ */
+function parsearHoras(input) {
+    if (input === null || input === undefined || input === '') return 0;
+    const str = String(input).trim();
+
+    // Formato HH:MM o H:MM (ej. 1:30, 01:30)
+    const matchColon = str.match(/^(\d+):([0-5]?\d)$/);
+    if (matchColon) {
+        const hrs = parseInt(matchColon[1], 10);
+        const min = parseInt(matchColon[2], 10);
+        return hrs + (min / 60);
+    }
+
+    // Formato con sufijos (ej. 1h30m, 1h30, 90m)
+    const matchHM = str.match(/^(\d+)h\s*(\d+)m?$/i);
+    if (matchHM) return parseInt(matchHM[1], 10) + parseInt(matchHM[2], 10) / 60;
+
+    const matchHOnly = str.match(/^(\d+(?:\.\d+)?)h$/i);
+    if (matchHOnly) return parseFloat(matchHOnly[1]);
+
+    const matchMOnly = str.match(/^(\d+)m$/i);
+    if (matchMOnly) return parseInt(matchMOnly[1], 10) / 60;
+
+    // Número puro: si > 24, asumir minutos; si no, horas decimales
+    const num = parseFloat(str.replace(',', '.'));
+    if (!isNaN(num)) {
+        if (Number.isInteger(num) && num > 24 && !str.includes('.')) return num / 60;
+        return num;
+    }
+
+    return 0;
+}
+
+/**
+ * Formatea horas decimales a string legible.
+ * 1.5 → '1h 30min' | 0.5 → '30min' | 2.0 → '2h'
+ */
+function formatearHoras(horas) {
+    const h = parseFloat(horas) || 0;
+    const totalMin = Math.round(h * 60);
+    const hrs = Math.floor(totalMin / 60);
+    const min = totalMin % 60;
+    if (hrs === 0) return min + 'min';
+    if (min === 0) return hrs + 'h';
+    return hrs + 'h ' + min + 'min';
+}
+
+/**
+ * Convierte horas decimales a formato H:MM para edición.
+ * 1.5 → '1:30' | 2.0 → '2:00'
+ */
+function decimalAHoraMM(horas) {
+    const h = parseFloat(horas) || 0;
+    const totalMin = Math.round(h * 60);
+    const hrs = Math.floor(totalMin / 60);
+    const min = totalMin % 60;
+    return hrs + ':' + String(min).padStart(2, '0');
+}
+
+/**
+ * Actualiza el preview en tiempo real del campo de horas.
+ */
+function actualizarPreviewHoras(val) {
+    const preview = document.getElementById('horasPreview');
+    if (!preview) return;
+    if (!val || val.trim() === '' || val.trim() === '0' || val.trim() === '0:00') {
+        preview.textContent = '';
+        return;
+    }
+    const parsed = parsearHoras(val);
+    if (parsed > 0) {
+        preview.textContent = '= ' + formatearHoras(parsed);
+    } else {
+        preview.textContent = '';
+    }
+}
+
+// ==========================================
 // 2. INICIALIZACIÓN Y AUTENTICACIÓN
 // ==========================================
 window.onload = async function () {
@@ -350,7 +433,7 @@ async function guardar() {
         proyecto: proyectoVal,
         trabajador: trabajadorVal,
         fecha: document.getElementById('fecha').value,
-        horas: Number(document.getElementById('horas').value) || 0,
+        horas: parsearHoras(document.getElementById('horas').value),
         actividad: document.getElementById('actividad').value,
         horas_pres: Number(document.getElementById('horasPres').value) || 0,
         valor: Number(document.getElementById('valor').value) || 0
@@ -374,7 +457,7 @@ async function guardar() {
             const success = await window.API.actualizarRegistro(editId, obj);
             if (success) {
                 datos[index] = obj;
-                accionAuditoria = `EDITAR: Modificó horas a ${obj.horas}h en proy. ${obj.proyecto}`;
+                accionAuditoria = `EDITAR: Modificó horas a ${formatearHoras(obj.horas)} en proy. ${obj.proyecto}`;
                 Toast.success("Registro actualizado exitosamente.");
             }
         }
@@ -382,7 +465,7 @@ async function guardar() {
         const success = await window.API.crearRegistro(obj);
         if (success) {
             datos.push(obj);
-            accionAuditoria = `CREAR: Registró ${obj.horas}h en proy. ${obj.proyecto}`;
+            accionAuditoria = `CREAR: Registró ${formatearHoras(obj.horas)} en proy. ${obj.proyecto}`;
             Toast.success("Registro creado exitosamente.");
         }
     }
@@ -409,11 +492,11 @@ function generarAlertas() {
         <div class="alert-item" onclick="verDetalle('${al.proyecto}')" style="animation-delay: ${i * 0.05}s;">
             <div class="alert-header">
                 <strong style="color: var(--scitic-dark); font-size: 1.05rem;">${al.proyecto}</strong>
-                <span style="background: var(--danger-bg); color: var(--danger); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size:0.75rem; border: 1px solid rgba(239,68,68,0.3);">+${al.exceso} h</span>
+                <span style="background: var(--danger-bg); color: var(--danger); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size:0.75rem; border: 1px solid rgba(239,68,68,0.3);">+${formatearHoras(al.exceso)}</span>
             </div>
             <small style="color: var(--text-muted);">${al.cliente || 'Sin Cliente'}</small>
             <div class="alert-detail">
-                🚨 <strong>${al.trabajador}</strong> reportó horas que superaron el límite de ${al.horasPres}h el <strong>${al.fecha}</strong>.
+                🚨 <strong>${al.trabajador}</strong> reportó horas que superaron el límite de ${formatearHoras(al.horasPres)} el <strong>${al.fecha}</strong>.
             </div>
         </div>`;
     });
@@ -456,13 +539,13 @@ function generarDesgloseAdmin(lista) {
         html += `<div class="admin-project-card">
             <h4 class="admin-project-title" onclick="filtrarDesdeDesglose('${proyecto}')">
                 ${proyecto} 
-                <span style="font-size:0.75rem; font-weight:normal; ${colorClase}; display:block; margin-top:6px; letter-spacing: 0.5px;">(${data.totalHoras}H USADAS / ${data.horasPres}H PRESUP.)</span>
+                <span style="font-size:0.75rem; font-weight:normal; ${colorClase}; display:block; margin-top:6px; letter-spacing: 0.5px;">(${formatearHoras(data.totalHoras)} USADAS / ${formatearHoras(data.horasPres)} PRESUP.)</span>
             </h4>`;
 
         for (const [trabajador, stats] of Object.entries(data.trabajadores)) {
             html += `<div class="worker-stat">
                 <span class="worker-name"><span style="color:var(--text-muted)">👤</span> ${trabajador}</span>
-                <span style="text-align: right"><strong>${stats.horas}h</strong> <br><small style="color: var(--primary)">$${stats.costo.toLocaleString('es-CO')}</small></span>
+                <span style="text-align: right"><strong title="${stats.horas} h">${formatearHoras(stats.horas)}</strong> <br><small style="color: var(--primary)">$${stats.costo.toLocaleString('es-CO')}</small></span>
             </div>`;
         }
         html += `</div>`;
@@ -493,7 +576,7 @@ function mostrar(lista) {
             <td style="color:var(--text-muted); font-size: 0.85rem; font-weight: 500;">${d.fecha || 'N/A'}</td>
             <td><span class="project-link" onclick="verDetalle('${(d.proyecto || '').trim()}')">${(d.proyecto || '').trim() || 'N/A'}</span><br><small style="color:var(--text-muted)">${(d.cliente || '').trim() || ''}</small></td>
             <td style="font-weight: 500;">${(d.trabajador || '').trim() || 'N/A'}</td>
-            <td><strong style="color: var(--scitic-dark);">${d.horas || 0} h</strong></td>
+            <td><strong style="color: var(--scitic-dark);" title="${d.horas || 0} h decimal">${formatearHoras(d.horas || 0)}</strong></td>
             ${esAdmin ? `<td style="color: var(--primary); font-weight: 600;">$${Number(d.pago || 0).toLocaleString('es-CO')}</td>` : ''}
             ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso || 0, 100)}%; ${Number(d.progreso || 0) > 100 ? 'background:linear-gradient(135deg, #ef4444, #dc2626);' : ''}"></div></div><small style="${Number(d.progreso || 0) > 100 ? 'color: var(--danger); font-weight:bold;' : ''}">${d.progreso || 0}%</small></td>` : ''}
             <td><span class="badge bg-blue">${d.actividad || 'N/A'}</span></td>
@@ -505,6 +588,7 @@ function mostrar(lista) {
     });
 
     document.getElementById('tabla').innerHTML = htmlTabla;
+    // Animar las horas filtradas; al terminar, mostrar en formato legible
     animarNumero('stat-horas', totalH, " h");
     if (esAdmin) animarNumero('stat-presupuesto', totalP, "$", true);
     animarNumero('stat-proyectos', proyActivos.size, "");
@@ -534,6 +618,13 @@ function animarNumero(id, finalValue, sufijo, esMoneda = false) {
         else obj.innerHTML = esMoneda ? sufijo + val.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + val : val + sufijo);
     };
     window.requestAnimationFrame(step);
+    // Tras la animación, si es el stat de horas, sobreescribir con formato legible
+    if (id === 'stat-horas') {
+        setTimeout(() => {
+            const elFinal = document.getElementById(id);
+            if (elFinal) elFinal.innerHTML = formatearHoras(val);
+        }, 830);
+    }
 }
 
 function verDetalle(nombre) {
@@ -544,9 +635,9 @@ function verDetalle(nombre) {
     document.getElementById('modalCliente').innerText = (registros[0].cliente || '').trim();
     let h = 0, c = 0; let act = { DISEÑO: 0, RRHH: 0, OBRAS: 0 };
     registros.forEach(r => { h += Number(r.horas || 0); c += Number(r.pago || 0); if (act[r.actividad] !== undefined) act[r.actividad] += Number(r.horas || 0); });
-    document.getElementById('mHoras').innerText = h + " h";
+        document.getElementById('mHoras').innerText = formatearHoras(h);
     document.getElementById('mCosto').innerText = "$" + c.toLocaleString('es-CO');
-    document.getElementById('mActividades').innerHTML = Object.entries(act).map(([k, v]) => `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;"><span style="font-weight: 600; color: var(--scitic-dark);"><span class="badge bg-blue">${k}</span></span><span style="font-size: 1.1rem; color: var(--primary); font-weight: 600;">${v} h</span></div>`).join("");
+    document.getElementById('mActividades').innerHTML = Object.entries(act).map(([k, v]) => `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;"><span style="font-weight: 600; color: var(--scitic-dark);"><span class="badge bg-blue">${k}</span></span><span style="font-size: 1.1rem; color: var(--primary); font-weight: 600;">${formatearHoras(v)}</span></div>`).join("");
     document.getElementById('detalleModal').classList.add('show');
 }
 
@@ -670,6 +761,8 @@ function limpiarFormulario() {
     }
     document.getElementById('horasPres').value = "0";
     document.getElementById('horas').value = "0";
+    const previewEl = document.getElementById('horasPreview');
+    if (previewEl) previewEl.textContent = '';
     document.getElementById('valor').value = "0";
     document.getElementById('fecha').value = getFechaColombiaString();
     document.getElementById('actividad').value = "DISEÑO";
@@ -698,7 +791,7 @@ async function eliminar(id) {
         if (success) {
             datos = datos.filter(d => d.id !== id);
             recalcularProgresos();
-            await registrarAuditoria("ELIMINAR", `Se borró registro de ${registro.horas}h de ${registro.trabajador} en ${registro.proyecto}.`);
+            await registrarAuditoria("ELIMINAR", `Se borró registro de ${formatearHoras(registro.horas)} de ${registro.trabajador} en ${registro.proyecto}.`);
             inicializarDatosGlobales();
             if (editId === id) limpiarFormulario();
             Toast.success("Registro eliminado.");
@@ -716,7 +809,8 @@ function editar(id) {
     document.getElementById('trabajador').value = (d.trabajador || '').trim();
     document.getElementById('horasPres').value = d.horas_pres || 0;
     document.getElementById('fecha').value = d.fecha || new Date().toISOString().split('T')[0];
-    document.getElementById('horas').value = d.horas || 0;
+    document.getElementById('horas').value = d.horas ? decimalAHoraMM(d.horas) : '0:00';
+    actualizarPreviewHoras(document.getElementById('horas').value);
     document.getElementById('valor').value = d.valor || 0;
     document.getElementById('actividad').value = ["DISEÑO", "RRHH", "OBRAS"].includes(d.actividad) ? d.actividad : "DISEÑO";
 
