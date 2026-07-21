@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Tubería y Bandejas RITEL 2025</title>
+
+    <script>
+        // Leer la memoria del navegador para saber el modo (por defecto es 'online')
+        var appMode = localStorage.getItem('ritelAppMode') || 'online';
+        
+        // Función para inyectar las librerías antes de que cargue la página
+        function loadScript(src) {
+            document.write('<script src="' + src + '"><\/script>');
+        }
+
+        if (appMode === 'online') {
+            // Modo Con Internet (Librerías desde la nube, incluye colores para Excel)
+            loadScript("https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js");
+            loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+            loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js");
+        } else {
+            // Modo Sin Internet (Busca los archivos locales en la misma carpeta)
+            loadScript("xlsx.full.min.js");
+            loadScript("jspdf.umd.min.js");
+            loadScript("jspdf.plugin.autotable.min.js");
+        }
+
+        // Cargar fórmulas de la norma RITEL
+        loadScript("ritel-formulas.js");
+
+        // Función que se activa al presionar el botón de conexión
+        function alternarConexion() {
+            var nuevoModo = (appMode === 'online') ? 'offline' : 'online';
+            localStorage.setItem('ritelAppMode', nuevoModo);
+            location.reload(); // Recargar la página para aplicar la nueva ruta de archivos
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #004080;
+            --secondary: #0073e6;
+            --accent: #f2a900;
+            --bg-light: #f4f8fb;
+            --border: #cce0ff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 20px;
+            color: #333;
+        }
+        
+        .project-title {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            border: none;
+            background: transparent;
+            width: 100%;
+            margin-bottom: 25px;
+            border-bottom: 2px dashed transparent;
+            transition: 0.3s;
+            display: block;
+        }
+        .project-title:focus {
+            outline: none;
+            border-bottom: 2px dashed var(--accent);
+        }
+
+        .header-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-group label {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .input-group input, .input-group select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-group input[type="number"] { width: 80px; }
+        
+        .resaltado-pau {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--secondary);
+            padding-top: 8px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            color: white;
+        }
+        .btn-calc { background-color: var(--primary); }
+        .btn-calc:hover { background-color: #00264d; }
+        .btn-toggle { background-color: #17a2b8; }
+        .btn-toggle:hover { background-color: #138496; }
+        .btn-excel { background-color: #1D6F42; }
+        .btn-pdf { background-color: #D32F2F; }
+        .btn-save { background-color: #f2a900; color: #000; }
+        .btn-net { font-size: 14px; padding: 10px; border: 2px solid transparent; }
+        .btn-net:hover { filter: brightness(0.9); }
+        
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 12px;
+        }
+        th {
+            background-color: var(--primary);
+            color: white;
+            padding: 8px;
+            border: 1px solid var(--border);
+        }
+        th.sub-th {
+            background-color: var(--secondary);
+            font-size: 11px;
+        }
+        th.th-total {
+            background-color: var(--accent);
+            color: #000;
+        }
+        td {
+            padding: 6px;
+            border: 1px solid var(--border);
+        }
+        tr:nth-child(even) { background-color: var(--bg-light); }
+        
+        .input-mini {
+            width: 45px;
+            text-align: center;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .in-pau-piso {
+            background-color: #e8f4ff;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        select.input-sel {
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .tubos-fisicos {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        .tubos-total-cell {
+            font-weight: bold;
+            background-color: #fff3cd;
+            font-size: 14px;
+        }
+        
+        .th-bandeja { background-color: #2b78e4; }
+        .th-bandeja-total { background-color: #6d9eeb; }
+        
+        .bandeja-resumen {
+            padding: 15px; 
+            background: white; 
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .hidden { display: none; }
+        
+        .chk-group {
+            flex-direction: row; 
+            align-items: center; 
+            gap: 8px; 
+            background: var(--bg-light); 
+            padding: 10px 15px; 
+            border-radius: 4px; 
+            border: 1px solid var(--border);
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <input type="text" id="in-proyecto" class="project-title" placeholder="Escribe el Nombre del Proyecto Aquí">
+
+    <div class="header-panel">
+        <div class="input-group">
+            <label>Piso más alto (Cubierta):</label>
+            <input type="number" id="in-pisos" value="28" min="1">
+        </div>
+        <div class="input-group">
+            <label title="El piso donde inicia la torre y se ubica el SETI. Útil si hay parqueaderos abajo.">Piso del SETI (Base):</label>
+            <input type="number" id="in-piso-base" value="3" min="1">
+        </div>
+        <div class="input-group">
+            <label>Aptos/Piso (Por defecto):</label>
+            <input type="number" id="in-aptos" value="6" min="0" onchange="aplicarAptosDefault()">
+        </div>
+        
+        <div class="input-group chk-group">
+            <input type="checkbox" id="chk-linea-extra" onchange="generarTabla()" style="width: 16px; height: 16px; cursor: pointer;">
+            <label for="chk-linea-extra" style="margin: 0; cursor: pointer; color: #333;" title="Si se activa, muestra el paso por el piso base antes de entrar al SETI (Ej. Piso 4 a Piso 3).">Mostrar Línea Extra (Paso SETI)</label>
+        </div>
+
+        <button class="btn-calc" onclick="generarTabla()">Generar Infraestructura</button>
+        
+        <div class="input-group" style="margin-left: 15px; border-left: 2px solid #eee; padding-left: 15px;">
+            <label>Total PAUs Edificio:</label>
+            <div class="resaltado-pau" id="out-total-pau">0</div>
+        </div>
+
+        <div style="flex-grow: 1;"></div>
+
+        <button id="btn-conexion" class="btn-net" onclick="alternarConexion()"></button>
+
+        <button class="btn-toggle" onclick="toggleVista()">🔄 Vista (Tubería/Bandeja)</button>
+        <button class="btn-save" onclick="guardarHTML()" title="Guarda la web completa para que puedas abrirla luego con doble clic">💾 Guardar App (.html)</button>
+        <button class="btn-excel" onclick="exportarExcel()">📊 Excel</button>
+        <button class="btn-pdf" onclick="exportarPDF()">📄 PDF</button>
+    </div>
+
+    <div class="table-container" id="vista-tubos">
+        <table id="tabla-calculo">
+            <thead>
+                <tr>
+                    <th rowspan="2">Tramo</th>
+                    <th rowspan="2" title="Cantidad de PAUs que ingresan en este nivel">PAUs<br>Nivel</th>
+                    <th colspan="2">PAU Acumulado</th>
+                    <th rowspan="2">Material</th>
+                    <th rowspan="2">Diámetro</th>
+                    <th rowspan="2">Área (AT)</th>
+                    <th rowspan="2">Curvas<br>(>60°)</th>
+                    <th colspan="2">CNC Cables (mm²)</th>
+                    <th colspan="2">SETI (Abajo ⬇)</th>
+                    <th colspan="2">SETS (Arriba ⬆)</th>
+                    <th rowspan="2" class="th-total">TOTAL<br>TUBOS</th>
+                </tr>
+                <tr>
+                    <th class="sub-th">SETI</th>
+                    <th class="sub-th">SETS</th>
+                    <th class="sub-th">SETI</th>
+                    <th class="sub-th">SETS</th>
+                    <th class="sub-th">Calc.</th>
+                    <th class="sub-th">Físicos</th>
+                    <th class="sub-th">Calc.</th>
+                    <th class="sub-th">Físicos</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="table-container hidden" id="vista-bandeja">
+        <div class="bandeja-resumen">
+            <div class="input-group">
+                <label>ALTO BANDEJA (mm):</label>
+                <input type="number" id="in-alto-bandeja" value="80" style="width: 100px; font-weight: bold; font-size: 14px;" onchange="recalcularTodo()">
+            </div>
+            <div>
+                <span style="font-size: 12px; font-weight: bold; color: var(--primary);">Anchos de Bandeja Comerciales Recomendados en Gabinetes Principales:</span><br>
+                ⬇️ LLEGADA A SETI: <strong id="bandeja-seti" style="color:var(--secondary); font-size: 16px;">0</strong> mm &nbsp;&nbsp;|&nbsp;&nbsp; 
+                ⬆️ LLEGADA A SETS: <strong id="bandeja-sets" style="color:var(--secondary); font-size: 16px;">0</strong> mm
+            </div>
+        </div>
+        <table id="tabla-bandeja">
+            <thead>
+                <tr>
+                    <th class="th-bandeja">Tramo</th>
+                    <th class="th-bandeja">Cálculos para<br>Bandeja SETI</th>
+                    <th class="th-bandeja">Cálculos para<br>Bandeja SETS</th>
+                    <th class="th-bandeja">Ancho Bandeja<br>SETI</th>
+                    <th class="th-bandeja">Ancho Bandeja<br>SETS</th>
+                    <th class="th-bandeja-total">Total Bandejas<br>Portacable (mm)</th>
+                    <th class="th-bandeja-total" style="background-color: var(--accent); color: #000;">Bandeja Comercial<br>Recomendada (mm)</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body-bandeja">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        function toggleVista() {
+            const vistaTubos = document.getElementById('vista-tubos');
+            const vistaBandeja = document.getElementById('vista-bandeja');
+            if (vistaTubos.classList.contains('hidden')) {
+                vistaTubos.classList.remove('hidden');
+                vistaBandeja.classList.add('hidden');
+            } else {
+                vistaTubos.classList.add('hidden');
+                vistaBandeja.classList.remove('hidden');
+            }
+        }
+
+        function redondearTubos(valor) {
+            if (valor === 0) return 0;
+            let v = Math.round(valor * 1000) / 1000;
+            let entero = Math.floor(v);
+            let decimal = v - entero;
+            return (decimal >= 0.1) ? entero + 1 : entero;
+        }
+
+        function redondearBandeja(valor) {
+            if (valor <= 0) return 0;
+            let baseCien = Math.floor(valor / 100) * 100;
+            let residuo = valor - baseCien;
+            let redondeado = (residuo >= 10) ? baseCien + 100 : baseCien;
+            return Math.max(200, redondeado);
+        }
+
+        function generarTabla() {
+            const pisos = parseInt(document.getElementById('in-pisos').value) || 0;
+            let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
+            const aptosDefault = parseInt(document.getElementById('in-aptos').value) || 0;
+            const mostrarLineaExtra = document.getElementById('chk-linea-extra').checked;
+            
+            if (pisos < pisoBase) {
+                alert("El piso más alto debe ser mayor o igual al piso del SETI.");
+                document.getElementById('in-pisos').value = pisoBase;
+                return;
+            }
+
+            const tbodyTubos = document.getElementById('tabla-body');
+            const tbodyBandeja = document.getElementById('tabla-body-bandeja');
+            tbodyTubos.innerHTML = '';
+            tbodyBandeja.innerHTML = '';
+
+            let limiteInferior = (pisoBase > 1 && !mostrarLineaExtra) ? pisoBase : pisoBase - 1;
+
+            for (let i = pisos; i >= limiteInferior; i--) {
+                let trTubo = document.createElement('tr');
+                let trBandeja = document.createElement('tr');
+                
+                trTubo.dataset.nivel = i; 
+                trBandeja.dataset.nivel = i;
+                
+                let nombreTramo = "";
+                let curvasDefault = 0;
+                
+                let valorPauInicial = 0;
+                if (i > pisoBase) {
+                    valorPauInicial = aptosDefault; 
+                } else if (i === pisoBase && pisoBase === 1) {
+                    valorPauInicial = aptosDefault; 
+                } else {
+                    valorPauInicial = 0; 
+                }
+
+                if (i === pisos) { 
+                    nombreTramo = `SETS a Piso ${pisos}`; 
+                } else if (i === limiteInferior) { 
+                    if (limiteInferior === pisoBase) {
+                        nombreTramo = `Piso ${pisoBase + 1} a SETI`; 
+                    } else {
+                        nombreTramo = `Piso ${pisoBase} a SETI`; 
+                    }
+                    curvasDefault = 2; 
+                } else { 
+                    nombreTramo = `Piso ${i+1} a Piso ${i}`; 
+                }
+
+                trTubo.innerHTML = `
+                    <td><strong>${nombreTramo}</strong></td>
+                    <td><input type="number" class="input-mini in-pau-piso" value="${valorPauInicial}" min="0" onchange="recalcularTodo()"></td>
+                    <td class="val-pau-seti">0</td>
+                    <td class="val-pau-sets">0</td>
+                    <td>
+                        <select class="input-sel sel-mat" onchange="recalcularTodo()">
+                            <option value="SCH40" selected>SCH40</option>
+                            <option value="PVC">PVC</option>
+                            <option value="EMT">EMT</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="input-sel sel-dia" onchange="recalcularTodo()">
+                            <option value='1/2"'>1/2"</option>
+                            <option value='3/4"'>3/4"</option>
+                            <option value='1"'>1"</option>
+                            <option value='1 1/4"'>1 1/4"</option>
+                            <option value='1 1/2"'>1 1/2"</option>
+                            <option value='2"' selected>2"</option>
+                        </select>
+                    </td>
+                    <td class="val-at">2138.44</td>
+                    <td><input type="number" class="input-mini in-curvas" value="${curvasDefault}" min="0" onchange="recalcularTodo()"></td>
+                    <td class="val-cnc-seti">0.00</td>
+                    <td class="val-cnc-sets">0.00</td>
+                    <td class="val-tub-seti-c">0.000</td>
+                    <td class="tubos-fisicos val-tub-seti-f">0</td>
+                    <td class="val-tub-sets-c">0.000</td>
+                    <td class="tubos-fisicos val-tub-sets-f">0</td>
+                    <td class="tubos-total-cell val-total">0</td>
+                `;
+                tbodyTubos.appendChild(trTubo);
+
+                trBandeja.innerHTML = `
+                    <td><strong>${nombreTramo}</strong></td>
+                    <td class="ban-calc-seti">0.00</td>
+                    <td class="ban-calc-sets">0.00</td>
+                    <td class="ban-ancho-seti">0.00</td>
+                    <td class="ban-ancho-sets">0.00</td>
+                    <td class="tubos-total-cell ban-total">0.00</td>
+                    <td class="tubos-total-cell ban-recomendada" style="font-size: 14px; background-color: #fff3cd; color: var(--primary);">0</td>
+                `;
+                tbodyBandeja.appendChild(trBandeja);
+            }
+            recalcularTodo();
+        }
+
+        function aplicarAptosDefault() {
+            let aptos = parseInt(document.getElementById('in-aptos').value) || 0;
+            let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
+            
+            document.querySelectorAll('#tabla-body tr').forEach(tr => {
+                let nivel = parseInt(tr.dataset.nivel);
+                if(nivel > pisoBase || (nivel === pisoBase && pisoBase === 1)) {
+                    tr.querySelector('.in-pau-piso').value = aptos;
+                }
+            });
+            recalcularTodo();
+        }
+
+        function recalcularTodo() {
+            let pisos = parseInt(document.getElementById('in-pisos').value) || 0;
+            let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
+            let mostrarLineaExtra = document.getElementById('chk-linea-extra').checked;
+            let altoBandeja = parseFloat(document.getElementById('in-alto-bandeja').value) || 80;
+            
+            let limiteInferior = (pisoBase > 1 && !mostrarLineaExtra) ? pisoBase : pisoBase - 1;
+
+            let filasTubo = document.querySelectorAll('#tabla-body tr');
+            let filasBandeja = document.querySelectorAll('#tabla-body-bandeja tr');
+            if(filasTubo.length === 0) return;
+
+            let pausArray = {};
+            let totalEdificio = 0;
+            
+            filasTubo.forEach(tr => {
+                let nivel = parseInt(tr.dataset.nivel);
+                let val = parseInt(tr.querySelector('.in-pau-piso').value) || 0;
+                pausArray[nivel] = val;
+                totalEdificio += val;
+            });
+
+            document.getElementById('out-total-pau').textContent = totalEdificio;
+
+            filasTubo.forEach((trTubo, index) => {
+                let nivel = parseInt(trTubo.dataset.nivel);
+                let trBandeja = filasBandeja[index];
+                
+                let pauSeti = 0;
+                for(let p = nivel + 1; p <= pisos; p++) { pauSeti += (pausArray[p] || 0); }
+                if (nivel === limiteInferior) { pauSeti += (pausArray[nivel] || 0); }
+
+                let pauSets = 0;
+                for(let p = pisoBase; p <= nivel; p++) { pauSets += (pausArray[p] || 0); }
+
+                trTubo.querySelector('.val-pau-seti').textContent = pauSeti;
+                trTubo.querySelector('.val-pau-sets').textContent = pauSets;
+
+                let curvas = parseInt(trTubo.querySelector('.in-curvas').value) || 0;
+                let material = trTubo.querySelector('.sel-mat').value;
+                let diametro = trTubo.querySelector('.sel-dia').value;
+                
+                let areaTubo = TABLA_AT[material][diametro];
+                trTubo.querySelector('.val-at').textContent = areaTubo.toFixed(2);
+
+                let cnc = RitelFormulas.calcularCNC(pauSeti, pauSets);
+                let cncSeti = cnc.cncSeti;
+                let cncSets = cnc.cncSets;
+
+                let tubos = RitelFormulas.calcularTubos(cncSeti, cncSets, areaTubo, curvas);
+                let tubCalcSeti = tubos.tubCalcSeti;
+                let tubCalcSets = tubos.tubCalcSets;
+
+                let tubFisSeti = pauSeti === 0 ? 0 : redondearTubos(tubCalcSeti);
+                let tubFisSets = pauSets === 0 ? 0 : redondearTubos(tubCalcSets);
+
+                trTubo.querySelector('.val-cnc-seti').textContent = cncSeti.toFixed(2);
+                trTubo.querySelector('.val-cnc-sets').textContent = cncSets.toFixed(2);
+                trTubo.querySelector('.val-tub-seti-c').textContent = tubCalcSeti.toFixed(3);
+                trTubo.querySelector('.val-tub-seti-f').textContent = tubFisSeti;
+                trTubo.querySelector('.val-tub-sets-c').textContent = tubCalcSets.toFixed(3);
+                trTubo.querySelector('.val-tub-sets-f').textContent = tubFisSets;
+                trTubo.querySelector('.val-total').textContent = tubFisSeti + tubFisSets;
+
+                // --- MATEMÁTICA BANDEJAS ---
+                let bandejas = RitelFormulas.calcularBandejas(pauSeti, pauSets, altoBandeja);
+                let calcBanSeti = bandejas.calcBanSeti;
+                let calcBanSets = bandejas.calcBanSets;
+                let anchoSeti = bandejas.anchoSeti;
+                let anchoSets = bandejas.anchoSets;
+                let anchoTotal = bandejas.anchoTotal;
+
+                trBandeja.querySelector('.ban-calc-seti').textContent = calcBanSeti.toFixed(2);
+                trBandeja.querySelector('.ban-calc-sets').textContent = calcBanSets.toFixed(2);
+                trBandeja.querySelector('.ban-ancho-seti').textContent = anchoSeti.toFixed(2);
+                trBandeja.querySelector('.ban-ancho-sets').textContent = anchoSets.toFixed(2);
+                trBandeja.querySelector('.ban-total').textContent = anchoTotal.toFixed(2);
+                
+                trBandeja.querySelector('.ban-recomendada').textContent = redondearBandeja(anchoTotal);
+            });
+
+            let finalRiti = filasBandeja[filasBandeja.length - 1].querySelector('.ban-recomendada').textContent;
+            let finalRits = filasBandeja[0].querySelector('.ban-recomendada').textContent;
+            
+            document.getElementById('bandeja-seti').textContent = finalRiti;
+            document.getElementById('bandeja-sets').textContent = finalRits;
+        }
+
+        function guardarHTML() {
+            document.querySelectorAll('input').forEach(input => {
+                if(input.type === 'checkbox') {
+                    if(input.checked) input.setAttribute('checked', 'checked');
+                    else input.removeAttribute('checked');
+                } else if(input.type === 'number' || input.type === 'text') {
+                    input.setAttribute('value', input.value);
+                }
+            });
+            document.querySelectorAll('select').forEach(select => {
+                Array.from(select.options).forEach(opt => {
+                    if(opt.value === select.value) opt.setAttribute('selected', 'selected');
+                    else opt.removeAttribute('selected');
+                });
+            });
+
+            let htmlContent = "<!DOCTYPE html>\n<html>\n" + document.documentElement.innerHTML + "\n</html>";
+            let blob = new Blob([htmlContent], {type: "text/html;charset=utf-8"});
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            let nombre = document.getElementById('in-proyecto').value.trim() || 'Proyecto_Calculo';
+            
+            a.href = url;
+            a.download = `${nombre}.html`; 
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function aplicarEstilosExcel(ws, indexFinEncabezado) {
+            if (!ws['!ref']) return;
+            let rango = XLSX.utils.decode_range(ws['!ref']);
+            let anchos = {};
+
+            for (let R = rango.s.r; R <= rango.e.r; ++R) {
+                for (let C = rango.s.c; C <= rango.e.c; ++C) {
+                    let celdaRef = XLSX.utils.encode_cell({c: C, r: R});
+                    let celda = ws[celdaRef];
+
+                    if (!celda) {
+                        celda = { t: 's', v: '' };
+                        ws[celdaRef] = celda;
+                    }
+
+                    if (R === 0) {
+                        if (C === 0) {
+                            celda.s = {
+                                font: { name: "Arial", sz: 14, bold: true, color: { rgb: "FFFFFF" } },
+                                fill: { fgColor: { rgb: "004080" } },
+                                alignment: { vertical: "center", horizontal: "center" }
+                            };
+                        }
+                        continue;
+                    }
+                    
+                    if (R === 1) {
+                        celda.s = { fill: { fgColor: { rgb: "FFFFFF" } } };
+                        continue;
+                    }
+
+                    let longitudTexto = celda.v ? celda.v.toString().length : 0;
+                    if (R <= indexFinEncabezado && longitudTexto > 15) longitudTexto = 15; 
+                    
+                    if (!anchos[C] || anchos[C] < longitudTexto) {
+                        anchos[C] = longitudTexto;
+                    }
+
+                    let esEncabezado = (R >= 2 && R <= indexFinEncabezado);
+                    let esFilaPar = (R > indexFinEncabezado && (R - indexFinEncabezado) % 2 === 0);
+
+                    // Estos estilos solo se verán en modo Online, el modo Offline los ignorará pacíficamente
+                    celda.s = {
+                        font: {
+                            name: "Arial",
+                            sz: 10,
+                            bold: esEncabezado,
+                            color: { rgb: esEncabezado ? "FFFFFF" : "000000" }
+                        },
+                        fill: {
+                            fgColor: { rgb: esEncabezado ? "0073e6" : (esFilaPar ? "F4F8FB" : "FFFFFF") }
+                        },
+                        alignment: {
+                            vertical: "center",
+                            horizontal: "center",
+                            wrapText: true
+                        },
+                        border: {
+                            top: { style: "thin", color: { rgb: "888888" } },
+                            bottom: { style: "thin", color: { rgb: "888888" } },
+                            left: { style: "thin", color: { rgb: "888888" } },
+                            right: { style: "thin", color: { rgb: "888888" } }
+                        }
+                    };
+                }
+            }
+            
+            ws['!cols'] = Object.keys(anchos).map(C => ({ wch: Math.min(Math.max(anchos[C] + 4, 10), 30) }));
+            if(!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 30 }; 
+        }
+
+        function exportarExcel() {
+            let nombreStr = document.getElementById('in-proyecto').value.trim() || "Proyecto Sin Nombre";
+            let nombreMayus = `PROYECTO: ${nombreStr.toUpperCase()}`;
+            let wb = XLSX.utils.book_new();
+            
+            let tablaTubos = document.getElementById("tabla-calculo").cloneNode(true);
+            let originalesTubos = document.getElementById("tabla-calculo").querySelectorAll('tbody tr');
+            
+            tablaTubos.querySelectorAll('tbody tr').forEach((tr, i) => {
+                let origTr = originalesTubos[i];
+                tr.querySelector('td:nth-child(2)').textContent = origTr.querySelector('.in-pau-piso').value;
+                tr.querySelector('td:nth-child(5)').textContent = origTr.querySelector('.sel-mat').value;
+                tr.querySelector('td:nth-child(6)').textContent = origTr.querySelector('.sel-dia').value;
+                tr.querySelector('td:nth-child(8)').textContent = origTr.querySelector('.in-curvas').value;
+            });
+            
+            let theadTubos = tablaTubos.querySelector('thead');
+            theadTubos.insertAdjacentHTML('afterbegin', `
+                <tr><th colspan="15">${nombreMayus}</th></tr>
+                <tr><th colspan="15"></th></tr>
+            `);
+
+            let wsTubos = XLSX.utils.table_to_sheet(tablaTubos);
+            aplicarEstilosExcel(wsTubos, 3);
+            XLSX.utils.book_append_sheet(wb, wsTubos, "Tubería");
+
+            let tablaBandejas = document.getElementById("tabla-bandeja").cloneNode(true);
+            let theadBandejas = tablaBandejas.querySelector('thead');
+            
+            theadBandejas.insertAdjacentHTML('afterbegin', `
+                <tr><th colspan="7">${nombreMayus}</th></tr>
+                <tr><th colspan="7"></th></tr>
+            `);
+
+            let wsBandejas = XLSX.utils.table_to_sheet(tablaBandejas);
+            aplicarEstilosExcel(wsBandejas, 2);
+            XLSX.utils.book_append_sheet(wb, wsBandejas, "Bandejas");
+
+            XLSX.writeFile(wb, `${nombreStr}.xlsx`);
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            let nombre = document.getElementById('in-proyecto').value.trim() || "Sin Nombre";
+            
+            let esVistaTubos = !document.getElementById('vista-tubos').classList.contains('hidden');
+            let tablaId = esVistaTubos ? '#tabla-calculo' : '#tabla-bandeja';
+            let tituloDoc = esVistaTubos ? 'Tubería' : 'Bandejas';
+
+            doc.text(`Memoria de Cálculo de ${tituloDoc} - Proyecto: ${nombre}`, 14, 15);
+            
+            doc.autoTable({
+                html: tablaId,
+                startY: 20,
+                theme: 'grid',
+                styles: { fontSize: 8, halign: 'center' },
+                headStyles: { fillColor: esVistaTubos ? [0, 64, 128] : [43, 120, 228] },
+                didParseCell: function(data) {
+                    if (data.section === 'body') {
+                        let elem = data.cell.raw.querySelector('select, input');
+                        if(elem) { data.cell.text = [elem.value]; }
+                    }
+                }
+            });
+            doc.save(`${tituloDoc}_${nombre}.pdf`);
+        }
+
+        window.onload = function() {
+            // Actualizar diseño del botón de conexión según el modo guardado
+            var btnConexion = document.getElementById('btn-conexion');
+            if(appMode === 'offline') {
+                btnConexion.innerHTML = "🔌 Modo: OFFLINE";
+                btnConexion.style.backgroundColor = "#6c757d";
+                btnConexion.title = "Haz clic para cambiar a modo Online (Requiere Internet)";
+            } else {
+                btnConexion.innerHTML = "🌐 Modo: ONLINE";
+                btnConexion.style.backgroundColor = "#28a745";
+                btnConexion.title = "Haz clic para cambiar a modo Offline (Sin Internet)";
+            }
+
+            if(document.querySelectorAll('#tabla-body tr').length === 0) {
+                generarTabla();
+            } else {
+                recalcularTodo(); 
+            }
+        };
+    </script>
+</body>
+</html>

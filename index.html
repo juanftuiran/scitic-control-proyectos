@@ -53,6 +53,7 @@
         <div class="module-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
             <button class="btn-primary" id="tabHoras" onclick="switchModule('horas')">⏱️ Módulo de Horas</button>
             <button class="btn-secondary" id="tabGastos" onclick="switchModule('gastos')">💸 Módulo de Gastos</button>
+            <button class="btn-secondary" id="tabHerramientas" onclick="switchModule('herramientas')">🛠️ Herramientas</button>
         </div>
 
         <div id="horasModule">
@@ -351,6 +352,30 @@
                         </div>
                     </section>
                 </main>
+            </div>
+        </div>
+
+        <!-- Nuevo Módulo de Herramientas -->
+        <div id="herramientasModule" style="display: none;">
+            <!-- Vista de Catálogo -->
+            <div id="herramientasCatalogo">
+                <h3 style="margin-bottom: 20px;">🛠️ Catálogo de Herramientas</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="stat-card glass-panel" style="cursor: pointer; border-left: 4px solid var(--accent); transition: transform 0.2s;" onclick="abrirHerramienta('./src/tools/calculadora-tubos/index.html')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+                        <h4 style="font-size: 1.1rem; color: var(--scitic-dark); margin-bottom: 10px;">📐 Calculadora de Tubos RITEL</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Herramienta para canalización y distribución RITEL 2025.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Visor de Herramienta -->
+            <div id="herramientasVisor" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <button class="btn-secondary" onclick="cerrarHerramienta()">⬅️ Volver al Catálogo</button>
+                </div>
+                <div class="card glass-panel" style="padding: 0; overflow: hidden; height: 80vh;">
+                    <iframe id="iframeHerramienta" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
             </div>
         </div>
 

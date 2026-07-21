@@ -1042,23 +1042,28 @@ function limpiarFiltrosGastos() {
 function switchModule(moduleName) {
     const horasModule = document.getElementById('horasModule');
     const gastosModule = document.getElementById('gastosModule');
+    const herramientasModule = document.getElementById('herramientasModule');
+    
     const tabHoras = document.getElementById('tabHoras');
     const tabGastos = document.getElementById('tabGastos');
+    const tabHerramientas = document.getElementById('tabHerramientas');
+
+    horasModule.style.display = 'none';
+    gastosModule.style.display = 'none';
+    if(herramientasModule) herramientasModule.style.display = 'none';
+    
+    tabHoras.classList.remove('btn-primary'); tabHoras.classList.add('btn-secondary');
+    tabGastos.classList.remove('btn-primary'); tabGastos.classList.add('btn-secondary');
+    if(tabHerramientas) { tabHerramientas.classList.remove('btn-primary'); tabHerramientas.classList.add('btn-secondary'); }
 
     if (moduleName === 'horas') {
         horasModule.style.display = 'block';
-        gastosModule.style.display = 'none';
         tabHoras.classList.add('btn-primary');
         tabHoras.classList.remove('btn-secondary');
-        tabGastos.classList.add('btn-secondary');
-        tabGastos.classList.remove('btn-primary');
-    } else {
-        horasModule.style.display = 'none';
+    } else if (moduleName === 'gastos') {
         gastosModule.style.display = 'block';
         tabGastos.classList.add('btn-primary');
         tabGastos.classList.remove('btn-secondary');
-        tabHoras.classList.add('btn-secondary');
-        tabHoras.classList.remove('btn-primary');
         
         if (usuarioActual.role === 'colaborador') {
             document.getElementById('gastoTrabajador').value = usuarioActual.name;
@@ -1071,7 +1076,25 @@ function switchModule(moduleName) {
             document.getElementById('pagoFecha').value = getFechaColombiaString();
         }
         filtrarGastos(); // Aplicar filtros al entrar
+    } else if (moduleName === 'herramientas') {
+        if(herramientasModule) herramientasModule.style.display = 'block';
+        if(tabHerramientas) {
+            tabHerramientas.classList.add('btn-primary');
+            tabHerramientas.classList.remove('btn-secondary');
+        }
     }
+}
+
+function abrirHerramienta(url) {
+    document.getElementById('herramientasCatalogo').style.display = 'none';
+    document.getElementById('herramientasVisor').style.display = 'block';
+    document.getElementById('iframeHerramienta').src = url;
+}
+
+function cerrarHerramienta() {
+    document.getElementById('herramientasVisor').style.display = 'none';
+    document.getElementById('herramientasCatalogo').style.display = 'block';
+    document.getElementById('iframeHerramienta').src = '';
 }
 
 function calcularTotalGasto() {
