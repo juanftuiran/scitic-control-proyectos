@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculadora de Pérdidas de Señal TDT para torres residenciales — SCITIC">
+    <title>Calculadora de Pérdidas TDT — SCITIC</title>
+    <style>
+        :root {
+            --primary: #004080;
+            --secondary: #0073e6;
+            --accent: #f2a900;
+            --bg-light: #f4f8fb;
+            --border: #cce0ff;
+            --ok: #28a745;
+            --warn: #ffc107;
+            --bad: #dc3545;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f3f7;
+            margin: 0; padding: 20px;
+            color: #333; font-size: 12px;
+        }
+
+        /* ── Título del proyecto ── */
+        .project-title {
+            font-size: 28px; font-weight: bold;
+            text-align: center; color: var(--primary);
+            border: none; background: transparent;
+            width: 100%; margin-bottom: 20px;
+            border-bottom: 2px dashed transparent;
+            transition: 0.3s; display: block;
+            padding: 8px 0;
+        }
+        .project-title:focus { outline: none; border-bottom: 2px dashed var(--accent); }
+
+        /* ── Paneles ── */
+        .header-panel {
+            background: white; padding: 16px 20px;
+            border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 12px; display: flex;
+            flex-wrap: wrap; gap: 12px; align-items: flex-end;
+        }
+        .panel-section-title {
+            width: 100%; font-size: 13px; font-weight: bold;
+            color: var(--primary); margin: 0 0 -4px 0;
+            padding-bottom: 4px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 6px; justify-content: space-between;
+        }
+        .panel-section-title .icon { font-size: 16px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label {
+            font-size: 11px; font-weight: bold;
+            color: var(--primary); margin-bottom: 4px;
+        }
+        .input-group input:not([type="checkbox"]), .input-group select {
+            padding: 7px 8px; border: 1px solid #ccc;
+            border-radius: 4px; font-size: 12px;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--secondary); outline: none;
+            box-shadow: 0 0 0 2px rgba(0,115,230,0.15);
+        }
+        .input-group input[type="number"] { width: 85px; }
+        .input-group select { min-width: 160px; }
+        .checkbox-group {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--bg-light); padding: 8px 12px;
+            border: 1px solid var(--border); border-radius: 4px;
+            height: 33px; font-weight: bold; color: var(--primary);
+            cursor: pointer;
+        }
+        .spacer { flex-grow: 1; }
+
+        /* ── Matriz de Cableado UI ── */
+        .matrix-section {
+            width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 6px;
+        }
+        .matrix-row {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            background: var(--bg-light); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .matrix-row-label {
+            font-weight: bold; color: var(--primary); font-size: 11px; min-width: 170px;
+        }
+        .matrix-inputs {
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+        }
+        .matrix-item {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .matrix-item label {
+            font-size: 9px; font-weight: bold; color: #555; margin-bottom: 2px;
+        }
+        .matrix-item input {
+            width: 52px; text-align: center; padding: 4px; font-size: 11px;
+            border: 1px solid #ccc; border-radius: 4px;
+        }
+
+        /* ── Botones ── */
+        button {
+            padding: 9px 16px; border: none; border-radius: 5px;
+            font-weight: bold; cursor: pointer;
+            transition: all 0.2s; color: white; font-size: 12px;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        button:active { transform: scale(0.97); }
+        .btn-calc  { background: var(--primary); }
+        .btn-calc:hover  { background: #00264d; }
+        .btn-config { background: var(--secondary); }
+        .btn-config:hover { background: #005bb5; }
+        .btn-save  { background: var(--accent); color: #000; }
+        .btn-save:hover { filter: brightness(0.9); }
+        .btn-excel { background: #1D6F42; }
+        .btn-excel:hover { background: #155a34; }
+        .btn-pdf   { background: #D32F2F; }
+        .btn-pdf:hover { background: #b71c1c; }
+
+        /* ── Contenedor de tablas ── */
+        .table-container {
+            overflow-x: auto; background: white;
+            border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }
+        th {
+            background-color: var(--primary); color: white;
+            padding: 7px 6px; border: 1px solid rgba(255,255,255,0.2);
+            font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 2;
+        }
+        th.sub-th { background-color: var(--secondary); font-size: 11px; }
+        th.th-accent { background-color: var(--accent); color: #000; }
+        th.th-result { background-color: #1a5276; }
+        td {
+            padding: 5px 4px; border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        tr:nth-child(even) { background-color: var(--bg-light); }
+        tr:hover { background-color: #e3ecf6; }
+
+        .piso-cell {
+            font-weight: bold; color: var(--primary);
+            background-color: #e8f0fe !important;
+            font-size: 11px; writing-mode: horizontal-tb;
+            text-align: center; vertical-align: middle;
+        }
+        .bold-cell { font-weight: bold; }
+
+        /* ── Inputs dentro de celdas ── */
+        .cell-edit {
+            width: 58px; text-align: center; padding: 3px 2px;
+            border: 1px solid #ddd; border-radius: 3px;
+            font-size: 11px; background: #fff;
+            transition: all 0.2s;
+        }
+        .cell-edit:focus {
+            border-color: var(--secondary); background: #e8f4ff;
+            outline: none; box-shadow: 0 0 0 2px rgba(0,115,230,0.2);
+        }
+        .bold-input { font-weight: bold; color: var(--primary); }
+        .calc-cell { color: #555; font-variant-numeric: tabular-nums; }
+
+        /* ── Nivel de señal colores ── */
+        .nivel-ok   { color: var(--ok); font-weight: bold; }
+        .nivel-warn { color: #e67e00; font-weight: bold; }
+        .nivel-bad  { color: var(--bad); font-weight: bold; background: #ffe6e6 !important; }
+
+        /* ── Resumen ── */
+        .summary-row td { font-weight: bold; background: #fff3cd !important; border-top: 2px solid var(--accent); }
+        .summary-row.max-row td { background: #d4edda !important; }
+        .summary-row.min-row td { background: #f8d7da !important; }
+        .summary-row.diff-row td { background: #fff3cd !important; border-top: 2px solid var(--accent); }
+        .summary-label { text-align: right; font-size: 11px; color: var(--primary); }
+
+        /* ── Config de pisos ── */
+        .floor-config-table th { font-size: 11px; padding: 6px 8px; }
+        .floor-config-table td { padding: 4px 6px; }
+        .floor-config-table .input-mini {
+            width: 55px; text-align: center; padding: 4px;
+            border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
+        }
+        .floor-config-table .input-mini:focus {
+            border-color: var(--secondary); outline: none;
+        }
+        .chain-cell {
+            vertical-align: middle;
+            text-align: center;
+            padding: 8px 6px !important;
+            min-width: 115px;
+        }
+        .chain-indicator {
+            display: block; padding: 4px 6px;
+            border-radius: 4px; font-size: 11px;
+            font-weight: bold; color: white; margin: 0 auto 6px auto;
+            text-align: center; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+        .chain-direction-sel {
+            display: block; font-size: 11px; padding: 4px; width: 100%;
+            border-radius: 4px; border: 1px solid #bbb;
+            background: #ffffff; font-weight: bold; color: #333;
+            cursor: pointer; text-align: center;
+        }
+
+        /* ── Info panel ── */
+        .info-panel {
+            display: flex; gap: 16px; padding: 10px 16px;
+            background: linear-gradient(135deg, #e8f0fe, #f4f8fb);
+            border-radius: 8px; margin-bottom: 12px;
+            flex-wrap: wrap; align-items: center;
+        }
+        .info-item {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .info-label { font-size: 10px; color: #666; text-transform: uppercase; }
+        .info-value { font-size: 16px; font-weight: bold; color: var(--primary); }
+
+        /* ── Utilidades ── */
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        .hidden { display: none !important; }
+
+        @media (max-width: 900px) {
+            body { padding: 10px; }
+            .project-title { font-size: 22px; }
+            .header-panel { padding: 12px; gap: 8px; }
+        }
+        @media print {
+            button, .header-panel, .floor-config-section { display: none !important; }
+            .table-container { box-shadow: none; }
+            body { margin: 0; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <input type="text" class="project-title" id="project-title" value="Nuevo Proyecto TDT" spellcheck="false">
+
+    <!-- ═══════════════ PANEL DE SISTEMA ═══════════════ -->
+    <div class="header-panel">
+        <div class="panel-section-title">
+            <span><span class="icon">📡</span> Configuración del Sistema</span>
+            <label class="checkbox-group" title="Habilita una segunda columna de cable troncal (para grandes distancias/exteriores)">
+                <input type="checkbox" id="use-rg11" onchange="toggleRG11Config()"> Usar Cable Troncal Adicional (RG11)
+            </label>
+        </div>
+        <div class="input-group">
+            <label>Nivel Salida (dBµV)</label>
+            <input type="number" id="nivel-salida" value="113" step="0.1" min="0">
+        </div>
+        <div class="input-group rg11-field hidden">
+            <label>Cable Troncal</label>
+            <select id="cable-troncal"></select>
+        </div>
+        <div class="input-group">
+            <label>Cable Distribución</label>
+            <select id="cable-distribucion"></select>
+        </div>
+        <div class="input-group">
+            <label>Tipo Conector</label>
+            <select id="tipo-conector"></select>
+        </div>
+        <div class="input-group">
+            <label>Tipo Toma</label>
+            <select id="tipo-toma"></select>
+        </div>
+    </div>
+
+    <!-- ═══════════════ PANEL DE TORRE Y CABLEADO ═══════════════ -->
+    <div class="header-panel">
+        <div class="panel-section-title"><span class="icon">🏢</span> Configuración de la Torre y Matriz de Longitudes</div>
+        <div class="input-group">
+            <label>N° Torres</label>
+            <input type="number" id="num-torres" value="1" min="1" max="10">
+        </div>
+        <div class="input-group">
+            <label>N° Pisos</label>
+            <input type="number" id="num-pisos" value="5" min="1" max="60" onchange="onTowerDimensionsChange()">
+        </div>
+        <div class="input-group">
+            <label>Aptos / Piso</label>
+            <input type="number" id="aptos-piso" value="2" min="1" max="20" onchange="onTowerDimensionsChange()">
+        </div>
+        <div class="input-group">
+            <label>Tomas / Apto</label>
+            <input type="number" id="tomas-apto" value="2" min="1" max="8" onchange="onTowerDimensionsChange()">
+        </div>
+        <div class="input-group">
+            <label>Pisos por Cadena</label>
+            <input type="number" id="pisos-cadena" value="5" min="1" max="60" onchange="onTowerDimensionsChange()" title="Cuántos pisos se conectan en serie">
+        </div>
+        <div class="input-group rg11-field hidden">
+            <label>Dist. Troncal (m)</label>
+            <input type="number" id="dist-rg11-default" value="107" min="0" step="0.5" onchange="autoUpdateFloorConfig()">
+        </div>
+        <div class="input-group">
+            <label>Dist. Distr. Base (m)</label>
+            <input type="number" id="dist-base-distr" value="10" min="0" step="0.5" onchange="autoUpdateFloorConfig()" title="Distancia base al primer piso de la cadena">
+        </div>
+        <div class="input-group">
+            <label>Salto Piso a Piso (m)</label>
+            <input type="number" id="dist-inc-piso" value="3.5" min="0" step="0.5" onchange="autoUpdateFloorConfig()" title="Metros adicionales que se suman en la columna vertical entre pisos continuos (+3.5m habitual)">
+        </div>
+
+        <!-- Matriz Dinámica de Dispersión por Apartamento y Distancia por Toma -->
+        <div class="matrix-section">
+            <div class="matrix-row">
+                <span class="matrix-row-label">📐 Dispersión por Apartamento (m):</span>
+                <div class="matrix-inputs" id="aptos-matrix-container"></div>
+            </div>
+            <div class="matrix-row">
+                <span class="matrix-row-label">🔌 Distancia por Toma (m):</span>
+                <div class="matrix-inputs" id="tomas-matrix-container"></div>
+            </div>
+        </div>
+
+        <div class="spacer" style="width:100%; margin-top:6px;"></div>
+        <button class="btn-config" onclick="toggleConfigPisos()">🔧 Config. Pisos</button>
+        <button class="btn-calc" onclick="generarTabla()">⚡ Generar Tabla</button>
+        <button class="btn-save" onclick="guardarHTML()">💾 HTML</button>
+        <button class="btn-excel" onclick="exportarExcel()">📊 Excel</button>
+        <button class="btn-pdf" onclick="exportarPDF()">📄 PDF</button>
+    </div>
+
+    <!-- ═══════════════ CONFIG DE PISOS ═══════════════ -->
+    <div id="floor-config-section" class="hidden fade-in">
+        <div class="table-container floor-config-section">
+            <table class="floor-config-table" id="floor-config-table">
+                <thead>
+                    <tr>
+                        <th title="Configuración de la cadena de derivadores">Cadena / Sentido</th>
+                        <th>Piso</th>
+                        <th>N° Aptos</th>
+                        <th>Tomas/Apto</th>
+                        <th title="Atenuación hacia la toma en este piso">Derivación<br>(dB)</th>
+                        <th title="Atenuación hacia el siguiente piso en la cadena">Paso<br>(dB)</th>
+                        <th>Splitter<br>Torre (dB)</th>
+                        <th>Splitter<br>Apto (dB)</th>
+                        <th class="rg11-col hidden">Dist.<br>Troncal (m)</th>
+                        <th title="Distancia acumulada en el eje vertical (Base + Incrementos por Piso)">Dist. Distribución<br>Vertical (m)</th>
+                        <th>Conectores</th>
+                    </tr>
+                </thead>
+                <tbody id="floor-config-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════════════ TABLA DE RESULTADOS ═══════════════ -->
+    <div id="results-section" class="hidden fade-in">
+        <div class="info-panel" id="info-panel"></div>
+        <div class="table-container">
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th rowspan="3">PISO</th>
+                        <th rowspan="3">APARTAMENTO</th>
+                        <th rowspan="3">TOMA#</th>
+                        <th colspan="3" class="sub-th rg11-col hidden">Cable Troncal</th>
+                        <th colspan="3">Cable Distribución (RG6 Total)</th>
+                        <th colspan="2" class="sub-th">Conectores</th>
+                        <th rowspan="3" title="Suma en cascada calculada automáticamente">Derivador<br>(dB)</th>
+                        <th rowspan="3">Repartidor<br>(dB)</th>
+                        <th rowspan="3">Toma<br>(dB)</th>
+                        <th rowspan="3">Amplif.<br>(dB)</th>
+                        <th colspan="2" class="th-accent">Pérdida Total</th>
+                        <th colspan="2" class="th-result">Nivel de Señal</th>
+                    </tr>
+                    <tr>
+                        <th class="sub-th rg11-col hidden">Dist (m)</th>
+                        <th class="sub-th rg11-col hidden" id="th-troncal-baja">Baja</th>
+                        <th class="sub-th rg11-col hidden" id="th-troncal-alta">Alta</th>
+                        <th>Dist (m)</th>
+                        <th>Baja</th>
+                        <th>Alta</th>
+                        <th class="sub-th">Cant.</th>
+                        <th class="sub-th">dB</th>
+                        <th class="th-accent">Baja (dB)</th>
+                        <th class="th-accent">Alta (dB)</th>
+                        <th class="th-result" id="th-nivel-baja">470MHz</th>
+                        <th class="th-result" id="th-nivel-alta">698MHz</th>
+                    </tr>
+                    <tr>
+                        <th class="sub-th rg11-col hidden" id="th-troncal-name"></th>
+                        <th class="sub-th rg11-col hidden" id="th-troncal-baja-val"></th>
+                        <th class="sub-th rg11-col hidden" id="th-troncal-alta-val"></th>
+                        <th id="th-dist-name"></th>
+                        <th id="th-dist-baja-val"></th>
+                        <th id="th-dist-alta-val"></th>
+                        <th class="sub-th">un</th>
+                        <th class="sub-th" id="th-conect-val"></th>
+                        <th class="th-accent">dB</th>
+                        <th class="th-accent">dB</th>
+                        <th class="th-result">dBµV</th>
+                        <th class="th-result">dBµV</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
+
+        <!-- ═══════════════ RESUMEN ═══════════════ -->
+        <div class="table-container">
+            <table id="summary-table">
+                <thead>
+                    <tr>
+                        <th colspan="3" style="text-align:left; padding-left:12px;" id="summary-tower-name">TORRE 1</th>
+                        <th class="th-accent">Pérd. Baja</th>
+                        <th class="th-accent">Pérd. Alta</th>
+                        <th class="th-result">Nivel Baja (dBµV)</th>
+                        <th class="th-result">Nivel Alta (dBµV)</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody id="summary-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════════════ LIBRERÍAS ═══════════════ -->
+    <script src="lib/jspdf.umd.min.js"></script>
+    <script src="lib/jspdf.plugin.autotable.min.js"></script>
+    <!-- Usamos xlsx-js-style para permitir colores en la exportación Excel -->
+    <script src="lib/xlsx.bundle.js"></script>
+
+    <!-- ═══════════════ LÓGICA ═══════════════ -->
+    <script src="js/constantes.js"></script>
+    <script src="js/motor-calculo.js"></script>
+
+    <script>
+    const CHAIN_COLORS = ['#2196F3','#4CAF50','#FF9800','#9C27B0','#00BCD4','#E91E63','#795548','#607D8B','#CDDC39','#FF5722'];
+    let configGenerada = false;
+
+    // ════════════════════════════════════════
+    // INICIALIZACIÓN
+    // ════════════════════════════════════════
+    function init() {
+        populateSelect('cable-troncal', CONSTANTES.cables, 'RG11/T165');
+        populateSelect('cable-distribucion', CONSTANTES.cables, 'RG6/100X');
+        populateSelect('tipo-conector', CONSTANTES.conectores, 'F-Standard');
+        populateSelect('tipo-toma', CONSTANTES.tomas, 'Standard');
+        toggleRG11Config();
+        actualizarMatrizCableadoUI();
+        generarConfigPisos();
+    }
+
+    function populateSelect(id, obj, defaultKey) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '';
+        for (const key in obj) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = obj[key].nombre;
+            if (key === defaultKey) opt.selected = true;
+            sel.appendChild(opt);
+        }
+    }
+
+    function toggleRG11Config() {
+        const useRG11 = document.getElementById('use-rg11').checked;
+        document.querySelectorAll('.rg11-field').forEach(el => {
+            if (useRG11) el.classList.remove('hidden'); else el.classList.add('hidden');
+        });
+        document.querySelectorAll('.rg11-col').forEach(el => {
+            if (useRG11) el.classList.remove('hidden'); else el.classList.add('hidden');
+        });
+        
+        if (!document.getElementById('results-section').classList.contains('hidden')) {
+            recalcularTodo();
+        }
+    }
+
+    // ════════════════════════════════════════
+    // MATRIZ DINÁMICA DE DISTANCIAS (APTOS Y TOMAS)
+    // ════════════════════════════════════════
+    function onTowerDimensionsChange() {
+        actualizarMatrizCableadoUI();
+        autoUpdateFloorConfig();
+    }
+
+    function actualizarMatrizCableadoUI() {
+        const numAptos = parseInt(document.getElementById('aptos-piso').value) || 2;
+        const numTomas = parseInt(document.getElementById('tomas-apto').value) || 2;
+
+        // Contenedor Aptos (Dispersión y Nombres editables)
+        const aptosContainer = document.getElementById('aptos-matrix-container');
+        const oldAptoDispVals = Array.from(aptosContainer.querySelectorAll('.apto-disp-input')).map(i => parseFloat(i.value));
+        const oldAptoNameVals = Array.from(aptosContainer.querySelectorAll('.apto-name-input')).map(i => i.value);
+        aptosContainer.innerHTML = '';
+
+        for (let a = 0; a < numAptos; a++) {
+            const defaultDisp = oldAptoDispVals[a] !== undefined ? oldAptoDispVals[a] : ((a + 1) * 3);
+            const defaultName = oldAptoNameVals[a] !== undefined && oldAptoNameVals[a].trim() !== '' ? oldAptoNameVals[a] : ('APTO-' + String(a + 1).padStart(2, '0'));
+            
+            const item = document.createElement('div');
+            item.className = 'matrix-item';
+            item.style.minWidth = '75px';
+            item.innerHTML = '<input type="text" class="apto-name-input" data-apto="' + a + '" value="' + defaultName + '" style="width: 72px; text-align: center; font-weight: bold; font-size: 10px; margin-bottom: 3px; border: 1px solid #bbb; border-radius: 3px; padding: 2px;" title="Nombre o identificador editable del apartamento">' +
+                '<input type="number" class="apto-disp-input" data-apto="' + a + '" value="' + defaultDisp + '" step="0.5" title="Distancia de dispersión en metros">';
+            aptosContainer.appendChild(item);
+        }
+
+        // Contenedor Tomas (Interior)
+        const tomasContainer = document.getElementById('tomas-matrix-container');
+        const oldTomaVals = Array.from(tomasContainer.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value));
+        tomasContainer.innerHTML = '';
+
+        for (let t = 0; t < numTomas; t++) {
+            const defaultVal = oldTomaVals[t] !== undefined ? oldTomaVals[t] : ((t + 1) * 1.5);
+            const item = document.createElement('div');
+            item.className = 'matrix-item';
+            item.innerHTML = '<label>Toma ' + (t + 1) + '</label>' +
+                '<input type="number" class="toma-dist-input" data-toma="' + t + '" value="' + defaultVal + '" step="0.5">';
+            tomasContainer.appendChild(item);
+        }
+    }
+
+    // ════════════════════════════════════════
+    // CONFIGURACIÓN DE PISOS
+    // ════════════════════════════════════════
+    function toggleConfigPisos() {
+        const section = document.getElementById('floor-config-section');
+        section.classList.toggle('hidden');
+        if (!section.classList.contains('hidden') && !configGenerada) {
+            generarConfigPisos();
+        }
+    }
+
+    function autoUpdateFloorConfig() {
+        if (!document.getElementById('floor-config-section').classList.contains('hidden')) {
+            generarConfigPisos();
+        } else {
+            configGenerada = false; 
+        }
+    }
+
+    function onChainDirectionChange(chainIndex, newDirection) {
+        const numPisos = parseInt(document.getElementById('num-pisos').value) || 5;
+        const pisosCadena = parseInt(document.getElementById('pisos-cadena').value) || numPisos;
+        const floorConfigBody = document.getElementById('floor-config-body');
+        
+        const rows = Array.from(floorConfigBody.children);
+        const rowsChain = rows.filter(row => {
+            const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
+            if(!pisoCell || !pisoCell.textContent.includes('PISO')) return false;
+            const piso = parseInt(pisoCell.textContent.match(/\d+/)[0]);
+            const cIndex = Math.floor((numPisos - piso) / pisosCadena);
+            return cIndex === chainIndex;
+        });
+
+        const pisosEnEstaCadena = rowsChain.length;
+        const distBaseDistr = parseFloat(document.getElementById('dist-base-distr').value) || 10;
+        const distIncPiso  = parseFloat(document.getElementById('dist-inc-piso').value) || 3.5;
+
+        rowsChain.forEach((row, p) => {
+            let p_eff = (newDirection === 'descendente') ? p : (pisosEnEstaCadena - 1 - p);
+
+            let derivacion = 15;
+            let paso = 1.5;
+            if (p_eff === 0) { derivacion = 25; paso = 0.5; }
+            else if (p_eff === pisosEnEstaCadena - 1) { derivacion = 10; paso = 2.0; }
+
+            let conectoresEst = 10 + (p_eff * 2);
+            let distDistrEst = distBaseDistr + (p_eff * distIncPiso);
+
+            const inputDeriv = row.querySelector('[data-field="derivacion"]');
+            const inputPaso = row.querySelector('[data-field="paso"]');
+            const inputConect = row.querySelector('[data-field="conectores"]');
+            const inputDistr = row.querySelector('[data-field="dist-rg6-distr"]');
+
+            if (inputDeriv) inputDeriv.value = derivacion;
+            if (inputPaso) inputPaso.value = paso;
+            if (inputConect) inputConect.value = conectoresEst;
+            if (inputDistr) inputDistr.value = distDistrEst.toFixed(1);
+        });
+
+        if (!document.getElementById('results-section').classList.contains('hidden')) {
+            generarTabla();
+        }
+    }
+
+    function generarConfigPisos() {
+        const numPisos = parseInt(document.getElementById('num-pisos').value) || 5;
+        const aptos = parseInt(document.getElementById('aptos-piso').value) || 2;
+        const tomas = parseInt(document.getElementById('tomas-apto').value) || 2;
+        const pisosCadena = parseInt(document.getElementById('pisos-cadena').value) || numPisos;
+        
+        const distRG11 = parseFloat(document.getElementById('dist-rg11-default').value) || 107;
+        const distBaseDistr = parseFloat(document.getElementById('dist-base-distr').value) || 10;
+        const distIncPiso  = parseFloat(document.getElementById('dist-inc-piso').value) || 3.5;
+
+        const tbody = document.getElementById('floor-config-body');
+        tbody.innerHTML = '';
+
+        const numCadenas = Math.ceil(numPisos / pisosCadena);
+        let pisoActual = numPisos;
+
+        for (let c = 0; c < numCadenas; c++) {
+            const color = CHAIN_COLORS[c % CHAIN_COLORS.length];
+            const pisosEnEstaCadena = Math.min(pisosCadena, pisoActual);
+
+            for (let p = 0; p < pisosEnEstaCadena; p++) {
+                const tr = document.createElement('tr');
+                let html = '';
+
+                if (p === 0) {
+                    html += '<td rowspan="' + pisosEnEstaCadena + '" class="chain-cell" style="background: ' + color + '12;">' +
+                            '<div class="chain-indicator" style="background:' + color + '">CADENA ' + (c + 1) + '</div>' +
+                            '<select class="chain-direction-sel" data-chain="' + c + '" onchange="onChainDirectionChange(' + c + ', this.value)">' +
+                                '<option value="descendente">⬇️ Descendente</option>' +
+                                '<option value="ascendente">⬆️ Ascendente</option>' +
+                            '</select>' +
+                            '</td>';
+                }
+
+                let conectoresEst = 10 + (p * 2);
+                let distDistrEst = distBaseDistr + (p * distIncPiso);
+
+                let derivacion = 15;
+                let paso = 1.5;
+                if (p === 0) { derivacion = 25; paso = 0.5; }
+                else if (p === pisosEnEstaCadena - 1) { derivacion = 10; paso = 2.0; }
+
+                html += '<td><strong>PISO ' + pisoActual + '</strong></td>' +
+                    '<td><input type="number" class="input-mini" value="' + aptos + '" min="1" max="20" data-floor="' + pisoActual + '" data-field="aptos"></td>' +
+                    '<td><input type="number" class="input-mini" value="' + tomas + '" min="1" max="8" data-floor="' + pisoActual + '" data-field="tomas"></td>' +
+                    '<td><input type="number" class="input-mini" value="' + derivacion + '" step="0.5" data-floor="' + pisoActual + '" data-field="derivacion"></td>' +
+                    '<td><input type="number" class="input-mini" value="' + paso + '" step="0.1" data-floor="' + pisoActual + '" data-field="paso"></td>' +
+                    '<td><input type="number" class="input-mini" value="8" step="0.1" data-floor="' + pisoActual + '" data-field="splitter-torre"></td>' +
+                    '<td><input type="number" class="input-mini" value="4" step="0.1" data-floor="' + pisoActual + '" data-field="splitter-apto"></td>' +
+                    '<td class="rg11-col ' + (document.getElementById('use-rg11').checked ? '' : 'hidden') + '"><input type="number" class="input-mini" value="' + distRG11 + '" step="0.5" data-floor="' + pisoActual + '" data-field="dist-rg11"></td>' +
+                    '<td><input type="number" class="input-mini" value="' + distDistrEst.toFixed(1) + '" step="0.5" data-floor="' + pisoActual + '" data-field="dist-rg6-distr"></td>' +
+                    '<td><input type="number" class="input-mini" value="' + conectoresEst + '" min="0" data-floor="' + pisoActual + '" data-field="conectores"></td>';
+
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+                pisoActual--;
+            }
+        }
+        configGenerada = true;
+    }
+
+    function leerConfigPisos() {
+        if (!configGenerada) generarConfigPisos();
+
+        const numPisos = parseInt(document.getElementById('num-pisos').value) || 5;
+        const pisosCadena = parseInt(document.getElementById('pisos-cadena').value) || numPisos;
+        
+        const floors = [];
+        const floorConfigBody = document.getElementById('floor-config-body');
+        
+        const direcciones = [];
+        floorConfigBody.querySelectorAll('.chain-direction-sel').forEach(sel => {
+            direcciones.push(sel.value);
+        });
+
+        for (const row of floorConfigBody.children) {
+            const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
+            if(!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
+
+            const piso = parseInt(pisoCell.textContent.match(/\d+/)[0]);
+            const cadenaIndex = Math.floor((numPisos - piso) / pisosCadena);
+
+            floors.push({
+                piso: piso,
+                cadenaIndex: cadenaIndex,
+                direccionCadena: direcciones[cadenaIndex] || 'descendente',
+                aptos: parseInt(row.querySelector('[data-field="aptos"]').value) || 2,
+                tomas: parseInt(row.querySelector('[data-field="tomas"]').value) || 2,
+                derivacion: parseFloat(row.querySelector('[data-field="derivacion"]').value) || 0,
+                paso: parseFloat(row.querySelector('[data-field="paso"]').value) || 0,
+                splitterTorre: parseFloat(row.querySelector('[data-field="splitter-torre"]').value) || 0,
+                splitterApto: parseFloat(row.querySelector('[data-field="splitter-apto"]').value) || 0,
+                distRG11: parseFloat(row.querySelector('[data-field="dist-rg11"]')?.value) || 0,
+                distRG6Distr: parseFloat(row.querySelector('[data-field="dist-rg6-distr"]').value) || 0,
+                conectores: parseInt(row.querySelector('[data-field="conectores"]').value) || 0,
+            });
+        }
+
+        floors.sort((a, b) => b.piso - a.piso);
+
+        const chains = [];
+        for (let i = 0; i < floors.length; i += pisosCadena) {
+            chains.push(floors.slice(i, i + pisosCadena));
+        }
+
+        for (let i = 0; i < chains.length; i++) {
+            const chain = chains[i];
+            const direccion = direcciones[i] || 'descendente';
+            const cadenaData = chain.map(f => ({ derivacion: f.derivacion, paso: f.paso }));
+            
+            for (let j = 0; j < chain.length; j++) {
+                const floorObj = chain[j];
+                floorObj.derivadorTotal = MotorCalculo.calcularPerdidaDerivador(cadenaData, j, direccion);
+
+                const parts = [floorObj.derivacion];
+                if (direccion === 'descendente') {
+                    for (let k = 0; k < j; k++) parts.push(cadenaData[k].paso);
+                } else {
+                    for (let k = chain.length - 1; k > j; k--) parts.push(cadenaData[k].paso);
+                }
+                floorObj.derivadorFormula = parts.join('+');
+            }
+        }
+        return floors;
+    }
+
+    // ════════════════════════════════════════
+    // GENERACIÓN DE TABLA DE RESULTADOS
+    // ════════════════════════════════════════
+    function generarTabla() {
+        const useRG11 = document.getElementById('use-rg11').checked;
+        const cableTroncalKey = document.getElementById('cable-troncal').value;
+        const cableDistKey = document.getElementById('cable-distribucion').value;
+        const tipoConectorKey = document.getElementById('tipo-conector').value;
+        
+        const cableTroncal = CONSTANTES.cables[cableTroncalKey] || CONSTANTES.cables['RG6/100X'];
+        const cableDist = CONSTANTES.cables[cableDistKey];
+        const conector = CONSTANTES.conectores[tipoConectorKey];
+        const toma = CONSTANTES.tomas[document.getElementById('tipo-toma').value];
+
+        // Recoger matriz de distancias por Apto y Toma, y nombres editables
+        const dispAptosVals = Array.from(document.querySelectorAll('.apto-disp-input')).map(i => parseFloat(i.value) || 0);
+        const distTomasVals = Array.from(document.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value) || 0);
+        const aptoNames = Array.from(document.querySelectorAll('.apto-name-input')).map((input, idx) => input.value.trim() || ('APTO-' + String(idx + 1).padStart(2, '0')));
+
+        // Encabezados
+        document.getElementById('th-troncal-name').textContent = cableTroncalKey;
+        document.getElementById('th-troncal-baja-val').textContent = cableTroncal.atten_baja + ' dB/m';
+        document.getElementById('th-troncal-alta-val').textContent = cableTroncal.atten_alta + ' dB/m';
+        document.getElementById('th-dist-name').textContent = cableDistKey;
+        document.getElementById('th-dist-baja-val').textContent = cableDist.atten_baja + ' dB/m';
+        document.getElementById('th-dist-alta-val').textContent = cableDist.atten_alta + ' dB/m';
+        document.getElementById('th-conect-val').textContent = conector.atenuacion + ' dB';
+        document.getElementById('th-nivel-baja').textContent = CONSTANTES.sistema.frecBaja + 'MHz';
+        document.getElementById('th-nivel-alta').textContent = CONSTANTES.sistema.frecAlta + 'MHz';
+
+        const floors = leerConfigPisos();
+        const tbody = document.getElementById('results-body');
+        tbody.innerHTML = '';
+
+        for (const floor of floors) {
+            const totalTomasPiso = floor.aptos * floor.tomas;
+            for (let a = 1; a <= floor.aptos; a++) {
+                const nombreApto = aptoNames[a - 1] || ('APTO-' + String(a).padStart(2, '0'));
+                for (let t = 1; t <= floor.tomas; t++) {
+                    const isFirstOfFloor = (a === 1 && t === 1);
+                    const repartidorTotal = floor.splitterTorre + floor.splitterApto;
+                    
+                    // RG6 Total = Distr. Vertical (Piso) + Dispersión (Apto a-1) + Toma (t-1)
+                    const dispApto = dispAptosVals[a - 1] !== undefined ? dispAptosVals[a - 1] : ((a - 1) * 3);
+                    const distToma = distTomasVals[t - 1] !== undefined ? distTomasVals[t - 1] : ((t - 1) * 1.5);
+                    const distRG6Total = floor.distRG6Distr + dispApto + distToma;
+
+                    const tr = document.createElement('tr');
+                    tr.dataset.distr = floor.distRG6Distr;
+                    tr.dataset.disp = dispApto;
+                    tr.dataset.tomaDist = distToma;
+                    tr.dataset.derivFormula = floor.derivadorFormula;
+                    tr.dataset.repartFormula = floor.splitterTorre + '+' + floor.splitterApto;
+
+                    let html = '';
+
+                    if (isFirstOfFloor) {
+                        html += '<td rowspan="' + totalTomasPiso + '" class="piso-cell">PISO ' + floor.piso + '<br><span style="font-size:9px;color:#666">' + (floor.direccionCadena === 'descendente' ? '⬇' : '⬆') + '</span></td>';
+                    }
+
+                    html += '<td>' + nombreApto + '</td>';
+                    html += '<td class="bold-cell">T' + t + '</td>';
+
+                    // RG11
+                    html += '<td class="rg11-col ' + (useRG11?'':'hidden') + '"><input type="number" class="cell-edit" value="' + floor.distRG11 + '" step="0.5" data-col="dist-rg11" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td class="calc-cell rg11-col ' + (useRG11?'':'hidden') + '" data-col="rg11-baja">—</td>';
+                    html += '<td class="calc-cell rg11-col ' + (useRG11?'':'hidden') + '" data-col="rg11-alta">—</td>';
+
+                    // RG6
+                    html += '<td><input type="number" class="cell-edit" value="' + distRG6Total.toFixed(1) + '" step="0.5" data-col="dist-rg6" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td class="calc-cell" data-col="rg6-baja">—</td>';
+                    html += '<td class="calc-cell" data-col="rg6-alta">—</td>';
+
+                    html += '<td><input type="number" class="cell-edit bold-input" value="' + floor.conectores + '" min="0" data-col="num-conect" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td class="calc-cell" data-col="conect-db">—</td>';
+
+                    html += '<td><input type="number" class="cell-edit" value="' + floor.derivadorTotal.toFixed(1) + '" step="0.1" data-col="derivador-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td><input type="number" class="cell-edit bold-input" value="' + repartidorTotal.toFixed(1) + '" step="0.1" data-col="repartidor-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td><input type="number" class="cell-edit" value="' + toma.atenuacion + '" step="0.1" data-col="toma-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td><input type="number" class="cell-edit" value="0" step="0.1" data-col="amp-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+
+                    html += '<td class="calc-cell" data-col="perdida-baja" style="font-weight:bold">—</td>';
+                    html += '<td class="calc-cell" data-col="perdida-alta" style="font-weight:bold">—</td>';
+                    html += '<td class="calc-cell" data-col="nivel-baja">—</td>';
+                    html += '<td class="calc-cell" data-col="nivel-alta">—</td>';
+
+                    tr.innerHTML = html;
+                    tbody.appendChild(tr);
+                }
+            }
+        }
+
+        recalcularTodo();
+        document.getElementById('results-section').classList.remove('hidden');
+        actualizarInfoPanel(floors);
+    }
+
+    // ════════════════════════════════════════
+    // RECÁLCULO
+    // ════════════════════════════════════════
+    function getInputValue(tr, col) {
+        const el = tr.querySelector('[data-col="' + col + '"]');
+        if (!el) return 0;
+        return el.tagName === 'INPUT' ? (parseFloat(el.value) || 0) : (parseFloat(el.textContent) || 0);
+    }
+
+    function setCellValue(tr, col, value, decimals) {
+        const cell = tr.querySelector('[data-col="' + col + '"]');
+        if (cell) cell.textContent = value.toFixed(decimals !== undefined ? decimals : 1);
+    }
+
+    function recalcularFila(tr) {
+        if (!tr) return;
+
+        const useRG11 = document.getElementById('use-rg11').checked;
+        const cableTroncal = CONSTANTES.cables[document.getElementById('cable-troncal').value] || CONSTANTES.cables['RG6/100X'];
+        const cableDist = CONSTANTES.cables[document.getElementById('cable-distribucion').value];
+        const conector = CONSTANTES.conectores[document.getElementById('tipo-conector').value];
+        const nivelSalida = parseFloat(document.getElementById('nivel-salida').value) || 113;
+
+        const distRG11 = useRG11 ? getInputValue(tr, 'dist-rg11') : 0;
+        const distRG6 = getInputValue(tr, 'dist-rg6');
+        const numConect = getInputValue(tr, 'num-conect');
+        const derivadorDB = getInputValue(tr, 'derivador-db');
+        const repartidorDB = getInputValue(tr, 'repartidor-db');
+        const tomaDB = getInputValue(tr, 'toma-db');
+        const ampDB = getInputValue(tr, 'amp-db');
+
+        const rg11Baja = useRG11 ? MotorCalculo.perdidaCable(distRG11, cableTroncal.atten_baja) : 0;
+        const rg11Alta = useRG11 ? MotorCalculo.perdidaCable(distRG11, cableTroncal.atten_alta) : 0;
+        const rg6Baja = MotorCalculo.perdidaCable(distRG6, cableDist.atten_baja);
+        const rg6Alta = MotorCalculo.perdidaCable(distRG6, cableDist.atten_alta);
+        const conectDB = MotorCalculo.perdidaConectores(numConect, conector.atenuacion);
+
+        const perdidaBaja = MotorCalculo.perdidaTotal(rg11Baja, rg6Baja, conectDB, derivadorDB, repartidorDB, tomaDB, ampDB);
+        const perdidaAlta = MotorCalculo.perdidaTotal(rg11Alta, rg6Alta, conectDB, derivadorDB, repartidorDB, tomaDB, ampDB);
+        const nivelBaja = MotorCalculo.nivelSenal(nivelSalida, perdidaBaja);
+        const nivelAlta = MotorCalculo.nivelSenal(nivelSalida, perdidaAlta);
+
+        if (useRG11) {
+            setCellValue(tr, 'rg11-baja', rg11Baja);
+            setCellValue(tr, 'rg11-alta', rg11Alta);
+        }
+        setCellValue(tr, 'rg6-baja', rg6Baja);
+        setCellValue(tr, 'rg6-alta', rg6Alta);
+        setCellValue(tr, 'conect-db', conectDB);
+        setCellValue(tr, 'perdida-baja', perdidaBaja);
+        setCellValue(tr, 'perdida-alta', perdidaAlta);
+        setCellValue(tr, 'nivel-baja', nivelBaja);
+        setCellValue(tr, 'nivel-alta', nivelAlta);
+
+        colorearNivel(tr.querySelector('[data-col="nivel-baja"]'), nivelBaja);
+        colorearNivel(tr.querySelector('[data-col="nivel-alta"]'), nivelAlta);
+    }
+
+    function colorearNivel(cell, valor) {
+        if (!cell) return;
+        const min = CONSTANTES.sistema.nivelIdealMin;
+        const max = CONSTANTES.sistema.nivelIdealMax;
+        cell.classList.remove('nivel-ok', 'nivel-warn', 'nivel-bad');
+        if (valor >= min && valor <= max) cell.classList.add('nivel-ok');
+        else if (valor >= min - 5 && valor <= max + 5) cell.classList.add('nivel-warn');
+        else cell.classList.add('nivel-bad');
+    }
+
+    function recalcularTodo() {
+        document.querySelectorAll('#results-body tr').forEach(tr => recalcularFila(tr));
+        actualizarResumen();
+    }
+
+    function recogerDatosFilas() {
+        const filas = [];
+        document.querySelectorAll('#results-body tr').forEach(tr => {
+            filas.push({
+                perdidaBaja: parseFloat(tr.querySelector('[data-col="perdida-baja"]').textContent) || 0,
+                perdidaAlta: parseFloat(tr.querySelector('[data-col="perdida-alta"]').textContent) || 0,
+                nivelBaja: parseFloat(tr.querySelector('[data-col="nivel-baja"]').textContent) || 0,
+                nivelAlta: parseFloat(tr.querySelector('[data-col="nivel-alta"]').textContent) || 0,
+            });
+        });
+        return filas;
+    }
+
+    function actualizarResumen() {
+        const filas = recogerDatosFilas();
+        if (filas.length === 0) return;
+
+        const resumen = MotorCalculo.calcularResumen(filas);
+        const tbody = document.getElementById('summary-body');
+        tbody.innerHTML = '';
+
+        document.getElementById('summary-tower-name').textContent = document.getElementById('project-title').value || 'TORRE 1';
+
+        const trMax = document.createElement('tr');
+        trMax.className = 'summary-row max-row';
+        trMax.innerHTML = '<td colspan="3" class="summary-label">MAX NIVEL</td>' +
+            '<td>' + resumen.maxPerdidaBaja.toFixed(1) + '</td><td>' + resumen.maxPerdidaAlta.toFixed(1) + '</td>' +
+            '<td>' + resumen.maxNivelBaja.toFixed(1) + '</td><td>' + resumen.maxNivelAlta.toFixed(1) + '</td>' +
+            '<td>Máxima pérdida / Mejor nivel</td>';
+        tbody.appendChild(trMax);
+
+        const trMin = document.createElement('tr');
+        trMin.className = 'summary-row min-row';
+        trMin.innerHTML = '<td colspan="3" class="summary-label">MIN NIVEL</td>' +
+            '<td>' + resumen.minPerdidaBaja.toFixed(1) + '</td><td>' + resumen.minPerdidaAlta.toFixed(1) + '</td>' +
+            '<td>' + resumen.minNivelBaja.toFixed(1) + '</td><td>' + resumen.minNivelAlta.toFixed(1) + '</td>' +
+            '<td>Mínima pérdida / Peor nivel</td>';
+        tbody.appendChild(trMin);
+
+        const trDiff = document.createElement('tr');
+        trDiff.className = 'summary-row diff-row';
+        trDiff.innerHTML = '<td colspan="3" class="summary-label">DIFERENCIA MAX-MIN</td>' +
+            '<td>—</td><td>—</td><td>' + resumen.difNivelBaja.toFixed(2) + '</td><td>' + resumen.difNivelAlta.toFixed(2) + '</td>' +
+            '<td>Diferencia max/min</td>';
+        tbody.appendChild(trDiff);
+
+        colorearNivel(trMax.children[5], resumen.maxNivelBaja);
+        colorearNivel(trMax.children[6], resumen.maxNivelAlta);
+        colorearNivel(trMin.children[5], resumen.minNivelBaja);
+        colorearNivel(trMin.children[6], resumen.minNivelAlta);
+    }
+
+    function actualizarInfoPanel(floors) {
+        const totalAptos = floors.reduce((s, f) => s + f.aptos, 0);
+        const totalTomas = floors.reduce((s, f) => s + f.aptos * f.tomas, 0);
+        const pisosCadena = parseInt(document.getElementById('pisos-cadena').value) || floors.length;
+        const totalCadenas = Math.ceil(floors.length / pisosCadena);
+        const nivelSalida = parseFloat(document.getElementById('nivel-salida').value) || 113;
+
+        document.getElementById('info-panel').innerHTML =
+            '<div class="info-item"><span class="info-label">Pisos</span><span class="info-value">' + floors.length + '</span></div>' +
+            '<div class="info-item"><span class="info-label">Aptos</span><span class="info-value">' + totalAptos + '</span></div>' +
+            '<div class="info-item"><span class="info-label">Tomas</span><span class="info-value">' + totalTomas + '</span></div>' +
+            '<div class="info-item"><span class="info-label">Cadenas</span><span class="info-value">' + totalCadenas + '</span></div>' +
+            '<div class="info-item"><span class="info-label">Nivel Salida</span><span class="info-value">' + nivelSalida + ' dBµV</span></div>';
+    }
+
+    // ════════════════════════════════════════
+    // EXPORTAR EXCEL CON FORMATO
+    // ════════════════════════════════════════
+    function exportarExcel() {
+        if (typeof XLSX === 'undefined') { alert('Librería XLSX no disponible'); return; }
+
+        const projectName = document.getElementById('project-title').value || 'Proyecto TDT';
+        const wb = XLSX.utils.book_new();
+        const rows = document.querySelectorAll('#results-body tr');
+        if (rows.length === 0) { alert('Genera la tabla primero'); return; }
+
+        const useRG11 = document.getElementById('use-rg11').checked;
+        const cableTroncal = CONSTANTES.cables[document.getElementById('cable-troncal').value] || CONSTANTES.cables['RG6/100X'];
+        const cableDist = CONSTANTES.cables[document.getElementById('cable-distribucion').value];
+        const conector = CONSTANTES.conectores[document.getElementById('tipo-conector').value];
+        const nivelSalida = parseFloat(document.getElementById('nivel-salida').value);
+
+        const sheetData = [];
+
+        sheetData.push([projectName]);
+        
+        const r2 = ['PISO', 'APARTAMENTO', 'TOMA#'];
+        if (useRG11) r2.push('Cable ' + document.getElementById('cable-troncal').value, '', '');
+        r2.push('Cable ' + document.getElementById('cable-distribucion').value, '', '', 'Conectores', '', 'Derivador', 'Repartidor', 'Toma', 'Amplificador', 'Pérdida', '', 'NIVEL DE SEÑAL', '');
+        sheetData.push(r2);
+
+        const r3 = ['', '', ''];
+        if (useRG11) r3.push('Dist. (m)', 'Baja', 'Alta');
+        r3.push('Dist (m)', 'Baja', 'Alta', 'Cant.', 'dB', 'dB', 'dB', 'dB', 'dB', 'Baja dB', 'Alta dB', CONSTANTES.sistema.frecBaja + 'MHz', CONSTANTES.sistema.frecAlta + 'MHz');
+        sheetData.push(r3);
+
+        const r4 = ['', '', ''];
+        if (useRG11) r4.push('', cableTroncal.atten_baja, cableTroncal.atten_alta);
+        r4.push('', cableDist.atten_baja, cableDist.atten_alta, '', conector.atenuacion, '', '', '', nivelSalida, '', '', '', '');
+        sheetData.push(r4);
+
+        const dataStartRow = 5;
+        let currentPiso = '';
+        let rowIdx = 0;
+        
+        const COL_RG11_D = useRG11 ? 'D' : '';
+        const COL_RG11_B = useRG11 ? 'E' : '';
+        const COL_RG11_A = useRG11 ? 'F' : '';
+        const off = useRG11 ? 3 : 0;
+        
+        const cols = {
+            rg6_d: String.fromCharCode(68 + off),
+            rg6_b: String.fromCharCode(69 + off),
+            rg6_a: String.fromCharCode(70 + off),
+            con_c: String.fromCharCode(71 + off),
+            con_d: String.fromCharCode(72 + off),
+            der:   String.fromCharCode(73 + off),
+            rep:   String.fromCharCode(74 + off),
+            tom:   String.fromCharCode(75 + off),
+            amp:   String.fromCharCode(76 + off),
+            per_b: String.fromCharCode(77 + off),
+            per_a: String.fromCharCode(78 + off),
+            niv_b: String.fromCharCode(79 + off),
+            niv_a: String.fromCharCode(80 + off)
+        };
+
+        rows.forEach(tr => {
+            const pisoCell = tr.querySelector('.piso-cell');
+            if (pisoCell) {
+                const clone = pisoCell.cloneNode(true);
+                const span = clone.querySelector('span');
+                if(span) clone.removeChild(span);
+                currentPiso = clone.textContent.trim().replace(/<br>/g, '');
+            }
+
+            const tds = tr.querySelectorAll('td');
+            let aptoText = '', tomaText = '';
+            for (const td of tds) {
+                const text = td.textContent.trim();
+                if (text.startsWith('APTO')) aptoText = text;
+                if (text.match(/^T\d+$/)) tomaText = text;
+            }
+
+            const r = dataStartRow + rowIdx;
+            const row = [currentPiso, aptoText, tomaText];
+            
+            if (useRG11) {
+                row.push(
+                    getInputValue(tr, 'dist-rg11'),
+                    { f: COL_RG11_D + r + '*' + COL_RG11_B + '$4' },
+                    { f: COL_RG11_D + r + '*' + COL_RG11_A + '$4' }
+                );
+            }
+
+            const rg11_b_term = useRG11 ? (COL_RG11_B + r + '+') : '';
+            const rg11_a_term = useRG11 ? (COL_RG11_A + r + '+') : '';
+
+            // Formularización de la suma de distancia RG6 (Distr + Disp + Toma)
+            const dDistr = parseFloat(tr.dataset.distr);
+            const dDisp = parseFloat(tr.dataset.disp);
+            const dToma = parseFloat(tr.dataset.tomaDist);
+
+            let distFormulaStr = '';
+            if (!isNaN(dDistr) && !isNaN(dDisp) && !isNaN(dToma)) {
+                const parts = [];
+                if (dDistr > 0) parts.push(dDistr);
+                if (dDisp > 0) parts.push(dDisp);
+                if (dToma > 0) parts.push(dToma);
+                distFormulaStr = parts.length > 0 ? parts.join('+') : '0';
+            } else {
+                distFormulaStr = String(getInputValue(tr, 'dist-rg6'));
+            }
+
+            // Formularización de derivadores (Derivación + Pasos) y repartidores (Torre + Apto)
+            const derivFormulaStr = tr.dataset.derivFormula || String(getInputValue(tr, 'derivador-db'));
+            const repartFormulaStr = tr.dataset.repartFormula || String(getInputValue(tr, 'repartidor-db'));
+
+            row.push(
+                { f: distFormulaStr },
+                { f: cols.rg6_d + r + '*' + cols.rg6_b + '$4' },
+                { f: cols.rg6_d + r + '*' + cols.rg6_a + '$4' },
+                getInputValue(tr, 'num-conect'),
+                { f: cols.con_c + r + '*' + cols.con_d + '$4' },
+                { f: derivFormulaStr },
+                { f: repartFormulaStr },
+                getInputValue(tr, 'toma-db'),
+                getInputValue(tr, 'amp-db'),
+                { f: rg11_b_term + cols.rg6_b + r + '+' + cols.con_d + r + '+' + cols.der + r + '+' + cols.rep + r + '+' + cols.tom + r + '-' + cols.amp + r },
+                { f: rg11_a_term + cols.rg6_a + r + '+' + cols.con_d + r + '+' + cols.der + r + '+' + cols.rep + r + '+' + cols.tom + r + '-' + cols.amp + r },
+                { f: cols.amp + '$4-' + cols.per_b + r },
+                { f: cols.amp + '$4-' + cols.per_a + r }
+            );
+            
+            sheetData.push(row);
+            rowIdx++;
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+        const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "004080" } }, alignment: { horizontal: "center", vertical: "center" } };
+        const subHeaderStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "0073e6" } }, alignment: { horizontal: "center" } };
+        const accentStyle = { font: { bold: true }, fill: { fgColor: { rgb: "f2a900" } }, alignment: { horizontal: "center" } };
+        const resultStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1a5276" } }, alignment: { horizontal: "center" } };
+
+        for(let C = 0; C < sheetData[1].length; ++C) {
+            const addr2 = XLSX.utils.encode_cell({r:1, c:C});
+            const addr3 = XLSX.utils.encode_cell({r:2, c:C});
+            if(!ws[addr2]) continue;
+            
+            let styleToUse = headerStyle;
+            if(C >= sheetData[1].length - 4 && C <= sheetData[1].length - 3) styleToUse = accentStyle;
+            if(C >= sheetData[1].length - 2) styleToUse = resultStyle;
+
+            ws[addr2].s = styleToUse;
+            if(ws[addr3]) {
+                if (C >= 3 && C < sheetData[1].length - 4) ws[addr3].s = subHeaderStyle;
+                else ws[addr3].s = styleToUse;
+            }
+        }
+
+        const borderStyle = { top: {style:'thin', color:{auto:1}}, bottom: {style:'thin', color:{auto:1}}, left: {style:'thin', color:{auto:1}}, right: {style:'thin', color:{auto:1}} };
+        for(let R = dataStartRow-1; R < sheetData.length; ++R) {
+            for(let C = 0; C < sheetData[R].length; ++C) {
+                const addr = XLSX.utils.encode_cell({r:R, c:C});
+                if(!ws[addr]) continue;
+                ws[addr].s = ws[addr].s || {};
+                ws[addr].s.border = borderStyle;
+                if (R % 2 !== 0 && R < sheetData.length - 3) {
+                    ws[addr].s.fill = { fgColor: { rgb: "F4F8FB" } };
+                }
+                if (C >= sheetData[1].length - 2 && R < sheetData.length - 3) {
+                    ws[addr].s.font = { bold: true };
+                }
+            }
+        }
+
+        if (ws['A1']) {
+            ws['A1'].s = { font: { bold: true, sz: 16, color: { rgb: "004080" } } };
+            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: sheetData[1].length - 1 } }];
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, 'TORRE 1');
+        XLSX.writeFile(wb, projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '.xlsx');
+    }
+
+    function exportarPDF() {
+        if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') { alert('Librería jsPDF no disponible'); return; }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const projectName = document.getElementById('project-title').value || 'Proyecto TDT';
+        const useRG11 = document.getElementById('use-rg11').checked;
+
+        doc.setFontSize(16);
+        doc.setTextColor(0, 64, 128);
+        doc.text(projectName, 14, 15);
+
+        const h1 = ['PISO', 'APTO', 'TOMA'];
+        if(useRG11) h1.push('Dist\nRG11', 'RG11\nBaja', 'RG11\nAlta');
+        h1.push('Dist\nRG6', 'RG6\nBaja', 'RG6\nAlta', 'Conect\nCant', 'Conect\ndB', 'Deriv\ndB', 'Repart\ndB', 'Toma\ndB', 'Amp\ndB', 'Pérd\nBaja', 'Pérd\nAlta', 'Nivel\n470MHz', 'Nivel\n698MHz');
+
+        const data = [];
+        let currentPiso = '';
+        document.querySelectorAll('#results-body tr').forEach(tr => {
+            const pisoCell = tr.querySelector('.piso-cell');
+            if (pisoCell) {
+                const clone = pisoCell.cloneNode(true);
+                const span = clone.querySelector('span');
+                if(span) clone.removeChild(span);
+                currentPiso = clone.textContent.trim().replace(/<br>/g, '');
+            }
+
+            const tds = tr.querySelectorAll('td');
+            let aptoText = '', tomaText = '';
+            for (const td of tds) {
+                const t = td.textContent.trim();
+                if (t.startsWith('APTO')) aptoText = t;
+                if (t.match(/^T\d+$/)) tomaText = t;
+            }
+
+            const row = [currentPiso, aptoText, tomaText];
+            if(useRG11) row.push(getInputValue(tr, 'dist-rg11'), tr.querySelector('[data-col="rg11-baja"]').textContent, tr.querySelector('[data-col="rg11-alta"]').textContent);
+            row.push(
+                getInputValue(tr, 'dist-rg6'), tr.querySelector('[data-col="rg6-baja"]').textContent, tr.querySelector('[data-col="rg6-alta"]').textContent,
+                getInputValue(tr, 'num-conect'), tr.querySelector('[data-col="conect-db"]').textContent,
+                getInputValue(tr, 'derivador-db'), getInputValue(tr, 'repartidor-db'), getInputValue(tr, 'toma-db'), getInputValue(tr, 'amp-db'),
+                tr.querySelector('[data-col="perdida-baja"]').textContent, tr.querySelector('[data-col="perdida-alta"]').textContent,
+                tr.querySelector('[data-col="nivel-baja"]').textContent, tr.querySelector('[data-col="nivel-alta"]').textContent
+            );
+            data.push(row);
+        });
+
+        doc.autoTable({
+            head: [h1], body: data, startY: 26, theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1.5 },
+            headStyles: { fillColor: [0, 64, 128], textColor: 255, fontSize: 7 },
+            alternateRowStyles: { fillColor: [244, 248, 251] },
+        });
+
+        doc.save(projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '.pdf');
+    }
+
+    function guardarHTML() {
+        document.querySelectorAll('input, select').forEach(el => {
+            if (el.type === 'checkbox') {
+                if (el.checked) el.setAttribute('checked', 'checked'); else el.removeAttribute('checked');
+            } else if (el.tagName === 'SELECT') {
+                Array.from(el.options).forEach(opt => {
+                    if (opt.selected) opt.setAttribute('selected', 'selected'); else opt.removeAttribute('selected');
+                });
+            } else {
+                el.setAttribute('value', el.value);
+            }
+        });
+        const hiddenElements = document.querySelectorAll('.hidden');
+        hiddenElements.forEach(el => el.classList.remove('hidden'));
+        
+        if (!document.getElementById('use-rg11').checked) {
+             document.querySelectorAll('.rg11-col, .rg11-field').forEach(el => el.classList.add('hidden'));
+        }
+
+        const htmlContent = '<!DOCTYPE html>\n<html lang="es">\n' + document.documentElement.innerHTML + '\n</html>';
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (document.getElementById('project-title').value || 'proyecto-tdt') + '.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
