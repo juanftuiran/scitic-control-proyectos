@@ -77,29 +77,39 @@
 
         /* ── Matriz de Cableado UI ── */
         .matrix-section {
-            width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 6px;
+            width: 100%; display: flex; gap: 10px; margin-top: 6px; overflow-x: auto; padding-bottom: 8px;
         }
-        .matrix-row {
-            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-            background: var(--bg-light); padding: 8px 12px; border-radius: 6px;
-            border: 1px solid var(--border);
+        .apto-card {
+            background: #fff; border: 1px solid var(--border); border-radius: 6px;
+            padding: 8px; min-width: 200px; display: flex; flex-direction: column; gap: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
-        .matrix-row-label {
-            font-weight: bold; color: var(--primary); font-size: 11px; min-width: 170px;
+        .apto-card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #eee; padding-bottom: 4px;
         }
-        .matrix-inputs {
-            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+        .apto-card-header input[type="text"] {
+            font-weight: bold; font-size: 11px; width: 80px; padding: 2px 4px;
+            border: 1px solid transparent; border-radius: 3px; color: var(--primary);
         }
-        .matrix-item {
+        .apto-card-header input[type="text"]:focus {
+            border-color: var(--secondary); background: #f9f9f9;
+        }
+        .apto-card-row {
+            display: flex; justify-content: space-between; align-items: center; font-size: 10px;
+        }
+        .apto-card-row input[type="number"] {
+            width: 50px; padding: 3px; border: 1px solid #ccc; border-radius: 3px; text-align: center;
+        }
+        .tomas-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
+            background: var(--bg-light); padding: 4px; border-radius: 4px;
+        }
+        .toma-input-wrapper {
             display: flex; flex-direction: column; align-items: center;
         }
-        .matrix-item label {
-            font-size: 9px; font-weight: bold; color: #555; margin-bottom: 2px;
-        }
-        .matrix-item input {
-            width: 52px; text-align: center; padding: 4px; font-size: 11px;
-            border: 1px solid #ccc; border-radius: 4px;
-        }
+        .toma-input-wrapper label { font-size: 9px; color: #666; margin-bottom: 2px; }
+        .toma-input-wrapper input { width: 100%; text-align: center; padding: 2px; font-size: 10px; border: 1px solid #ccc; border-radius: 3px; }
 
         /* ── Botones ── */
         button {
@@ -304,16 +314,20 @@
             <input type="number" id="dist-inc-piso" value="3.5" min="0" step="0.5" onchange="autoUpdateFloorConfig()" title="Metros adicionales que se suman en la columna vertical entre pisos continuos (+3.5m habitual)">
         </div>
 
+        <!-- Plantilla Típica de Cadena -->
+        <div class="panel-section-title" style="margin-top: 10px; border-bottom: none;"><span class="icon">🔗</span> Plantilla de Cadena (Atenuación)</div>
+        <div class="matrix-section" style="padding-bottom: 4px; margin-top: 0;">
+            <div class="input-group" style="min-width: 120px;">
+                <label>Conectores Base</label>
+                <input type="number" id="conectores-base" value="10" min="0" onchange="autoUpdateFloorConfig()">
+            </div>
+            <div id="chain-template-container" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+        </div>
+
         <!-- Matriz Dinámica de Dispersión por Apartamento y Distancia por Toma -->
-        <div class="matrix-section">
-            <div class="matrix-row">
-                <span class="matrix-row-label">📐 Dispersión por Apartamento (m):</span>
-                <div class="matrix-inputs" id="aptos-matrix-container"></div>
-            </div>
-            <div class="matrix-row">
-                <span class="matrix-row-label">🔌 Distancia por Toma (m):</span>
-                <div class="matrix-inputs" id="tomas-matrix-container"></div>
-            </div>
+        <div class="panel-section-title" style="margin-top: 10px; border-bottom: none;"><span class="icon">📐</span> Matriz de Distancias (Por Apto y Toma)</div>
+        <div class="matrix-section" id="aptos-matrix-container">
+            <!-- Tarjetas de apartamento se insertarán aquí dinámicamente -->
         </div>
 
         <div class="spacer" style="width:100%; margin-top:6px;"></div>
@@ -442,6 +456,7 @@
         populateSelect('tipo-conector', CONSTANTES.conectores, 'F-Standard');
         populateSelect('tipo-toma', CONSTANTES.tomas, 'Standard');
         toggleRG11Config();
+        actualizarPlantillaCadena();
         actualizarMatrizCableadoUI();
         generarConfigPisos();
     }
@@ -473,47 +488,136 @@
     }
 
     // ════════════════════════════════════════
-    // MATRIZ DINÁMICA DE DISTANCIAS (APTOS Y TOMAS)
+    // MATRIZ DINÁMICA DE DISTANCIAS (APTOS Y TOMAS) Y PLANTILLA
     // ════════════════════════════════════════
     function onTowerDimensionsChange() {
+        actualizarPlantillaCadena();
         actualizarMatrizCableadoUI();
         autoUpdateFloorConfig();
     }
 
+    function actualizarPlantillaCadena() {
+        const pisosCadena = parseInt(document.getElementById('pisos-cadena').value) || 5;
+        const container = document.getElementById('chain-template-container');
+
+        // Guardar valores anteriores
+        const oldVals = [];
+        container.querySelectorAll('.template-item').forEach(item => {
+            oldVals.push({
+                derivacion: parseFloat(item.querySelector('.tpl-deriv').value),
+                paso: parseFloat(item.querySelector('.tpl-paso').value)
+            });
+        });
+
+        container.innerHTML = '';
+
+        for (let p = 0; p < pisosCadena; p++) {
+            let defDeriv = 15;
+            let defPaso = 1.5;
+            
+            // Valores por defecto inteligentes
+            if (p === 0) { defDeriv = 25; defPaso = 0.5; }
+            else if (p === pisosCadena - 1) { defDeriv = 10; defPaso = 2.0; }
+
+            // Restaurar si existe
+            if (oldVals[p]) {
+                defDeriv = isNaN(oldVals[p].derivacion) ? defDeriv : oldVals[p].derivacion;
+                defPaso = isNaN(oldVals[p].paso) ? defPaso : oldVals[p].paso;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'apto-card template-item';
+            card.style.minWidth = '110px';
+            card.innerHTML = `
+                <div class="apto-card-header" style="justify-content: center; background: #f0f0f0;">
+                    <span style="font-weight:bold; font-size:10px;">PISO ${p + 1} (Relativo)</span>
+                </div>
+                <div class="apto-card-row">
+                    <label>Deriv (dB):</label>
+                    <input type="number" class="tpl-deriv" value="${defDeriv}" step="0.5" onchange="autoUpdateFloorConfig()">
+                </div>
+                <div class="apto-card-row">
+                    <label>Paso (dB):</label>
+                    <input type="number" class="tpl-paso" value="${defPaso}" step="0.1" onchange="autoUpdateFloorConfig()">
+                </div>
+            `;
+            container.appendChild(card);
+        }
+    }
+
     function actualizarMatrizCableadoUI() {
         const numAptos = parseInt(document.getElementById('aptos-piso').value) || 2;
-        const numTomas = parseInt(document.getElementById('tomas-apto').value) || 2;
+        const tomasGlobal = parseInt(document.getElementById('tomas-apto').value) || 2;
+        const container = document.getElementById('aptos-matrix-container');
 
-        // Contenedor Aptos (Dispersión y Nombres editables)
-        const aptosContainer = document.getElementById('aptos-matrix-container');
-        const oldAptoDispVals = Array.from(aptosContainer.querySelectorAll('.apto-disp-input')).map(i => parseFloat(i.value));
-        const oldAptoNameVals = Array.from(aptosContainer.querySelectorAll('.apto-name-input')).map(i => i.value);
-        aptosContainer.innerHTML = '';
+        // Guardar estado actual
+        const estadoActual = [];
+        container.querySelectorAll('.apto-card').forEach((card, a) => {
+            const name = card.querySelector('.apto-name-input').value;
+            const disp = parseFloat(card.querySelector('.apto-disp-input').value);
+            const numTomas = parseInt(card.querySelector('.apto-num-tomas').value);
+            const tomasDist = Array.from(card.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value));
+            estadoActual.push({ name, disp, numTomas, tomasDist });
+        });
+
+        container.innerHTML = '';
 
         for (let a = 0; a < numAptos; a++) {
-            const defaultDisp = oldAptoDispVals[a] !== undefined ? oldAptoDispVals[a] : ((a + 1) * 3);
-            const defaultName = oldAptoNameVals[a] !== undefined && oldAptoNameVals[a].trim() !== '' ? oldAptoNameVals[a] : ('APTO-' + String(a + 1).padStart(2, '0'));
+            const estado = estadoActual[a] || {};
+            const defaultDisp = estado.disp !== undefined ? estado.disp : ((a + 1) * 3);
+            const defaultName = estado.name !== undefined && estado.name.trim() !== '' ? estado.name : ('APTO-' + String(a + 1).padStart(2, '0'));
+            const numTomasApto = estado.numTomas !== undefined ? estado.numTomas : tomasGlobal;
             
-            const item = document.createElement('div');
-            item.className = 'matrix-item';
-            item.style.minWidth = '75px';
-            item.innerHTML = '<input type="text" class="apto-name-input" data-apto="' + a + '" value="' + defaultName + '" style="width: 72px; text-align: center; font-weight: bold; font-size: 10px; margin-bottom: 3px; border: 1px solid #bbb; border-radius: 3px; padding: 2px;" title="Nombre o identificador editable del apartamento">' +
-                '<input type="number" class="apto-disp-input" data-apto="' + a + '" value="' + defaultDisp + '" step="0.5" title="Distancia de dispersión en metros">';
-            aptosContainer.appendChild(item);
+            const card = document.createElement('div');
+            card.className = 'apto-card';
+            card.dataset.apto = a;
+            
+            card.innerHTML = `
+                <div class="apto-card-header">
+                    <input type="text" class="apto-name-input" value="${defaultName}" title="Nombre del apartamento">
+                </div>
+                <div class="apto-card-row">
+                    <label title="Distancia de dispersión en metros">Disp. (m):</label>
+                    <input type="number" class="apto-disp-input" value="${defaultDisp}" step="0.5">
+                </div>
+                <div class="apto-card-row">
+                    <label>Cant. Tomas:</label>
+                    <input type="number" class="apto-num-tomas" value="${numTomasApto}" min="1" max="12" onchange="actualizarTomasGrid(this.closest('.apto-card'))">
+                </div>
+                <div class="tomas-grid"></div>
+            `;
+            container.appendChild(card);
+            
+            // Llenar la grid de tomas
+            const tomasGrid = card.querySelector('.tomas-grid');
+            for(let t = 0; t < numTomasApto; t++) {
+                const defDist = (estado.tomasDist && estado.tomasDist[t] !== undefined) ? estado.tomasDist[t] : ((t + 1) * 1.5);
+                tomasGrid.innerHTML += `
+                    <div class="toma-input-wrapper">
+                        <label>T${t+1} (m)</label>
+                        <input type="number" class="toma-dist-input" value="${defDist}" step="0.5">
+                    </div>
+                `;
+            }
         }
+    }
 
-        // Contenedor Tomas (Interior)
-        const tomasContainer = document.getElementById('tomas-matrix-container');
-        const oldTomaVals = Array.from(tomasContainer.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value));
-        tomasContainer.innerHTML = '';
-
-        for (let t = 0; t < numTomas; t++) {
-            const defaultVal = oldTomaVals[t] !== undefined ? oldTomaVals[t] : ((t + 1) * 1.5);
-            const item = document.createElement('div');
-            item.className = 'matrix-item';
-            item.innerHTML = '<label>Toma ' + (t + 1) + '</label>' +
-                '<input type="number" class="toma-dist-input" data-toma="' + t + '" value="' + defaultVal + '" step="0.5">';
-            tomasContainer.appendChild(item);
+    function actualizarTomasGrid(card) {
+        const numTomas = parseInt(card.querySelector('.apto-num-tomas').value) || 1;
+        const grid = card.querySelector('.tomas-grid');
+        
+        // Guardar valores anteriores
+        const oldVals = Array.from(grid.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value));
+        grid.innerHTML = '';
+        
+        for(let t = 0; t < numTomas; t++) {
+            const defDist = oldVals[t] !== undefined ? oldVals[t] : ((t + 1) * 1.5);
+            grid.innerHTML += `
+                <div class="toma-input-wrapper">
+                    <label>T${t+1} (m)</label>
+                    <input type="number" class="toma-dist-input" value="${defDist}" step="0.5">
+                </div>
+            `;
         }
     }
 
@@ -551,19 +655,27 @@
         });
 
         const pisosEnEstaCadena = rowsChain.length;
-        const distBaseDistr = parseFloat(document.getElementById('dist-base-distr').value) || 10;
+        
+        // Buscar el input de dist-base de esta cadena (está en la primera celda de la primera fila de la cadena)
+        const baseInput = rowsChain[0].querySelector('.chain-base-dist-input');
+        const distBaseDistr = baseInput ? (parseFloat(baseInput.value) || 0) : (parseFloat(document.getElementById('dist-base-distr').value) || 10);
         const distIncPiso  = parseFloat(document.getElementById('dist-inc-piso').value) || 3.5;
 
         rowsChain.forEach((row, p) => {
             let p_eff = (newDirection === 'descendente') ? p : (pisosEnEstaCadena - 1 - p);
 
+            let conectoresBase = parseInt(document.getElementById('conectores-base').value) || 10;
+            let conectoresEst = conectoresBase + (p_eff * 2);
+
             let derivacion = 15;
             let paso = 1.5;
-            if (p_eff === 0) { derivacion = 25; paso = 0.5; }
-            else if (p_eff === pisosEnEstaCadena - 1) { derivacion = 10; paso = 2.0; }
-
-            let conectoresEst = 10 + (p_eff * 2);
+            const templateItems = document.querySelectorAll('#chain-template-container .template-item');
+            if (templateItems[p_eff]) {
+                derivacion = parseFloat(templateItems[p_eff].querySelector('.tpl-deriv').value) || 0;
+                paso = parseFloat(templateItems[p_eff].querySelector('.tpl-paso').value) || 0;
+            }
             let distDistrEst = distBaseDistr + (p_eff * distIncPiso);
+            let formulaDistr = `${distBaseDistr}+(${distIncPiso}*${p_eff})`;
 
             const inputDeriv = row.querySelector('[data-field="derivacion"]');
             const inputPaso = row.querySelector('[data-field="paso"]');
@@ -573,7 +685,10 @@
             if (inputDeriv) inputDeriv.value = derivacion;
             if (inputPaso) inputPaso.value = paso;
             if (inputConect) inputConect.value = conectoresEst;
-            if (inputDistr) inputDistr.value = distDistrEst.toFixed(1);
+            if (inputDistr) {
+                inputDistr.value = distDistrEst.toFixed(1);
+                inputDistr.dataset.formula = formulaDistr;
+            }
         });
 
         if (!document.getElementById('results-section').classList.contains('hidden')) {
@@ -612,16 +727,25 @@
                                 '<option value="descendente">⬇️ Descendente</option>' +
                                 '<option value="ascendente">⬆️ Ascendente</option>' +
                             '</select>' +
+                            '<div style="margin-top: 6px; font-size: 10px; color: #444;">' +
+                                '<label style="display:block; margin-bottom: 2px;">Dist. Base (m):</label>' +
+                                '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 50px; text-align:center; padding: 2px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                            '</div>' +
                             '</td>';
                 }
 
-                let conectoresEst = 10 + (p * 2);
+                let conectoresBase = parseInt(document.getElementById('conectores-base').value) || 10;
+                let conectoresEst = conectoresBase + (p * 2);
                 let distDistrEst = distBaseDistr + (p * distIncPiso);
+                let formulaDistr = `${distBaseDistr}+(${distIncPiso}*${p})`;
 
                 let derivacion = 15;
                 let paso = 1.5;
-                if (p === 0) { derivacion = 25; paso = 0.5; }
-                else if (p === pisosEnEstaCadena - 1) { derivacion = 10; paso = 2.0; }
+                const templateItems = document.querySelectorAll('#chain-template-container .template-item');
+                if (templateItems[p]) {
+                    derivacion = parseFloat(templateItems[p].querySelector('.tpl-deriv').value) || 0;
+                    paso = parseFloat(templateItems[p].querySelector('.tpl-paso').value) || 0;
+                }
 
                 html += '<td><strong>PISO ' + pisoActual + '</strong></td>' +
                     '<td><input type="number" class="input-mini" value="' + aptos + '" min="1" max="20" data-floor="' + pisoActual + '" data-field="aptos"></td>' +
@@ -631,7 +755,7 @@
                     '<td><input type="number" class="input-mini" value="8" step="0.1" data-floor="' + pisoActual + '" data-field="splitter-torre"></td>' +
                     '<td><input type="number" class="input-mini" value="4" step="0.1" data-floor="' + pisoActual + '" data-field="splitter-apto"></td>' +
                     '<td class="rg11-col ' + (document.getElementById('use-rg11').checked ? '' : 'hidden') + '"><input type="number" class="input-mini" value="' + distRG11 + '" step="0.5" data-floor="' + pisoActual + '" data-field="dist-rg11"></td>' +
-                    '<td><input type="number" class="input-mini" value="' + distDistrEst.toFixed(1) + '" step="0.5" data-floor="' + pisoActual + '" data-field="dist-rg6-distr"></td>' +
+                    '<td><input type="number" class="input-mini" value="' + distDistrEst.toFixed(1) + '" step="0.5" data-floor="' + pisoActual + '" data-field="dist-rg6-distr" data-formula="' + formulaDistr + '"></td>' +
                     '<td><input type="number" class="input-mini" value="' + conectoresEst + '" min="0" data-floor="' + pisoActual + '" data-field="conectores"></td>';
 
                 tr.innerHTML = html;
@@ -663,6 +787,8 @@
             const piso = parseInt(pisoCell.textContent.match(/\d+/)[0]);
             const cadenaIndex = Math.floor((numPisos - piso) / pisosCadena);
 
+            const inputDistr = row.querySelector('[data-field="dist-rg6-distr"]');
+
             floors.push({
                 piso: piso,
                 cadenaIndex: cadenaIndex,
@@ -674,7 +800,8 @@
                 splitterTorre: parseFloat(row.querySelector('[data-field="splitter-torre"]').value) || 0,
                 splitterApto: parseFloat(row.querySelector('[data-field="splitter-apto"]').value) || 0,
                 distRG11: parseFloat(row.querySelector('[data-field="dist-rg11"]')?.value) || 0,
-                distRG6Distr: parseFloat(row.querySelector('[data-field="dist-rg6-distr"]').value) || 0,
+                distRG6Distr: parseFloat(inputDistr.value) || 0,
+                distRG6DistrFormula: inputDistr.dataset.formula || String(parseFloat(inputDistr.value) || 0),
                 conectores: parseInt(row.querySelector('[data-field="conectores"]').value) || 0,
             });
         }
@@ -721,10 +848,14 @@
         const conector = CONSTANTES.conectores[tipoConectorKey];
         const toma = CONSTANTES.tomas[document.getElementById('tipo-toma').value];
 
-        // Recoger matriz de distancias por Apto y Toma, y nombres editables
-        const dispAptosVals = Array.from(document.querySelectorAll('.apto-disp-input')).map(i => parseFloat(i.value) || 0);
-        const distTomasVals = Array.from(document.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value) || 0);
-        const aptoNames = Array.from(document.querySelectorAll('.apto-name-input')).map((input, idx) => input.value.trim() || ('APTO-' + String(idx + 1).padStart(2, '0')));
+        // Recoger matriz de distancias por Apto desde las tarjetas
+        const aptosData = [];
+        document.querySelectorAll('#aptos-matrix-container .apto-card').forEach((card, idx) => {
+            const name = card.querySelector('.apto-name-input')?.value.trim() || ('APTO-' + String(idx + 1).padStart(2, '0'));
+            const disp = parseFloat(card.querySelector('.apto-disp-input')?.value) || 0;
+            const tomasDist = Array.from(card.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value) || 0);
+            aptosData.push({ name, disp, tomasDist });
+        });
 
         // Encabezados
         document.getElementById('th-troncal-name').textContent = cableTroncalKey;
@@ -742,20 +873,28 @@
         tbody.innerHTML = '';
 
         for (const floor of floors) {
-            const totalTomasPiso = floor.aptos * floor.tomas;
+            // Contar el número real de tomas que tendrá este piso según la matriz de apartamentos
+            let totalTomasPiso = 0;
             for (let a = 1; a <= floor.aptos; a++) {
-                const nombreApto = aptoNames[a - 1] || ('APTO-' + String(a).padStart(2, '0'));
-                for (let t = 1; t <= floor.tomas; t++) {
+                const dataApto = aptosData[a - 1] || { tomasDist: [] };
+                totalTomasPiso += (dataApto.tomasDist.length > 0) ? dataApto.tomasDist.length : 1; 
+            }
+
+            for (let a = 1; a <= floor.aptos; a++) {
+                const dataApto = aptosData[a - 1] || { name: 'APTO-' + String(a).padStart(2, '0'), disp: 3, tomasDist: [1.5] };
+                const numTomas = dataApto.tomasDist.length;
+                
+                for (let t = 1; t <= numTomas; t++) {
                     const isFirstOfFloor = (a === 1 && t === 1);
                     const repartidorTotal = floor.splitterTorre + floor.splitterApto;
                     
-                    // RG6 Total = Distr. Vertical (Piso) + Dispersión (Apto a-1) + Toma (t-1)
-                    const dispApto = dispAptosVals[a - 1] !== undefined ? dispAptosVals[a - 1] : ((a - 1) * 3);
-                    const distToma = distTomasVals[t - 1] !== undefined ? distTomasVals[t - 1] : ((t - 1) * 1.5);
+                    const dispApto = dataApto.disp;
+                    const distToma = dataApto.tomasDist[t - 1];
                     const distRG6Total = floor.distRG6Distr + dispApto + distToma;
 
                     const tr = document.createElement('tr');
                     tr.dataset.distr = floor.distRG6Distr;
+                    tr.dataset.distrFormula = floor.distRG6DistrFormula;
                     tr.dataset.disp = dispApto;
                     tr.dataset.tomaDist = distToma;
                     tr.dataset.derivFormula = floor.derivadorFormula;
@@ -767,7 +906,10 @@
                         html += '<td rowspan="' + totalTomasPiso + '" class="piso-cell">PISO ' + floor.piso + '<br><span style="font-size:9px;color:#666">' + (floor.direccionCadena === 'descendente' ? '⬇' : '⬆') + '</span></td>';
                     }
 
-                    html += '<td>' + nombreApto + '</td>';
+                    if (t === 1) {
+                        html += '<td rowspan="' + numTomas + '">' + dataApto.name + '</td>';
+                    }
+
                     html += '<td class="bold-cell">T' + t + '</td>';
 
                     // RG11
@@ -1037,17 +1179,17 @@
             const rg11_a_term = useRG11 ? (COL_RG11_A + r + '+') : '';
 
             // Formularización de la suma de distancia RG6 (Distr + Disp + Toma)
-            const dDistr = parseFloat(tr.dataset.distr);
+            const dDistrFormula = tr.dataset.distrFormula || String(parseFloat(tr.dataset.distr));
             const dDisp = parseFloat(tr.dataset.disp);
             const dToma = parseFloat(tr.dataset.tomaDist);
 
             let distFormulaStr = '';
-            if (!isNaN(dDistr) && !isNaN(dDisp) && !isNaN(dToma)) {
+            if (dDistrFormula && !isNaN(dDisp) && !isNaN(dToma)) {
                 const parts = [];
-                if (dDistr > 0) parts.push(dDistr);
+                parts.push(dDistrFormula);
                 if (dDisp > 0) parts.push(dDisp);
                 if (dToma > 0) parts.push(dToma);
-                distFormulaStr = parts.length > 0 ? parts.join('+') : '0';
+                distFormulaStr = parts.join('+');
             } else {
                 distFormulaStr = String(getInputValue(tr, 'dist-rg6'));
             }
