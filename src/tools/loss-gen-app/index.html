@@ -1214,16 +1214,75 @@
                 { f: cols.amp + '$4-' + cols.per_a + r }
             );
             
-            sheetData.push(row);
+        sheetData.push(row);
             rowIdx++;
         });
+
+        // ════════════════════════════════════════
+        // SECCIÓN RESUMEN EN EXCEL
+        // ════════════════════════════════════════
+        const mainDataEndRow = dataStartRow + rowIdx - 1;
+        const filas = recogerDatosFilas();
+        const resumen = MotorCalculo.calcularResumen(filas);
+
+        sheetData.push([]);
+
+        const idxPerdB = sheetData[1].length - 4;
+        const idxPerdA = sheetData[1].length - 3;
+        const idxNivB  = sheetData[1].length - 2;
+        const idxNivA  = sheetData[1].length - 1;
+        const idxDesc  = sheetData[1].length;
+
+        function buildSummaryRow(label, vPerdB, vPerdA, vNivB, vNivA, desc) {
+            const r = [];
+            for (let c = 0; c < idxPerdB; c++) {
+                r.push(label);
+            }
+            r[idxPerdB] = vPerdB;
+            r[idxPerdA] = vPerdA;
+            r[idxNivB]  = vNivB;
+            r[idxNivA]  = vNivA;
+            r[idxDesc]  = desc;
+            return r;
+        }
+
+        const sumHeader = buildSummaryRow(projectName, 'Pérd. Baja', 'Pérd. Alta', 'Nivel Baja (dBµV)', 'Nivel Alta (dBµV)', 'Descripción');
+        const sumMax = buildSummaryRow(
+            'MAX NIVEL',
+            { f: 'MAX(' + cols.per_b + dataStartRow + ':' + cols.per_b + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.maxPerdidaBaja.toFixed(1)) : 0 },
+            { f: 'MAX(' + cols.per_a + dataStartRow + ':' + cols.per_a + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.maxPerdidaAlta.toFixed(1)) : 0 },
+            { f: 'MAX(' + cols.niv_b + dataStartRow + ':' + cols.niv_b + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.maxNivelBaja.toFixed(1)) : 0 },
+            { f: 'MAX(' + cols.niv_a + dataStartRow + ':' + cols.niv_a + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.maxNivelAlta.toFixed(1)) : 0 },
+            'Máxima pérdida / Mejor nivel'
+        );
+        const sumMin = buildSummaryRow(
+            'MIN NIVEL',
+            { f: 'MIN(' + cols.per_b + dataStartRow + ':' + cols.per_b + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.minPerdidaBaja.toFixed(1)) : 0 },
+            { f: 'MIN(' + cols.per_a + dataStartRow + ':' + cols.per_a + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.minPerdidaAlta.toFixed(1)) : 0 },
+            { f: 'MIN(' + cols.niv_b + dataStartRow + ':' + cols.niv_b + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.minNivelBaja.toFixed(1)) : 0 },
+            { f: 'MIN(' + cols.niv_a + dataStartRow + ':' + cols.niv_a + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.minNivelAlta.toFixed(1)) : 0 },
+            'Mínima pérdida / Peor nivel'
+        );
+        const sumDiff = buildSummaryRow(
+            'DIFERENCIA MAX-MIN',
+            '—',
+            '—',
+            { f: 'MAX(' + cols.niv_b + dataStartRow + ':' + cols.niv_b + mainDataEndRow + ')-MIN(' + cols.niv_b + dataStartRow + ':' + cols.niv_b + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.difNivelBaja.toFixed(2)) : 0 },
+            { f: 'MAX(' + cols.niv_a + dataStartRow + ':' + cols.niv_a + mainDataEndRow + ')-MIN(' + cols.niv_a + dataStartRow + ':' + cols.niv_a + mainDataEndRow + ')', v: resumen ? parseFloat(resumen.difNivelAlta.toFixed(2)) : 0 },
+            'Diferencia max/min'
+        );
+
+        sheetData.push(sumHeader);
+        sheetData.push(sumMax);
+        sheetData.push(sumMin);
+        sheetData.push(sumDiff);
 
         const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
         const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "004080" } }, alignment: { horizontal: "center", vertical: "center" } };
         const subHeaderStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "0073e6" } }, alignment: { horizontal: "center" } };
-        const accentStyle = { font: { bold: true }, fill: { fgColor: { rgb: "f2a900" } }, alignment: { horizontal: "center" } };
-        const resultStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1a5276" } }, alignment: { horizontal: "center" } };
+        const accentStyle = { font: { bold: true }, fill: { fgColor: { rgb: "F2A900" } }, alignment: { horizontal: "center" } };
+        const resultStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1A5276" } }, alignment: { horizontal: "center" } };
 
         for(let C = 0; C < sheetData[1].length; ++C) {
             const addr2 = XLSX.utils.encode_cell({r:1, c:C});
@@ -1242,24 +1301,73 @@
         }
 
         const borderStyle = { top: {style:'thin', color:{auto:1}}, bottom: {style:'thin', color:{auto:1}}, left: {style:'thin', color:{auto:1}}, right: {style:'thin', color:{auto:1}} };
-        for(let R = dataStartRow-1; R < sheetData.length; ++R) {
+        for(let R = dataStartRow - 1; R < dataStartRow - 1 + rowIdx; ++R) {
             for(let C = 0; C < sheetData[R].length; ++C) {
                 const addr = XLSX.utils.encode_cell({r:R, c:C});
                 if(!ws[addr]) continue;
                 ws[addr].s = ws[addr].s || {};
                 ws[addr].s.border = borderStyle;
-                if (R % 2 !== 0 && R < sheetData.length - 3) {
+                if (R % 2 !== 0) {
                     ws[addr].s.fill = { fgColor: { rgb: "F4F8FB" } };
                 }
-                if (C >= sheetData[1].length - 2 && R < sheetData.length - 3) {
+                if (C >= sheetData[1].length - 2) {
                     ws[addr].s.font = { bold: true };
                 }
             }
         }
 
+        const sumHeaderR = dataStartRow - 1 + rowIdx + 1;
+        const sumMaxR    = sumHeaderR + 1;
+        const sumMinR    = sumHeaderR + 2;
+        const sumDiffR   = sumHeaderR + 3;
+
+        ws['!merges'] = ws['!merges'] || [];
         if (ws['A1']) {
             ws['A1'].s = { font: { bold: true, sz: 16, color: { rgb: "004080" } } };
-            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: sheetData[1].length - 1 } }];
+            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: sheetData[1].length - 1 } });
+        }
+
+        if (idxPerdB > 1) {
+            ws['!merges'].push({ s: { r: sumHeaderR, c: 0 }, e: { r: sumHeaderR, c: idxPerdB - 1 } });
+            ws['!merges'].push({ s: { r: sumMaxR,    c: 0 }, e: { r: sumMaxR,    c: idxPerdB - 1 } });
+            ws['!merges'].push({ s: { r: sumMinR,    c: 0 }, e: { r: sumMinR,    c: idxPerdB - 1 } });
+            ws['!merges'].push({ s: { r: sumDiffR,   c: 0 }, e: { r: sumDiffR,   c: idxPerdB - 1 } });
+        }
+
+        for (let C = 0; C <= idxDesc; C++) {
+            const addr = XLSX.utils.encode_cell({ r: sumHeaderR, c: C });
+            if (!ws[addr]) continue;
+            if (C < idxPerdB) {
+                ws[addr].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "004080" } }, alignment: { horizontal: "left", vertical: "center" } };
+            } else if (C === idxPerdB || C === idxPerdA) {
+                ws[addr].s = accentStyle;
+            } else if (C === idxNivB || C === idxNivA) {
+                ws[addr].s = resultStyle;
+            } else {
+                ws[addr].s = headerStyle;
+            }
+        }
+
+        const styleMax = { font: { bold: true, color: { rgb: "155724" } }, fill: { fgColor: { rgb: "D4EDDA" } }, border: borderStyle, alignment: { horizontal: "center" } };
+        const styleMaxLabel = { font: { bold: true, color: { rgb: "155724" } }, fill: { fgColor: { rgb: "D4EDDA" } }, border: borderStyle, alignment: { horizontal: "right" } };
+        const styleMaxDesc = { font: { bold: false, color: { rgb: "155724" } }, fill: { fgColor: { rgb: "D4EDDA" } }, border: borderStyle, alignment: { horizontal: "left" } };
+
+        const styleMin = { font: { bold: true, color: { rgb: "721C24" } }, fill: { fgColor: { rgb: "F8D7DA" } }, border: borderStyle, alignment: { horizontal: "center" } };
+        const styleMinLabel = { font: { bold: true, color: { rgb: "721C24" } }, fill: { fgColor: { rgb: "F8D7DA" } }, border: borderStyle, alignment: { horizontal: "right" } };
+        const styleMinDesc = { font: { bold: false, color: { rgb: "721C24" } }, fill: { fgColor: { rgb: "F8D7DA" } }, border: borderStyle, alignment: { horizontal: "left" } };
+
+        const styleDiff = { font: { bold: true, color: { rgb: "856404" } }, fill: { fgColor: { rgb: "FFF3CD" } }, border: borderStyle, alignment: { horizontal: "center" } };
+        const styleDiffLabel = { font: { bold: true, color: { rgb: "856404" } }, fill: { fgColor: { rgb: "FFF3CD" } }, border: borderStyle, alignment: { horizontal: "right" } };
+        const styleDiffDesc = { font: { bold: false, color: { rgb: "856404" } }, fill: { fgColor: { rgb: "FFF3CD" } }, border: borderStyle, alignment: { horizontal: "left" } };
+
+        for (let C = 0; C <= idxDesc; C++) {
+            const aMax  = XLSX.utils.encode_cell({ r: sumMaxR,  c: C });
+            const aMin  = XLSX.utils.encode_cell({ r: sumMinR,  c: C });
+            const aDiff = XLSX.utils.encode_cell({ r: sumDiffR, c: C });
+
+            if (ws[aMax])  ws[aMax].s  = (C < idxPerdB) ? styleMaxLabel  : (C === idxDesc ? styleMaxDesc  : styleMax);
+            if (ws[aMin])  ws[aMin].s  = (C < idxPerdB) ? styleMinLabel  : (C === idxDesc ? styleMinDesc  : styleMin);
+            if (ws[aDiff]) ws[aDiff].s = (C < idxPerdB) ? styleDiffLabel : (C === idxDesc ? styleDiffDesc : styleDiff);
         }
 
         XLSX.utils.book_append_sheet(wb, ws, 'TORRE 1');
