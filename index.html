@@ -363,25 +363,88 @@
         <div id="herramientasModule" style="display: none;">
             <!-- Vista de Catálogo -->
             <div id="herramientasCatalogo">
-                <h3 style="margin-bottom: 20px;">🛠️ Catálogo de Herramientas</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div class="stat-card glass-panel" style="cursor: pointer; border-left: 4px solid var(--accent); transition: transform 0.2s;" onclick="abrirHerramienta('./src/tools/calculadora-tubos/index.html')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
-                        <h4 style="font-size: 1.1rem; color: var(--scitic-dark); margin-bottom: 10px;">📐 Calculadora de Tubos RITEL</h4>
-                        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Herramienta para canalización y distribución RITEL 2025.</p>
+
+                <!-- Header del módulo -->
+                <div class="card glass-panel" style="margin-bottom: 2rem; padding: 2rem 2.5rem; border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <h3 style="border: none; padding: 0; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: -0.5px;">🛠️ Centro de Herramientas</h3>
+                        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem; line-height: 1.5;">Aplicaciones de ingeniería y cálculo disponibles para el equipo SCITIC. Seleccione una herramienta para comenzar.</p>
                     </div>
-                    <div class="stat-card glass-panel" style="cursor: pointer; border-left: 4px solid var(--success); transition: transform 0.2s;" onclick="abrirHerramienta('./src/tools/loss-gen-app/index.html')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
-                        <h4 style="font-size: 1.1rem; color: var(--scitic-dark); margin-bottom: 10px;">📡 Calculadora de Pérdidas TDT</h4>
-                        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Cálculo de pérdidas de señal para torres residenciales.</p>
+                    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">2</div>
+                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600;">Herramientas</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.8rem; font-weight: 800; color: var(--success);">●</div>
+                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600;">Online</div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Grid de herramientas -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+
+                    <!-- Card: Calculadora de Tubos RITEL -->
+                    <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/calculadora-tubos/index.html')">
+                        <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #ea580c, #f97316);"></div>
+                        <div class="herramienta-card-body">
+                            <div class="herramienta-card-icon" style="background: rgba(234, 88, 12, 0.12); border: 1px solid rgba(234, 88, 12, 0.25);">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="4"/>
+                                </svg>
+                            </div>
+                            <div class="herramienta-card-content">
+                                <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Tubos RITEL</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Dimensionamiento de canalización y distribución según normativa RITEL 2025.</p>
+                            </div>
+                        </div>
+                        <div class="herramienta-card-footer">
+                            <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">Canalización</span>
+                            <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">RITEL</span>
+                            <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                Abrir
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card: Calculadora de Pérdidas TDT -->
+                    <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/loss-gen-app/index.html')">
+                        <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #10b981, #34d399);"></div>
+                        <div class="herramienta-card-body">
+                            <div class="herramienta-card-icon" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 20h20"/><path d="M5 20V9l3-3"/><path d="M9 20V5l4-3"/><path d="M15 20V9l3-3"/><path d="M19 20v-7"/><circle cx="5" cy="9" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="15" cy="9" r="1"/>
+                                </svg>
+                            </div>
+                            <div class="herramienta-card-content">
+                                <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Pérdidas TDT</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Cálculo de pérdidas de señal, niveles y distribución para torres residenciales.</p>
+                            </div>
+                        </div>
+                        <div class="herramienta-card-footer">
+                            <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">Señal TDT</span>
+                            <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">Torres</span>
+                            <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                Abrir
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </span>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             <!-- Vista de Visor de Herramienta -->
             <div id="herramientasVisor" style="display: none;">
                 <div style="margin-bottom: 15px;">
-                    <button class="btn-secondary" onclick="cerrarHerramienta()">⬅️ Volver al Catálogo</button>
+                    <button class="btn-secondary" onclick="cerrarHerramienta()" style="padding: 0.6rem 1.5rem; width: auto; font-size: 0.85rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        Volver al Catálogo
+                    </button>
                 </div>
-                <div class="card glass-panel" style="padding: 0; overflow: hidden; height: 80vh;">
+                <div class="card glass-panel" style="padding: 0; overflow: hidden; height: 82vh; border-radius: 16px;">
                     <iframe id="iframeHerramienta" src="" style="width: 100%; height: 100%; border: none;"></iframe>
                 </div>
             </div>
