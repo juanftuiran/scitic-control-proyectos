@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCITIC - Registro TDT Obra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --brand-orange: #ea580c;
+            --brand-orange-hover: #f97316;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-solid: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-subtle: #64748b;
+            --header-bg: #1a2744;
+            --badge-gray: #64748b;
+            --badge-warning: #f59e0b;
+            --badge-success: #10b981;
+            --badge-danger: #ef4444;
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 80px; /* space for export bar */
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 14px; height: 14px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-left: 1px solid var(--border-solid); }
+        ::-webkit-scrollbar-thumb { background: rgba(234, 88, 12, 0.4); border-radius: 7px; border: 3px solid rgba(0,0,0,0.4); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(234, 88, 12, 0.8); }
+
+        /* Typography */
+        h1, h2, h3, h4 { font-weight: 600; }
+        p { line-height: 1.5; }
+
+        /* Header */
+        .app-header {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .brand {
+            display: flex; align-items: center; gap: 0.75rem;
+            font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .brand span.orange { color: var(--brand-orange); }
+
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--badge-success);
+            box-shadow: 0 0 10px var(--badge-success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+
+        /* Tabs Navigation */
+        .tabs-nav {
+            display: flex; gap: 1rem;
+            padding: 0 2rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid var(--border-subtle);
+            overflow-x: auto;
+            position: sticky; top: 65px; z-index: 40;
+        }
+
+        .tab-btn {
+            background: none; border: none; color: var(--text-muted);
+            padding: 1rem 0.5rem; font-size: 0.875rem; font-weight: 500;
+            cursor: pointer; position: relative; white-space: nowrap;
+            transition: color 0.2s ease;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { color: var(--brand-orange); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%;
+            height: 2px; background: var(--brand-orange);
+            box-shadow: 0 -2px 10px rgba(234, 88, 12, 0.5);
+        }
+
+        /* Content Container */
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Panels */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+
+        /* Forms & Inputs */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        
+        .form-input, .form-select {
+            width: 100%; padding: 0.75rem 1rem;
+            background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle);
+            border-radius: 8px; color: var(--text-main); font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none; border-color: var(--brand-orange);
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+        }
+        
+        .form-select option { background: var(--bg-dark); color: var(--text-main); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; font-size: 0.875rem;
+            cursor: pointer; transition: all 0.2s ease; border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, var(--brand-orange), var(--brand-orange-hover));
+            color: white; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4); }
+        .btn-primary:active { transform: translateY(1px); }
+
+        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border-subtle); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+
+        /* Tables */
+        .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-solid); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        th, td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-solid); }
+        th { background: var(--header-bg); font-weight: 600; color: #cbd5e1; white-space: nowrap; }
+        tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+        tr:hover { background: rgba(255,255,255,0.04); }
+        
+        .table-input {
+            width: 100%; padding: 0.4rem; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2); color: white;
+        }
+        .table-input:focus { outline: none; border-bottom-color: var(--brand-orange); }
+        .table-select {
+            width: 100%; padding: 0.4rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: white; border-radius: 4px;
+        }
+        .table-select option { background: var(--bg-dark); }
+
+        /* Badges */
+        .badge {
+            display: inline-block; padding: 0.25rem 0.6rem; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 500; white-space: nowrap; text-align: center;
+        }
+        .badge-gray { background: rgba(100,116,139,0.2); color: #cbd5e1; border: 1px solid rgba(100,116,139,0.3); }
+        .badge-warning { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-success { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+        /* Flex Utils */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-1 { flex: 1; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .pb-4 { padding-bottom: 1rem; }
+        .w-full { width: 100%; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-muted { color: var(--text-muted); }
+        .text-subtle { color: var(--text-subtle); }
+        .font-medium { font-weight: 500; }
+        .font-bold { font-weight: 700; }
+
+        /* Space config list */
+        .space-item {
+            display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;
+            background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px;
+        }
+
+        /* Summary Bars */
+        .summary-bar {
+            background: var(--header-bg); padding: 1rem 1.5rem; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+            border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 1rem;
+        }
+        .stat-item { display: flex; flex-direction: column; gap: 0.2rem; }
+        .stat-val { font-size: 1.25rem; font-weight: 700; color: var(--brand-orange); }
+
+        /* Collapsible Apartment Cards */
+        .apto-card {
+            background: rgba(30,41,59,0.4); border: 1px solid var(--border-subtle);
+            border-radius: 8px; margin-bottom: 1rem; overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .apto-header {
+            padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; background: rgba(0,0,0,0.1);
+        }
+        .apto-header:hover { background: rgba(255,255,255,0.02); }
+        .apto-body {
+            padding: 1.5rem; border-top: 1px solid var(--border-solid);
+            display: none;
+        }
+        .apto-card.expanded .apto-body { display: block; }
+        .apto-card.expanded { border-color: rgba(234, 88, 12, 0.3); }
+
+        /* Toast */
+        #toast-container {
+            position: fixed; bottom: 90px; right: 20px; z-index: 100;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            background: rgba(15,23,42,0.95); backdrop-filter: blur(10px);
+            border-left: 4px solid var(--brand-orange); color: white;
+            padding: 1rem 1.5rem; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: translateX(100%); animation: slideIn 0.3s forwards;
+            font-size: 0.875rem;
+        }
+        .toast.danger { border-left-color: var(--badge-danger); }
+        .toast.fadeOut { animation: slideOut 0.3s forwards; }
+        @keyframes slideIn { to { transform: translateX(0); } }
+        @keyframes slideOut { to { transform: translateX(120%); } }
+
+        /* Export Bar */
+        .export-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(2,6,23,0.9); backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-subtle);
+            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            z-index: 60;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 5rem 2rem; text-align: center; color: var(--text-muted);
+        }
+        .empty-state svg { width: 64px; height: 64px; margin-bottom: 1.5rem; opacity: 0.5; }
+
+        .group-header td {
+            background: rgba(255,255,255,0.05); font-weight: bold; color: var(--brand-orange);
+        }
+
+        /* KPI Cards in Informe */
+        .kpi-card {
+            background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1.5rem;
+            text-align: center; border: 1px solid var(--border-subtle);
+        }
+        .kpi-val { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; color: var(--brand-orange); }
+
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            .app-header, .tabs-nav, .export-bar, .btn { display: none !important; }
+            .card { border: none; box-shadow: none; background: transparent; padding: 0; }
+            table { border: 1px solid #ccc; }
+            th, td { border: 1px solid #ccc; padding: 4px; color: black; }
+            .badge { border: 1px solid #ccc; color: black; background: transparent; }
+            input, select { border: none; background: transparent; color: black; -webkit-appearance: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="brand">
+            <span class="orange">SCITIC</span> Registro de Instalación TDT
+        </div>
+        <div class="flex items-center gap-2 text-sm text-muted">
+            <div class="status-dot"></div> Guardado automático activado
+        </div>
+    </header>
+
+    <nav class="tabs-nav">
+        <button class="tab-btn active" data-target="tab-config">⚙️ CONFIGURACIÓN</button>
+        <button class="tab-btn" data-target="tab-vertical">📡 SETS & VERTICAL</button>
+        <button class="tab-btn" data-target="tab-dispersion">🔄 DISPERSIÓN</button>
+        <button class="tab-btn" data-target="tab-interior">🏠 RED INTERIOR</button>
+        <button class="tab-btn" data-target="tab-informe">📊 INFORME (DESGLOSE)</button>
+    </nav>
+
+    <div class="container">
+        
+        <!-- TAB 1: CONFIGURACIÓN -->
+        <div id="tab-config" class="tab-content" style="display: block;">
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="mb-4">1. Datos Básicos</h3>
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Proyecto</label>
+                        <input type="text" id="cfg-nombre" class="form-input" placeholder="Ej. MOKARA">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cliente / Constructora</label>
+                        <input type="text" id="cfg-cliente" class="form-input" placeholder="Ej. INELECT">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Torre / Bloque</label>
+                        <input type="text" id="cfg-torre" class="form-input" placeholder="Ej. 2">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Piso Inicial (más bajo)</label>
+                            <input type="number" id="cfg-piso-ini" class="form-input" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Piso Final (más alto)</label>
+                            <input type="number" id="cfg-piso-fin" class="form-input" value="23">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sufijos de Apartamentos (separados por coma)</label>
+                        <p class="text-xs text-muted mb-2">Ej: "01, 02, 03, 04" ó "05, 06, 07" ó "A, B, C"</p>
+                        <input type="text" id="cfg-sufijos" class="form-input" value="01, 02, 03, 04">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="mb-4">2. Espacios por Apartamento</h3>
+                    <p class="text-sm text-muted mb-4">Define los espacios estándar donde irá una toma TDT en cada apartamento.</p>
+                    
+                    <div id="espacios-list"></div>
+                    
+                    <div class="flex gap-2 mt-4">
+                        <input type="text" id="new-espacio" class="form-input" placeholder="Nombre del espacio (Ej. Estudio)">
+                        <button class="btn btn-secondary" onclick="addEspacio()">Agregar</button>
+                    </div>
+
+                    <div class="mt-4 pt-4" style="border-top: 1px solid var(--border-solid); display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="generarEstructura()" style="flex: 2; padding: 1rem; font-size: 1rem;">
+                            ⚙️ GENERAR ESTRUCTURA V2
+                        </button>
+                        <button class="btn" onclick="document.getElementById('file-upload-2').click()" style="flex: 1; padding: 1rem; font-size: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                            📂 Cargar JSON
+                        </button>
+                        <input type="file" id="file-upload-2" accept=".json,.html" style="display: none;" onchange="cargarProyecto(event)">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="config-summary" class="card mt-4" style="display: none; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 style="color: #6ee7b7;">✅ Estructura Generada</h3>
+                        <p class="text-sm text-muted mt-2" id="cfg-resumen-text"></p>
+                    </div>
+                    <button class="btn btn-danger" onclick="reiniciarProyecto()">Reiniciar Todo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SETS & VERTICAL -->
+        <div id="tab-vertical" class="tab-content">
+            <div id="vertical-empty" class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <h3>Estructura no generada</h3>
+                <p>Ve a la pestaña de Configuración y genera la estructura del proyecto.</p>
+            </div>
+            
+            <div id="vertical-content" style="display: none;">
+                <!-- SETS -->
+                <div class="card mb-4">
+                    <h3 class="mb-4" style="color: var(--brand-orange);">SETS (Cuarto de Equipos / Cubierta)</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Equipo / Ítem</th>
+                                    <th>Referencia / Observación</th>
+                                    <th>Cable Tipo</th>
+                                    <th>Cable (m)</th>
+                                    <th>Conectores</th>
+                                    <th>Cargas</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-sets">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RED VERTICAL DINÁMICA -->
+                <div class="summary-bar">
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Elementos</span>
+                        <span class="stat-val" id="sum-vert-elementos">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Total Cable</span>
+                        <span class="stat-val" id="sum-vert-cable">0 m</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Total Conectores/Etiquetas</span>
+                        <span class="stat-val" id="sum-vert-con">0</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="addVerticalItem()">+ Agregar Elemento Vertical</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="mb-4">Red Vertical (Distribución por Pisos)</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Piso</th>
+                                    <th>Equipo / Ítem</th>
+                                    <th>Referencia / Valor (dB)</th>
+                                    <th>Cable Tipo</th>
+                                    <th>Cable (m)</th>
+                                    <th>Conectores</th>
+                                    <th>Cargas</th>
+                                    <th>Estado</th>
+                                    <th>Observaciones</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-vertical">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: DISPERSIÓN -->
+        <div id="tab-dispersion" class="tab-content">
+            <div id="dispersion-empty" class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <h3>Estructura no generada</h3>
+                <p>Genera la estructura en la pestaña de configuración.</p>
+            </div>
+            
+            <div id="dispersion-content" style="display: none;">
+                <div class="summary-bar">
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Apartamentos Instalados</span>
+                        <span class="stat-val" id="sum-disp-aptos">0 / 0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Total Cable Dispersión</span>
+                        <span class="stat-val" id="sum-disp-cable">0 m</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Total Conectores/Etiquetas</span>
+                        <span class="stat-val" id="sum-disp-con">0</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="mb-4">Red de Dispersión (Gabinete de Piso → PAU Apartamento)</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Piso</th>
+                                    <th>Apartamento</th>
+                                    <th>Cable Tipo</th>
+                                    <th>Cable (m)</th>
+                                    <th>Conectores</th>
+                                    <th>Estado</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-dispersion">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: RED INTERIOR -->
+        <div id="tab-interior" class="tab-content">
+            <div id="interior-empty" class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <h3>Estructura no generada</h3>
+            </div>
+            
+            <div id="interior-content" style="display: none;">
+                <div class="summary-bar">
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Total Aptos</span>
+                        <span class="stat-val" id="sum-int-aptos">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Cable Interior</span>
+                        <span class="stat-val" id="sum-int-cable">0 m</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Tomas TDT</span>
+                        <span class="stat-val" id="sum-int-tomas">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="text-xs text-muted">Conectores/Etiquetas</span>
+                        <span class="stat-val" id="sum-int-con">0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary btn-sm" onclick="expandAll(true)">Expandir Todos</button>
+                        <button class="btn btn-secondary btn-sm" onclick="expandAll(false)">Colapsar Todos</button>
+                        <button class="btn btn-primary btn-sm" onclick="copiarPrimerApto()">📋 Copiar 1er Apto a Todos</button>
+                        <button class="btn btn-primary btn-sm" onclick="marcarInteriorInstalado()" style="background: #10b981; border-color: #10b981;">✅ Todo Instalado</button>
+                    </div>
+                </div>
+
+                <div id="interior-cards">
+                    <!-- JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: INFORME (DESGLOSE MAESTRO) -->
+        <div id="tab-informe" class="tab-content">
+            <div id="informe-empty" class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <h3>Estructura no generada</h3>
+            </div>
+            
+            <div id="informe-content" style="display: none;">
+                <div class="card mb-4" style="text-align: center;">
+                    <h2 class="mb-2">INFORME DE INSTALACIÓN TDT</h2>
+                    <p id="inf-proj-name" style="font-size: 1.5rem; color: var(--brand-orange); font-weight: 700;"></p>
+                    <p id="inf-proj-client" class="text-muted"></p>
+                    <p id="inf-date" class="text-xs mt-2"></p>
+                </div>
+
+                <div class="grid-4 mb-4">
+                    <div class="kpi-card">
+                        <div class="text-sm text-muted">Progreso Vertical</div>
+                        <div class="kpi-val" id="inf-kpi-vert">0%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="text-sm text-muted">Progreso Dispersión</div>
+                        <div class="kpi-val" id="inf-kpi-disp">0%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="text-sm text-muted">Progreso Interior</div>
+                        <div class="kpi-val" id="inf-kpi-int">0%</div>
+                    </div>
+                    <div class="kpi-card" style="border-color: var(--brand-orange);">
+                        <div class="text-sm text-muted">PROGRESO GENERAL</div>
+                        <div class="kpi-val" id="inf-kpi-gen">0%</div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <h3 class="mb-4">Totales Consolidados</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ítem</th>
+                                    <th>SETS</th>
+                                    <th>Vertical</th>
+                                    <th>Dispersión</th>
+                                    <th>Interior</th>
+                                    <th style="color: var(--brand-orange);">TOTAL GENERAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Metros de Cable</td>
+                                    <td id="tot-cab-s">0</td>
+                                    <td id="tot-cab-v">0</td>
+                                    <td id="tot-cab-d">0</td>
+                                    <td id="tot-cab-i">0</td>
+                                    <td id="tot-cab-t" class="font-bold">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Conectores</td>
+                                    <td id="tot-con-s">0</td>
+                                    <td id="tot-con-v">0</td>
+                                    <td id="tot-con-d">0</td>
+                                    <td id="tot-con-i">0</td>
+                                    <td id="tot-con-t" class="font-bold">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Etiquetas</td>
+                                    <td id="tot-eti-s">0</td>
+                                    <td id="tot-eti-v">0</td>
+                                    <td id="tot-eti-d">0</td>
+                                    <td id="tot-eti-i">0</td>
+                                    <td id="tot-eti-t" class="font-bold">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Tomas TDT</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td id="tot-tom-i">0</td>
+                                    <td id="tot-tom-t" class="font-bold">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Cargas Resistivas</td>
+                                    <td id="tot-car-s">0</td>
+                                    <td id="tot-car-v">0</td>
+                                    <td id="tot-car-d">0</td>
+                                    <td id="tot-car-i">0</td>
+                                    <td id="tot-car-t" class="font-bold" style="color: var(--brand-orange);">0</td>
+                                </tr>
+                            </tbody>
+                            <tbody id="inf-tbody-totales-eq">
+                                <!-- Dynamic equipment rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- DESGLOSE MAESTRO (Master Table) -->
+                <div class="card mb-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 style="color: var(--brand-orange);">DESGLOSE MAESTRO</h3>
+                        <div class="text-sm text-muted">1 Conector = 1 Etiqueta</div>
+                    </div>
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table style="font-size: 0.8rem;">
+                            <thead style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th>Origen</th>
+                                    <th>Piso</th>
+                                    <th>Apto</th>
+                                    <th>Espacio</th>
+                                    <th>Equipo / Ítem</th>
+                                    <th>Referencia</th>
+                                    <th>Cable Tipo</th>
+                                    <th>Metros</th>
+                                    <th>Conectores</th>
+                                    <th>Etiquetas</th>
+                                    <th>Cargas</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inf-tbody-maestro">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- EXPORT BAR -->
+    <div class="export-bar" id="export-bar" style="display: none;">
+        <div class="flex items-center gap-4">
+            <button class="btn btn-secondary" onclick="document.getElementById('file-upload').click()">
+                📂 Cargar Backup
+            </button>
+            <input type="file" id="file-upload" accept=".html,.json" style="display: none;">
+            
+            <button class="btn btn-secondary" id="btn-save-html">
+                💾 Guardar Proyecto
+            </button>
+            <button class="btn btn-secondary" id="btn-save-json">
+                JSON Backup
+            </button>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="btn btn-primary" id="btn-export-excel" style="background: #107c41;">
+                📊 Exportar Excel
+            </button>
+            <button class="btn btn-primary" id="btn-export-pdf" style="background: #b91c1c;">
+                📄 Exportar PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
+
+    <script>
+        // --- CONSTANTS & STATE ---
+        const statusOpts = ['Pendiente', 'En Proceso', 'Instalado', 'Con Novedad'];
+        const statusColors = {
+            'Pendiente': 'badge-gray', 'En Proceso': 'badge-warning', 
+            'Instalado': 'badge-success', 'Con Novedad': 'badge-danger'
+        };
+
+        const cableTipos = ['RG-6 LSZH', 'RG-6', 'RG-11', 'Ninguno'];
+        const verticalEquipos = ['Derivador 2D', 'Derivador 4D', 'Derivador 6D', 'Derivador 8D', 'Splitter 2D', 'Splitter 3D', 'Splitter 4D', 'Splitter 6D', 'Splitter 8D', 'Amplificador / Central', 'Cable Paso', 'Ninguno'];
+        const repartidorTipos = ['Ninguno', 'Splitter 2D', 'Splitter 3D', 'Splitter 4D', 'Splitter 6D', 'Splitter 8D'];
+
+        let state = {
+            config: {
+                nombre: '', cliente: '', torre: '',
+                pisoInicial: 2, pisoFinal: 23,
+                sufijosText: '01, 02, 03, 04',
+                sufijos: ['01', '02', '03', '04'],
+                espacios: ['SALA', 'ALC. 1', 'ALC. 2', 'ALC. PPAL'],
+                generado: false
+            },
+            sets: {
+                antena: { equipo: 'Antena UHF', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                mastil: { equipo: 'Mástil y Herrajes', ref: '', cableTipo: 'Ninguno', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                amplificador: { equipo: 'Central Prog. / Amp.', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                dps: { equipo: 'DPS', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' }
+            },
+            vertical: [], // array of objects
+            dispersion: {}, // keyed by aptoId
+            interior: {}    // keyed by aptoId
+        };
+
+        let saveTimeout = null;
+
+        // --- INIT & UTILS ---
+        function init() {
+            // Load state
+            const saved = localStorage.getItem('scitic-informes-obra-v2');
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch(e) {}
+            }
+            
+            setupTabs();
+            setupExportListeners();
+            renderConfigTab();
+            
+            if (state.config.generado) {
+                renderAllTabs();
+                document.getElementById('export-bar').style.display = 'flex';
+            }
+        }
+
+        function saveState() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(state));
+                showToast('Cambios guardados');
+            }, 500);
+        }
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'danger' ? 'danger' : ''}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fadeOut');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function buildSelect(options, selectedValue, onchangeStr) {
+            let html = `<select class="table-select" onchange="${onchangeStr}">`;
+            options.forEach(opt => {
+                html += `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt}</option>`;
+            });
+            html += `</select>`;
+            return html;
+        }
+
+        function getBadgeClass(estado) { return statusColors[estado] || 'badge-gray'; }
+
+        // --- TABS LOGIC ---
+        function setupTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                    e.target.classList.add('active');
+                    const target = e.target.getAttribute('data-target');
+                    document.getElementById(target).style.display = 'block';
+                    
+                    if (target === 'tab-informe') renderInforme();
+                });
+            });
+        }
+
+        // --- CONFIGURACIÓN ---
+        function renderConfigTab() {
+            const c = state.config;
+            document.getElementById('cfg-nombre').value = c.nombre;
+            document.getElementById('cfg-cliente').value = c.cliente;
+            document.getElementById('cfg-torre').value = c.torre;
+            document.getElementById('cfg-piso-ini').value = c.pisoInicial;
+            document.getElementById('cfg-piso-fin').value = c.pisoFinal;
+            document.getElementById('cfg-sufijos').value = c.sufijosText;
+            renderEspaciosList();
+
+            if (c.generado) {
+                document.getElementById('config-summary').style.display = 'block';
+                document.getElementById('cfg-resumen-text').innerText = 
+                    `${Math.abs(c.pisoFinal - c.pisoInicial) + 1} Pisos | ${c.sufijos.length} Aptos por piso | ${c.espacios.length} Espacios definidos`;
+            } else {
+                document.getElementById('config-summary').style.display = 'none';
+            }
+        }
+
+        function renderEspaciosList() {
+            const list = document.getElementById('espacios-list');
+            list.innerHTML = '';
+            state.config.espacios.forEach((esp, idx) => {
+                list.innerHTML += `
+                    <div class="space-item">
+                        <input type="text" class="form-input flex-1" value="${esp}" onchange="updateEspacio(${idx}, this.value)">
+                        <button class="btn btn-danger btn-sm" onclick="removeEspacio(${idx})">🗑</button>
+                    </div>`;
+            });
+        }
+
+        window.addEspacio = function() {
+            const val = document.getElementById('new-espacio').value.trim().toUpperCase();
+            if (val && !state.config.espacios.includes(val)) {
+                state.config.espacios.push(val);
+                document.getElementById('new-espacio').value = '';
+                renderEspaciosList();
+                saveState();
+            }
+        };
+
+        window.updateEspacio = function(idx, val) {
+            val = val.trim().toUpperCase();
+            if (val) state.config.espacios[idx] = val;
+            renderEspaciosList();
+            saveState();
+        };
+
+        window.removeEspacio = function(idx) {
+            state.config.espacios.splice(idx, 1);
+            renderEspaciosList();
+            saveState();
+        };
+
+        // --- GENERACIÓN ---
+        function getAptoId(piso, sufijo) {
+            return `${piso}${sufijo}`;
+        }
+
+        window.generarEstructura = function() {
+            const c = state.config;
+            c.nombre = document.getElementById('cfg-nombre').value;
+            c.cliente = document.getElementById('cfg-cliente').value;
+            c.torre = document.getElementById('cfg-torre').value;
+            c.pisoInicial = parseInt(document.getElementById('cfg-piso-ini').value);
+            c.pisoFinal = parseInt(document.getElementById('cfg-piso-fin').value);
+            c.sufijosText = document.getElementById('cfg-sufijos').value;
+            
+            // Parse sufijos
+            c.sufijos = c.sufijosText.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            
+            if (!c.nombre || isNaN(c.pisoInicial) || isNaN(c.pisoFinal) || c.sufijos.length === 0) {
+                showToast('Por favor completa todos los campos y define al menos 1 sufijo', 'danger');
+                return;
+            }
+
+            const minPiso = Math.min(c.pisoInicial, c.pisoFinal);
+            const maxPiso = Math.max(c.pisoInicial, c.pisoFinal);
+
+            // Rebuild Vertical logic (do not wipe if already exists, just make sure array exists)
+            if (!Array.isArray(state.vertical)) state.vertical = [];
+
+            const newDispersion = {};
+            const newInterior = {};
+
+            for (let p = maxPiso; p >= minPiso; p--) {
+                c.sufijos.forEach(suf => {
+                    const aptoId = getAptoId(p, suf);
+                    
+                    // Dispersion
+                    newDispersion[aptoId] = state.dispersion[aptoId] || {
+                        cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', obs: ''
+                    };
+                    
+                    // Interior
+                    let existingInt = state.interior[aptoId] || {
+                        repartidor: { tipo: 'Ninguno', ref: '', instalado: false, estado: 'Pendiente', cargas: '' },
+                        espacios: {}
+                    };
+                    
+                    const espaciosFinales = {};
+                    c.espacios.forEach(esp => {
+                        espaciosFinales[esp] = existingInt.espacios[esp] || {
+                            cableTipo: 'RG-6 LSZH', cable: '', toma: false, conectores: '', estado: 'Pendiente'
+                        };
+                    });
+                    existingInt.espacios = espaciosFinales;
+                    newInterior[aptoId] = existingInt;
+                });
+            }
+
+            state.dispersion = newDispersion;
+            state.interior = newInterior;
+            state.config.generado = true;
+
+            saveState();
+            renderAllTabs();
+            document.getElementById('export-bar').style.display = 'flex';
+            showToast('Estructura generada con éxito');
+            document.querySelector('.tab-btn[data-target="tab-vertical"]').click();
+        };
+
+        window.reiniciarProyecto = function() {
+            if (confirm("¿Estás seguro de borrar todos los datos del proyecto? Esto no se puede deshacer.")) {
+                state.config.generado = false;
+                state.sets = {
+                    antena: { equipo: 'Antena UHF', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                    mastil: { equipo: 'Mástil y Herrajes', ref: '', cableTipo: 'Ninguno', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                    amplificador: { equipo: 'Central Prog. / Amp.', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                    dps: { equipo: 'DPS', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' }
+                };
+                state.vertical = [];
+                state.dispersion = {};
+                state.interior = {};
+                saveState();
+                location.reload();
+            }
+        };
+
+        function renderAllTabs() {
+            renderConfigTab();
+            ['vertical', 'dispersion', 'interior', 'informe'].forEach(id => {
+                document.getElementById(`${id}-content`).style.display = 'block';
+                document.getElementById(`${id}-empty`).style.display = 'none';
+            });
+            renderSets();
+            renderVertical();
+            renderDispersion();
+            renderInterior();
+        }
+
+        // --- UPDATERS ---
+        window.updateSet = function(key, field, val) {
+            state.sets[key][field] = val;
+            saveState();
+        };
+
+        window.updateVertical = function(id, field, val) {
+            const item = state.vertical.find(i => i.id == id);
+            if(item) {
+                item[field] = val;
+                saveState();
+            }
+        };
+
+        window.updateDispersion = function(aptoId, field, val) {
+            state.dispersion[aptoId][field] = val;
+            saveState();
+        };
+
+        window.updateInteriorRep = function(aptoId, field, val) {
+            state.interior[aptoId].repartidor[field] = val;
+            if(field === 'tipo') {
+                state.interior[aptoId].repartidor.instalado = (val !== 'Ninguno');
+                if(val !== 'Ninguno' && state.interior[aptoId].repartidor.estado === 'Pendiente') {
+                    state.interior[aptoId].repartidor.estado = 'Instalado';
+                }
+            }
+            saveState();
+        };
+
+        window.updateInteriorEsp = function(aptoId, esp, field, val) {
+            if(field === 'toma') val = val.checked;
+            state.interior[aptoId].espacios[esp][field] = val;
+            saveState();
+        };
+
+        // --- SETS & VERTICAL RENDER ---
+        function renderSets() {
+            const tbody = document.getElementById('tbody-sets');
+            tbody.innerHTML = '';
+            Object.keys(state.sets).forEach(key => {
+                const row = state.sets[key];
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${row.equipo}</td>
+                        <td><input type="text" class="table-input" value="${row.ref}" onchange="updateSet('${key}', 'ref', this.value)"></td>
+                        <td>${buildSelect(cableTipos, row.cableTipo, `updateSet('${key}', 'cableTipo', this.value)`)}</td>
+                        <td><input type="number" step="0.1" class="table-input" value="${row.cable}" onchange="updateSet('${key}', 'cable', this.value)" style="width: 70px;"></td>
+                        <td>
+                            <div class="flex items-center gap-1">
+                                <input type="number" class="table-input" value="${row.conectores}" onchange="updateSet('${key}', 'conectores', this.value)" style="width: 50px;">
+                                <input type="checkbox" title="Etiquetas Instaladas" ${row.etiq !== false ? 'checked' : ''} onchange="updateSet('${key}', 'etiq', this.checked)">
+                            </div>
+                        </td>
+                        <td><input type="number" class="table-input" value="${row.cargas || ''}" onchange="updateSet('${key}', 'cargas', this.value)" style="width: 60px;"></td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span class="badge ${getBadgeClass(row.estado)}">${row.estado}</span>
+                                ${buildSelect(statusOpts, row.estado, `updateSet('${key}', 'estado', this.value); renderSets();`)}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.addVerticalItem = function() {
+            const minP = Math.min(state.config.pisoInicial, state.config.pisoFinal);
+            state.vertical.unshift({
+                id: Date.now(),
+                piso: minP,
+                equipo: 'Derivador',
+                ref: '',
+                cableTipo: 'RG-6 LSZH',
+                cable: '',
+                conectores: '',
+                cargas: '',
+                estado: 'Pendiente',
+                obs: ''
+            });
+            saveState();
+            renderVertical();
+        };
+
+        window.removeVerticalItem = function(id) {
+            state.vertical = state.vertical.filter(i => i.id != id);
+            saveState();
+            renderVertical();
+        };
+
+        function renderVertical() {
+            const tbody = document.getElementById('tbody-vertical');
+            tbody.innerHTML = '';
+            
+            // Sort vertical by piso desc
+            state.vertical.sort((a, b) => b.piso - a.piso);
+
+            let tCab = 0, tCon = 0;
+
+            state.vertical.forEach(row => {
+                tCab += parseFloat(row.cable || 0);
+                tCon += parseInt(row.conectores || 0);
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><input type="number" class="table-input" value="${row.piso}" onchange="updateVertical(${row.id}, 'piso', this.value); renderVertical();" style="width: 60px; font-weight: bold;"></td>
+                        <td>${buildSelect(verticalEquipos, row.equipo, `updateVertical(${row.id}, 'equipo', this.value)`)}</td>
+                        <td><input type="text" class="table-input" value="${row.ref}" onchange="updateVertical(${row.id}, 'ref', this.value)"></td>
+                        <td>${buildSelect(cableTipos, row.cableTipo, `updateVertical(${row.id}, 'cableTipo', this.value)`)}</td>
+                        <td><input type="number" step="0.1" class="table-input" value="${row.cable}" onchange="updateVertical(${row.id}, 'cable', this.value); renderVertical();" style="width: 70px;"></td>
+                        <td>
+                            <div class="flex items-center gap-1">
+                                <input type="number" class="table-input" value="${row.conectores}" onchange="updateVertical(${row.id}, 'conectores', this.value); renderVertical();" style="width: 50px;">
+                                <input type="checkbox" title="Etiquetas Instaladas" ${row.etiq !== false ? 'checked' : ''} onchange="updateVertical(${row.id}, 'etiq', this.checked); renderVertical();">
+                            </div>
+                        </td>
+                        <td><input type="number" class="table-input" value="${row.cargas || ''}" onchange="updateVertical(${row.id}, 'cargas', this.value); renderVertical();" style="width: 60px;"></td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span class="badge ${getBadgeClass(row.estado)}">${row.estado}</span>
+                                ${buildSelect(statusOpts, row.estado, `updateVertical(${row.id}, 'estado', this.value); renderVertical();`)}
+                            </div>
+                        </td>
+                        <td><input type="text" class="table-input" value="${row.obs}" onchange="updateVertical(${row.id}, 'obs', this.value)"></td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removeVerticalItem(${row.id})">🗑</button></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('sum-vert-elementos').innerText = state.vertical.length;
+            document.getElementById('sum-vert-cable').innerText = tCab.toFixed(1) + ' m';
+            document.getElementById('sum-vert-con').innerText = tCon;
+        }
+
+        // --- DISPERSIÓN RENDER ---
+        function renderDispersion() {
+            const tbody = document.getElementById('tbody-dispersion');
+            tbody.innerHTML = '';
+            
+            const c = state.config;
+            const maxP = Math.max(c.pisoInicial, c.pisoFinal);
+            const minP = Math.min(c.pisoInicial, c.pisoFinal);
+            
+            let tCab = 0, tCon = 0, tInst = 0, tAptos = 0;
+
+            for (let p = maxP; p >= minP; p--) {
+                // Header piso
+                tbody.innerHTML += `<tr class="group-header"><td colspan="7">PISO ${p}</td></tr>`;
+                
+                c.sufijos.forEach(suf => {
+                    const aptoId = getAptoId(p, suf);
+                    const row = state.dispersion[aptoId];
+                    if(!row) return;
+                    
+                    tAptos++;
+                    tCab += parseFloat(row.cable || 0);
+                    tCon += parseInt(row.conectores || 0);
+                    if(row.estado === 'Instalado') tInst++;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${p}</td>
+                            <td class="font-bold">Apto ${aptoId}</td>
+                            <td>${buildSelect(cableTipos, row.cableTipo, `updateDispersion('${aptoId}', 'cableTipo', this.value)`)}</td>
+                            <td><input type="number" step="0.1" class="table-input" value="${row.cable}" onchange="updateDispersion('${aptoId}', 'cable', this.value); updateDispersionSum();" style="width: 70px;"></td>
+                            <td>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" class="table-input" value="${row.conectores}" onchange="updateDispersion('${aptoId}', 'conectores', this.value); updateDispersionSum();" style="width: 50px;">
+                                    <input type="checkbox" title="Etiquetas Instaladas" ${row.etiq !== false ? 'checked' : ''} onchange="updateDispersion('${aptoId}', 'etiq', this.checked); updateDispersionSum();">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <span class="badge ${getBadgeClass(row.estado)}">${row.estado}</span>
+                                    ${buildSelect(statusOpts, row.estado, `updateDispersion('${aptoId}', 'estado', this.value); renderDispersion();`)}
+                                </div>
+                            </td>
+                            <td><input type="text" class="table-input" value="${row.obs}" onchange="updateDispersion('${aptoId}', 'obs', this.value)"></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            window.updateDispersionSum = function() {
+                let c=0, cn=0;
+                Object.values(state.dispersion).forEach(r => { c+=parseFloat(r.cable||0); cn+=parseInt(r.conectores||0); });
+                document.getElementById('sum-disp-cable').innerText = c.toFixed(1) + ' m';
+                document.getElementById('sum-disp-con').innerText = cn;
+            };
+            
+            document.getElementById('sum-disp-aptos').innerText = `${tInst} / ${tAptos}`;
+            document.getElementById('sum-disp-cable').innerText = tCab.toFixed(1) + ' m';
+            document.getElementById('sum-disp-con').innerText = tCon;
+        }
+
+        // --- INTERIOR RENDER ---
+        function renderInterior() {
+            const container = document.getElementById('interior-cards');
+            container.innerHTML = '';
+            
+            const c = state.config;
+            const maxP = Math.max(c.pisoInicial, c.pisoFinal);
+            const minP = Math.min(c.pisoInicial, c.pisoFinal);
+            
+            let tCab = 0, tCon = 0, tTom = 0, tAptos = 0;
+
+            for (let p = maxP; p >= minP; p--) {
+                c.sufijos.forEach(suf => {
+                    const aptoId = getAptoId(p, suf);
+                    const row = state.interior[aptoId];
+                    if(!row) return;
+                    
+                    tAptos++;
+                    let aptoStatus = 'Instalado';
+                    if(row.repartidor.tipo !== 'Ninguno' && row.repartidor.estado !== 'Instalado') aptoStatus = 'Pendiente';
+                    
+                    let espaciosHtml = '';
+                    Object.keys(row.espacios).forEach(esp => {
+                        const rEsp = row.espacios[esp];
+                        tCab += parseFloat(rEsp.cable || 0);
+                        tCon += parseInt(rEsp.conectores || 0);
+                        if(rEsp.toma) tTom++;
+                        if(rEsp.estado !== 'Instalado') aptoStatus = 'Pendiente';
+
+                        espaciosHtml += `
+                            <tr>
+                                <td>${esp}</td>
+                                <td>${buildSelect(['RG-6 LSZH', 'RG-6'], rEsp.cableTipo, `updateInteriorEsp('${aptoId}', '${esp}', 'cableTipo', this.value)`)}</td>
+                                <td><input type="number" step="0.1" class="table-input" value="${rEsp.cable}" onchange="updateInteriorEsp('${aptoId}', '${esp}', 'cable', this.value); updateIntSum();"></td>
+                                <td style="text-align: center;"><input type="checkbox" ${rEsp.toma?'checked':''} onchange="updateInteriorEsp('${aptoId}', '${esp}', 'toma', this); updateIntSum();"></td>
+                                <td>
+                                    <div class="flex items-center gap-1">
+                                        <input type="number" class="table-input" value="${rEsp.conectores}" onchange="updateInteriorEsp('${aptoId}', '${esp}', 'conectores', this.value); updateIntSum();" style="width: 50px;">
+                                        <input type="checkbox" title="Etiquetas Instaladas" ${rEsp.etiq !== false ? 'checked' : ''} onchange="updateInteriorEsp('${aptoId}', '${esp}', 'etiq', this.checked); updateIntSum();">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <span class="badge ${getBadgeClass(rEsp.estado)}">${rEsp.estado}</span>
+                                        ${buildSelect(statusOpts, rEsp.estado, `updateInteriorEsp('${aptoId}', '${esp}', 'estado', this.value); renderInterior();`)}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    container.innerHTML += `
+                        <div class="apto-card" id="card-${aptoId}">
+                            <div class="apto-header" onclick="this.parentElement.classList.toggle('expanded')">
+                                <div class="font-bold">Apto ${aptoId}</div>
+                                <div class="flex gap-4 items-center">
+                                    <div class="text-sm">Repartidor: ${row.repartidor.tipo}</div>
+                                    <span class="badge ${getBadgeClass(aptoStatus)}">${aptoStatus}</span>
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                            <div class="apto-body" onclick="event.stopPropagation()">
+                                <div class="grid-4 mb-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Tipo de Repartidor / Splitter</label>
+                                        ${buildSelect(repartidorTipos, row.repartidor.tipo, `updateInteriorRep('${aptoId}', 'tipo', this.value); renderInterior();`)}
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Referencia Repartidor</label>
+                                        <input type="text" class="form-input" value="${row.repartidor.ref}" onchange="updateInteriorRep('${aptoId}', 'ref', this.value)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Estado Repartidor</label>
+                                        ${buildSelect(statusOpts, row.repartidor.estado, `updateInteriorRep('${aptoId}', 'estado', this.value); renderInterior();`)}
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Cargas Resistivas</label>
+                                        <input type="number" class="form-input" value="${row.repartidor.cargas || ''}" onchange="updateInteriorRep('${aptoId}', 'cargas', this.value)">
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr><th>Espacio</th><th>Cable Tipo</th><th>Cable (m)</th><th>Toma TDT</th><th>Conectores</th><th>Estado</th></tr>
+                                        </thead>
+                                        <tbody>${espaciosHtml}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            window.updateIntSum = function() {
+                let c=0, cn=0, t=0;
+                Object.values(state.interior).forEach(r => {
+                    Object.values(r.espacios).forEach(e => {
+                        c += parseFloat(e.cable||0); cn += parseInt(e.conectores||0); if(e.toma) t++;
+                    });
+                });
+                document.getElementById('sum-int-cable').innerText = c.toFixed(1) + ' m';
+                document.getElementById('sum-int-con').innerText = cn;
+                document.getElementById('sum-int-tomas').innerText = t;
+            };
+
+            document.getElementById('sum-int-aptos').innerText = tAptos;
+            document.getElementById('sum-int-cable').innerText = tCab.toFixed(1) + ' m';
+            document.getElementById('sum-int-con').innerText = tCon;
+            document.getElementById('sum-int-tomas').innerText = tTom;
+        }
+
+        window.expandAll = function(expand) {
+            document.querySelectorAll('.apto-card').forEach(c => {
+                if(expand) c.classList.add('expanded');
+                else c.classList.remove('expanded');
+            });
+        };
+
+        window.copiarPrimerApto = function() {
+            if(!confirm("¿Copiar los valores, modelo y ESTADO del primer apartamento a TODOS los demás?")) return;
+            const c = state.config;
+            const maxP = Math.max(c.pisoInicial, c.pisoFinal);
+            const primerId = getAptoId(maxP, c.sufijos[0]);
+            const modelo = state.interior[primerId];
+            if(!modelo) return;
+
+            Object.keys(state.interior).forEach(id => {
+                if(id !== primerId) {
+                    state.interior[id].repartidor.tipo = modelo.repartidor.tipo;
+                    state.interior[id].repartidor.ref = modelo.repartidor.ref;
+                    state.interior[id].repartidor.cargas = modelo.repartidor.cargas;
+                    state.interior[id].repartidor.estado = modelo.repartidor.estado;
+                    Object.keys(modelo.espacios).forEach(esp => {
+                        if(state.interior[id].espacios[esp]) {
+                            state.interior[id].espacios[esp].cable = modelo.espacios[esp].cable;
+                            state.interior[id].espacios[esp].conectores = modelo.espacios[esp].conectores;
+                            state.interior[id].espacios[esp].toma = modelo.espacios[esp].toma;
+                            state.interior[id].espacios[esp].estado = modelo.espacios[esp].estado;
+                        }
+                    });
+                }
+            });
+            saveState();
+            renderInterior();
+            showToast('Valores copiados a todos los apartamentos');
+        };
+
+        window.marcarInteriorInstalado = function() {
+            if(!confirm("¿Marcar todos los repartidores y espacios de la red interior como INSTALADO?")) return;
+            Object.keys(state.interior).forEach(id => {
+                if (state.interior[id].repartidor.tipo !== 'Ninguno') {
+                    state.interior[id].repartidor.estado = 'Instalado';
+                }
+                Object.keys(state.interior[id].espacios).forEach(esp => {
+                    state.interior[id].espacios[esp].estado = 'Instalado';
+                });
+            });
+            saveState();
+            renderInterior();
+            showToast('Toda la red interior marcada como instalada');
+        };
+
+        // --- INFORME ---
+        function renderInforme() {
+            const c = state.config;
+            document.getElementById('inf-proj-name').innerText = c.nombre;
+            document.getElementById('inf-proj-client').innerText = `${c.cliente} - TORRE ${c.torre}`;
+            document.getElementById('inf-date').innerText = `Generado: ${new Date().toLocaleDateString('es-CO')}`;
+
+            // Calculate Totals & Master Table
+            let sCab = 0, sCon = 0, sCar = 0, vCab = 0, vCon = 0, vCar = 0, dCab = 0, dCon = 0, iCab = 0, iCon = 0, iTom = 0, iCar = 0;
+            let sEti = 0, vEti = 0, dEti = 0, iEti = 0;
+            let vTot=0, vInst=0, dTot=0, dInst=0, iTot=0, iInst=0;
+            
+            let eqData = {}; 
+            const ensureEqData = (eq) => {
+                if (!eqData[eq]) eqData[eq] = { totalS: 0, totalV: 0, totalI: 0, refs: {} };
+            };
+            const addEqRef = (eq, ref, type) => {
+                ensureEqData(eq);
+                const r = ref && ref !== '-' ? ref.trim() : 'Sin Referencia';
+                if (!eqData[eq].refs[r]) eqData[eq].refs[r] = { S: 0, V: 0, I: 0 };
+                eqData[eq].refs[r][type]++;
+            };
+            
+            const tbodyMaestro = document.getElementById('inf-tbody-maestro');
+            tbodyMaestro.innerHTML = '';
+            
+            const appendMaestro = (origen, piso, apto, espacio, equipo, ref, cTipo, metros, con, eti, cargas, estado) => {
+                const etiquetas = parseInt(eti || 0);
+                tbodyMaestro.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${origen}</td>
+                        <td>${piso}</td>
+                        <td>${apto}</td>
+                        <td>${espacio}</td>
+                        <td>${equipo}</td>
+                        <td>${ref}</td>
+                        <td>${cTipo}</td>
+                        <td>${metros || '0'}</td>
+                        <td>${con || '0'}</td>
+                        <td class="font-bold" style="color:var(--brand-orange);">${etiquetas}</td>
+                        <td>${cargas || '0'}</td>
+                        <td><span class="badge ${getBadgeClass(estado)}">${estado}</span></td>
+                    </tr>
+                `;
+            };
+
+            // SETS
+            Object.keys(state.sets).forEach(key => {
+                const r = state.sets[key];
+                sCab += parseFloat(r.cable || 0);
+                const con = parseInt(r.conectores || 0);
+                sCon += con;
+                const eti = (r.etiq !== false && con > 0) ? con : 0;
+                sEti += eti;
+                sCar += parseInt(r.cargas || 0);
+                if (r.equipo && r.equipo !== 'Ninguno') {
+                    ensureEqData(r.equipo);
+                    eqData[r.equipo].totalS++;
+                    addEqRef(r.equipo, r.ref, 'S');
+                }
+                appendMaestro('SETS', 'Cubierta', '-', '-', r.equipo, r.ref || '-', r.cableTipo, r.cable, r.conectores, eti, r.cargas, r.estado);
+            });
+
+            // Vertical
+            state.vertical.forEach(r => {
+                vTot++;
+                if(r.estado === 'Instalado') vInst++;
+                vCab += parseFloat(r.cable || 0);
+                const con = parseInt(r.conectores || 0);
+                vCon += con;
+                const eti = (r.etiq !== false && con > 0) ? con : 0;
+                vEti += eti;
+                vCar += parseInt(r.cargas || 0);
+                if (r.equipo && r.equipo !== 'Ninguno' && r.equipo !== 'Cable Paso') {
+                    ensureEqData(r.equipo);
+                    eqData[r.equipo].totalV++;
+                    addEqRef(r.equipo, r.ref, 'V');
+                }
+                appendMaestro('Vertical', r.piso, '-', '-', r.equipo, r.ref || '-', r.cableTipo, r.cable, r.conectores, eti, r.cargas, r.estado);
+            });
+
+            // Dispersion
+            Object.keys(state.dispersion).forEach(id => {
+                const r = state.dispersion[id];
+                dTot++;
+                if(r.estado === 'Instalado') dInst++;
+                dCab += parseFloat(r.cable || 0);
+                const con = parseInt(r.conectores || 0);
+                dCon += con;
+                const eti = (r.etiq !== false && con > 0) ? con : 0;
+                dEti += eti;
+                // Extract piso from aptoId
+                let pisoGuess = id;
+                for (let s of c.sufijos) {
+                    if (id.endsWith(s)) {
+                        pisoGuess = id.substring(0, id.length - s.length);
+                        break;
+                    }
+                }
+                appendMaestro('Dispersión', pisoGuess, id, '-', '-', '-', r.cableTipo, r.cable, r.conectores, eti, '0', r.estado);
+            });
+
+            // Interior
+            Object.keys(state.interior).forEach(id => {
+                const r = state.interior[id];
+                iTot++;
+                let aptoComplete = true;
+                
+                let pisoGuess = id;
+                for (let s of c.sufijos) {
+                    if (id.endsWith(s)) {
+                        pisoGuess = id.substring(0, id.length - s.length);
+                        break;
+                    }
+                }
+                
+                if(r.repartidor.tipo !== 'Ninguno') {
+                    iCar += parseInt(r.repartidor.cargas || 0);
+                    ensureEqData(r.repartidor.tipo);
+                    eqData[r.repartidor.tipo].totalI++;
+                    addEqRef(r.repartidor.tipo, r.repartidor.ref, 'I');
+                    appendMaestro('Interior', pisoGuess, id, '-', r.repartidor.tipo, r.repartidor.ref || '-', '-', '0', '0', '0', r.repartidor.cargas, r.repartidor.estado);
+                }
+
+                Object.keys(r.espacios).forEach(esp => {
+                    const e = r.espacios[esp];
+                    iCab += parseFloat(e.cable || 0);
+                    const con = parseInt(e.conectores || 0);
+                    iCon += con;
+                    const eti = (e.etiq !== false && con > 0) ? con : 0;
+                    iEti += eti;
+                    if(e.toma) iTom++;
+                    if(e.estado !== 'Instalado') aptoComplete = false;
+                    
+                    appendMaestro('Interior', pisoGuess, id, esp, 'Cableado/Toma', '-', e.cableTipo, e.cable, e.conectores, eti, '0', e.estado);
+                });
+                if(aptoComplete) iInst++;
+            });
+
+            // DOM Updates Consolidado
+            document.getElementById('tot-cab-s').innerText = sCab.toFixed(1);
+            document.getElementById('tot-cab-v').innerText = vCab.toFixed(1);
+            document.getElementById('tot-cab-d').innerText = dCab.toFixed(1);
+            document.getElementById('tot-cab-i').innerText = iCab.toFixed(1);
+            document.getElementById('tot-cab-t').innerText = (sCab + vCab + dCab + iCab).toFixed(1) + ' m';
+
+            document.getElementById('tot-con-s').innerText = sCon;
+            document.getElementById('tot-con-v').innerText = vCon;
+            document.getElementById('tot-con-d').innerText = dCon;
+            document.getElementById('tot-con-i').innerText = iCon;
+            document.getElementById('tot-con-t').innerText = sCon + vCon + dCon + iCon;
+
+            document.getElementById('tot-eti-s').innerText = sEti;
+            document.getElementById('tot-eti-v').innerText = vEti;
+            document.getElementById('tot-eti-d').innerText = dEti;
+            document.getElementById('tot-eti-i').innerText = iEti;
+            document.getElementById('tot-eti-t').innerText = sEti + vEti + dEti + iEti;
+
+            document.getElementById('tot-tom-i').innerText = iTom;
+            document.getElementById('tot-tom-t').innerText = iTom;
+
+            document.getElementById('tot-car-s').innerText = sCar;
+            document.getElementById('tot-car-v').innerText = vCar;
+            document.getElementById('tot-car-d').innerText = 0;
+            document.getElementById('tot-car-i').innerText = iCar;
+            document.getElementById('tot-car-t').innerText = sCar + vCar + iCar;
+
+            const eqTbody = document.getElementById('inf-tbody-totales-eq');
+            eqTbody.innerHTML = '';
+            Object.keys(eqData).sort().forEach(eq => {
+                const data = eqData[eq];
+                const total = data.totalS + data.totalV + data.totalI;
+                
+                eqTbody.innerHTML += `
+                    <tr>
+                        <td>${eq}</td>
+                        <td>${data.totalS}</td>
+                        <td>${data.totalV}</td>
+                        <td>0</td>
+                        <td>${data.totalI}</td>
+                        <td class="font-bold" style="color: var(--brand-orange);">${total}</td>
+                    </tr>
+                `;
+
+                const refs = Object.keys(data.refs).sort();
+                if (refs.length > 0 && !(refs.length === 1 && (refs[0] === 'Sin Referencia' || refs[0] === '-'))) {
+                    refs.forEach(ref => {
+                        const rd = data.refs[ref];
+                        const rTotal = rd.S + rd.V + rd.I;
+                        eqTbody.innerHTML += `
+                            <tr style="background: rgba(255,255,255,0.02); font-size: 0.9em;">
+                                <td style="padding-left: 2rem; color: var(--text-muted);">Ref: ${ref}</td>
+                                <td style="color: var(--text-muted);">${rd.S}</td>
+                                <td style="color: var(--text-muted);">${rd.V}</td>
+                                <td style="color: var(--text-muted);">0</td>
+                                <td style="color: var(--text-muted);">${rd.I}</td>
+                                <td style="color: var(--text-muted);">${rTotal}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+
+            // KPIs
+            const pV = vTot ? (vInst/vTot)*100 : 0;
+            const pD = dTot ? (dInst/dTot)*100 : 0;
+            const pI = iTot ? (iInst/iTot)*100 : 0;
+            const pG = (pV + pD + pI) / 3;
+            
+            document.getElementById('inf-kpi-vert').innerText = pV.toFixed(1) + '%';
+            document.getElementById('inf-kpi-disp').innerText = pD.toFixed(1) + '%';
+            document.getElementById('inf-kpi-int').innerText = pI.toFixed(1) + '%';
+            document.getElementById('inf-kpi-gen').innerText = pG.toFixed(1) + '%';
+        }
+
+        // --- EXPORT ---
+        function setupExportListeners() {
+            document.getElementById('btn-export-excel').addEventListener('click', exportExcel);
+            document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
+            document.getElementById('btn-save-html').addEventListener('click', guardarHTML);
+            document.getElementById('btn-save-json').addEventListener('click', guardarJSON);
+            document.getElementById('file-upload').addEventListener('change', cargarProyecto);
+        }
+
+        function exportExcel() {
+            try {
+                const wb = XLSX.utils.book_new();
+                
+                // 1. Resumen
+                const resumenData = [
+                    ["SCITIC - REGISTRO DE INSTALACIÓN TDT V2"],
+                    ["Proyecto:", state.config.nombre, "Torre:", state.config.torre],
+                    ["Cliente:", state.config.cliente, "Fecha:", new Date().toLocaleDateString()],
+                    [],
+                    ["CONSOLIDADO", "SETS", "Vertical", "Dispersión", "Interior", "TOTAL"]
+                ];
+                
+                // Extraer de las dos tbodys de la primera tabla en tab-informe (Totales Consolidados)
+                const tblTotales = document.querySelector('#tab-informe .card .table-responsive table');
+                tblTotales.querySelectorAll('tbody tr').forEach(tr => {
+                    const rowData = Array.from(tr.querySelectorAll('td')).map((td, idx) => {
+                        const txt = td.innerText.replace(' m', '').trim();
+                        if (idx > 0) return parseFloat(txt) || parseInt(txt) || 0;
+                        return txt;
+                    });
+                    resumenData.push(rowData);
+                });
+
+                const wsResumen = XLSX.utils.aoa_to_sheet(resumenData);
+
+                // Helper to style sheets
+                const styleSheet = (ws, headerRowIndex) => {
+                    ws['!cols'] = [{wch: 25}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}];
+                    for (let key in ws) {
+                        if (key[0] === '!') continue;
+                        const row = parseInt(key.replace(/[A-Z]/g, ''));
+                        const cell = ws[key];
+                        
+                        let s = {
+                            font: { name: 'Calibri', sz: 11 },
+                            border: {
+                                top: { style: "thin", color: { rgb: "CCCCCC" } },
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                                left: { style: "thin", color: { rgb: "CCCCCC" } },
+                                right: { style: "thin", color: { rgb: "CCCCCC" } }
+                            }
+                        };
+                        
+                        if (row === 1) {
+                            s.font.bold = true;
+                            s.font.sz = 14;
+                            s.font.color = { rgb: "EA580C" };
+                            s.border = {};
+                        } else if (row < headerRowIndex) {
+                            s.font.bold = true;
+                            s.border = {};
+                        } else if (row === headerRowIndex) {
+                            s.font.bold = true;
+                            s.fill = { fgColor: { rgb: "1A2744" } };
+                            s.font.color = { rgb: "FFFFFF" };
+                        } else if (cell.v && typeof cell.v === 'string' && (cell.v.includes('TOTAL') || cell.v.includes('Ref: '))) {
+                            if (cell.v.includes('TOTAL')) s.font.bold = true;
+                            if (cell.v.includes('Ref: ')) {
+                                s.font.color = { rgb: "666666" };
+                                s.alignment = { indent: 2 };
+                            }
+                        }
+                        
+                        cell.s = s;
+                    }
+                };
+
+                styleSheet(wsResumen, 5);
+                XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
+
+                // 2. Desglose Maestro (Parse HTML Table)
+                const tblMaestro = document.querySelector('#tab-informe table').parentNode.querySelector('table'); // wait, this was buggy in previous code, let me fix it
+                const tbl2 = document.querySelector('#tab-informe').querySelectorAll('table')[1];
+                const wsMaestro = XLSX.utils.table_to_sheet(tbl2);
+                styleSheet(wsMaestro, 1);
+                XLSX.utils.book_append_sheet(wb, wsMaestro, "Desglose Maestro");
+                
+                XLSX.writeFile(wb, `TDT_${state.config.nombre}_Torre${state.config.torre}_V2.xlsx`);
+                showToast('Excel exportado correctamente');
+            } catch(e) {
+                console.error(e);
+                showToast('Error al exportar Excel', 'danger');
+            }
+        }
+
+        function exportPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('landscape');
+                
+                doc.setFontSize(22);
+                doc.setTextColor(234, 88, 12);
+                doc.text("SCITIC - INFORME TDT (V2)", 14, 20);
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Proyecto: ${state.config.nombre} | Cliente: ${state.config.cliente} | Torre: ${state.config.torre}`, 14, 30);
+                
+                // Consolidado
+                doc.autoTable({
+                    startY: 40,
+                    html: document.querySelector('#tab-informe table'),
+                    theme: 'grid',
+                    headStyles: { fillColor: [26, 39, 68] },
+                    didParseCell: function(data) {
+                        if (data.section === 'body' && data.cell.raw) {
+                            const td = data.cell.raw;
+                            const text = td.innerText || td.textContent || '';
+                            
+                            if (text.startsWith('Ref:')) {
+                                data.cell.styles.textColor = [120, 120, 120];
+                                if (data.column.index === 0) {
+                                    data.cell.styles.cellPadding = { left: 8, top: 1.5, bottom: 1.5, right: 1.5 };
+                                }
+                            } else if (td.style && td.style.color && td.style.color.includes('var(--text-muted)')) {
+                                data.cell.styles.textColor = [120, 120, 120];
+                            }
+                            
+                            if (td.classList && td.classList.contains('font-bold')) {
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+                            if (td.style && td.style.color && td.style.color.includes('var(--brand-orange)')) {
+                                data.cell.styles.textColor = [234, 88, 12];
+                            }
+                        }
+                    }
+                });
+
+                // Maestro
+                doc.addPage();
+                doc.text("DESGLOSE MAESTRO (1 Conector = 1 Etiqueta)", 14, 20);
+                doc.autoTable({
+                    startY: 25,
+                    html: document.querySelectorAll('#tab-informe table')[1],
+                    theme: 'grid',
+                    styles: { fontSize: 7, overflow: 'linebreak' },
+                    headStyles: { fillColor: [234, 88, 12] },
+                    columnStyles: {
+                        4: { cellWidth: 25 },
+                        5: { cellWidth: 40 }
+                    }
+                });
+                
+                doc.save(`TDT_${state.config.nombre}_T${state.config.torre}_V2.pdf`);
+                showToast('PDF exportado correctamente');
+            } catch(e) {
+                console.error(e);
+                showToast('Error al exportar PDF', 'danger');
+            }
+        }
+
+        function guardarHTML() {
+            let htmlContent = document.documentElement.outerHTML;
+            const stateScript = `<script id="scitic-backup-state" type="application/json">${JSON.stringify(state)}<\/script>`;
+            htmlContent = htmlContent.replace(/<script id="scitic-backup-state".*?<\/script>/s, '');
+            htmlContent = htmlContent.replace('</body>', `${stateScript}\n</body>`);
+            
+            const blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `TDT_${state.config.nombre}_Torre${state.config.torre}_BackupV2.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Archivo HTML guardado con datos');
+        }
+
+        function guardarJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const a = document.createElement('a');
+            a.href = dataStr;
+            a.download = `TDT_${state.config.nombre}_Torre${state.config.torre}_BackupV2.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Archivo JSON guardado con éxito');
+        }
+
+        function cargarProyecto(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const contents = evt.target.result;
+                    let parsedState = null;
+                    if (file.name.endsWith('.json')) {
+                        parsedState = JSON.parse(contents);
+                    } else if (file.name.endsWith('.html')) {
+                        const match = contents.match(/<script id="scitic-backup-state" type="application\/json">(.*?)<\/script>/s);
+                        if (match && match[1]) parsedState = JSON.parse(match[1]);
+                    }
+                    if (parsedState && parsedState.config) {
+                        localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(parsedState));
+                        location.reload(); // Reload to render properly with new state
+                    }
+                } catch(err) {
+                    showToast('Error leyendo backup', 'danger');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const backupScript = document.getElementById('scitic-backup-state');
+            if (backupScript) {
+                try {
+                    state = JSON.parse(backupScript.textContent);
+                    localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(state));
+                } catch(e) {}
+            }
+            init();
+        });
+    </script>
+</body>
+</html>
