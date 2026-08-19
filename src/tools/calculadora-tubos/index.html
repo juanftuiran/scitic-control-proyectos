@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Tubería y Bandejas RITEL 2025</title>
+    <title>Calculadora de Canalizaciones y Tubería RITEL 2025 | SCITIC</title>
 
     <script>
         // Leer la memoria del navegador para saber el modo (por defecto es 'online')
@@ -44,23 +44,65 @@
             --accent: #f2a900;
             --bg-light: #f4f8fb;
             --border: #cce0ff;
+            --success: #1D6F42;
+            --danger: #D32F2F;
+            --purple: #6f42c1;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f9f9f9;
-            margin: 20px;
+            margin: 15px 20px;
             color: #333;
+        }
+
+        /* NAVEGACIÓN ENTRE APLICATIVOS / MODOS */
+        .nav-app-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .nav-tab-btn {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 30px;
+            color: var(--primary);
+            background: transparent;
+            border: 2px solid transparent;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-tab-btn:hover {
+            background: #e8f0fe;
+            color: var(--secondary);
+        }
+        .nav-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,64,128,0.25);
         }
         
         .project-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             text-align: center;
             color: var(--primary);
             border: none;
             background: transparent;
             width: 100%;
-            margin-bottom: 25px;
+            margin-bottom: 8px;
             border-bottom: 2px dashed transparent;
             transition: 0.3s;
             display: block;
@@ -70,15 +112,22 @@
             border-bottom: 2px dashed var(--accent);
         }
 
+        .sub-header-info {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 18px;
+        }
+
         .header-panel {
             background: white;
-            padding: 20px;
+            padding: 18px 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
         .input-group {
@@ -99,36 +148,66 @@
         .input-group input[type="number"] { width: 80px; }
         
         .resaltado-pau {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             color: var(--secondary);
-            padding-top: 8px;
+            padding-top: 4px;
+        }
+
+        .resaltado-tubos {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--success);
+            padding-top: 4px;
         }
 
         button {
-            padding: 10px 15px;
+            padding: 9px 14px;
             border: none;
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
             color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
         }
         .btn-calc { background-color: var(--primary); }
         .btn-calc:hover { background-color: #00264d; }
+        .btn-add { background-color: var(--secondary); }
+        .btn-add:hover { background-color: #005bb5; }
         .btn-toggle { background-color: #17a2b8; }
         .btn-toggle:hover { background-color: #138496; }
-        .btn-excel { background-color: #1D6F42; }
-        .btn-pdf { background-color: #D32F2F; }
-        .btn-save { background-color: #f2a900; color: #000; }
-        .btn-net { font-size: 14px; padding: 10px; border: 2px solid transparent; }
+        .btn-example { background-color: var(--purple); }
+        .btn-example:hover { background-color: #59359a; }
+        .btn-clear { background-color: #6c757d; }
+        .btn-clear:hover { background-color: #5a6268; }
+        .btn-excel { background-color: var(--success); }
+        .btn-excel:hover { background-color: #155734; }
+        .btn-pdf { background-color: var(--danger); }
+        .btn-pdf:hover { background-color: #b71c1c; }
+        .btn-save { background-color: var(--accent); color: #000; }
+        .btn-save:hover { background-color: #d89600; }
+        .btn-net { font-size: 13px; padding: 9px 12px; border: 2px solid transparent; }
         .btn-net:hover { filter: brightness(0.9); }
         
+        .btn-icon {
+            padding: 5px 8px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background-color: #bd2130; }
+        .btn-copy { background-color: #17a2b8; }
+        .btn-copy:hover { background-color: #138496; }
+
         .table-container {
             overflow-x: auto;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             margin-bottom: 20px;
         }
         table {
@@ -140,7 +219,7 @@
         th {
             background-color: var(--primary);
             color: white;
-            padding: 8px;
+            padding: 8px 6px;
             border: 1px solid var(--border);
         }
         th.sub-th {
@@ -152,19 +231,27 @@
             color: #000;
         }
         td {
-            padding: 6px;
+            padding: 6px 4px;
             border: 1px solid var(--border);
         }
         tr:nth-child(even) { background-color: var(--bg-light); }
         
+        .input-tramo {
+            width: 75px;
+            text-align: center;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-weight: 600;
+        }
         .input-mini {
-            width: 45px;
+            width: 48px;
             text-align: center;
             padding: 4px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        .in-pau-piso {
+        .in-pau-piso, .in-pau-parc {
             background-color: #e8f4ff;
             font-weight: bold;
             color: var(--primary);
@@ -178,12 +265,13 @@
         .tubos-fisicos {
             font-weight: bold;
             color: var(--primary);
-            font-size: 14px;
+            font-size: 13px;
         }
         .tubos-total-cell {
             font-weight: bold;
             background-color: #fff3cd;
             font-size: 14px;
+            color: #856404;
         }
         
         .th-bandeja { background-color: #2b78e4; }
@@ -197,125 +285,316 @@
             gap: 30px;
             align-items: center;
         }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         
         .chk-group {
             flex-direction: row; 
             align-items: center; 
             gap: 8px; 
             background: var(--bg-light); 
-            padding: 10px 15px; 
+            padding: 8px 12px; 
             border-radius: 4px; 
             border: 1px solid var(--border);
             height: 100%;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .card {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--secondary);
+        }
+        .card.card-accent { border-left-color: var(--accent); }
+        .card.card-success { border-left-color: var(--success); }
+        .card-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .card-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .empty-state {
+            padding: 35px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
+    <!-- SELECTOR DE MODO / HERRAMIENTA -->
+    <div class="nav-app-bar">
+        <button class="nav-tab-btn active" id="tab-btn-torres" onclick="cambiarModoApp('torres')">🏢 Edificios / Torres (SETI-SETS)</button>
+        <button class="nav-tab-btn" id="tab-btn-parcelaciones" onclick="cambiarModoApp('parcelaciones')">🏘️ Parcelaciones / Casas (SETU)</button>
+    </div>
+
+    <!-- TÍTULO DINÁMICO DEL PROYECTO -->
     <input type="text" id="in-proyecto" class="project-title" placeholder="Escribe el Nombre del Proyecto Aquí">
-
-    <div class="header-panel">
-        <div class="input-group">
-            <label>Piso más alto (Cubierta):</label>
-            <input type="number" id="in-pisos" value="28" min="1">
-        </div>
-        <div class="input-group">
-            <label title="El piso donde inicia la torre y se ubica el SETI. Útil si hay parqueaderos abajo.">Piso del SETI (Base):</label>
-            <input type="number" id="in-piso-base" value="3" min="1">
-        </div>
-        <div class="input-group">
-            <label>Aptos/Piso (Por defecto):</label>
-            <input type="number" id="in-aptos" value="6" min="0" onchange="aplicarAptosDefault()">
-        </div>
-        
-        <div class="input-group chk-group">
-            <input type="checkbox" id="chk-linea-extra" onchange="generarTabla()" style="width: 16px; height: 16px; cursor: pointer;">
-            <label for="chk-linea-extra" style="margin: 0; cursor: pointer; color: #333;" title="Si se activa, muestra el paso por el piso base antes de entrar al SETI (Ej. Piso 4 a Piso 3).">Mostrar Línea Extra (Paso SETI)</label>
-        </div>
-
-        <button class="btn-calc" onclick="generarTabla()">Generar Infraestructura</button>
-        
-        <div class="input-group" style="margin-left: 15px; border-left: 2px solid #eee; padding-left: 15px;">
-            <label>Total PAUs Edificio:</label>
-            <div class="resaltado-pau" id="out-total-pau">0</div>
-        </div>
-
-        <div style="flex-grow: 1;"></div>
-
-        <button id="btn-conexion" class="btn-net" onclick="alternarConexion()"></button>
-
-        <button class="btn-toggle" onclick="toggleVista()">🔄 Vista (Tubería/Bandeja)</button>
-        <button class="btn-save" onclick="guardarHTML()" title="Guarda la web completa para que puedas abrirla luego con doble clic">💾 Guardar App (.html)</button>
-        <button class="btn-excel" onclick="exportarExcel()">📊 Excel</button>
-        <button class="btn-pdf" onclick="exportarPDF()">📄 PDF</button>
+    <div class="sub-header-info" id="sub-header-info">
+        Normativa RITEL 2025 (CRC) — Dimensionamiento de Canalización y Redes de Distribución
     </div>
 
-    <div class="table-container" id="vista-tubos">
-        <table id="tabla-calculo">
-            <thead>
-                <tr>
-                    <th rowspan="2">Tramo</th>
-                    <th rowspan="2" title="Cantidad de PAUs que ingresan en este nivel">PAUs<br>Nivel</th>
-                    <th colspan="2">PAU Acumulado</th>
-                    <th rowspan="2">Material</th>
-                    <th rowspan="2">Diámetro</th>
-                    <th rowspan="2">Área (AT)</th>
-                    <th rowspan="2">Curvas<br>(>60°)</th>
-                    <th colspan="2">CNC Cables (mm²)</th>
-                    <th colspan="2">SETI (Abajo ⬇)</th>
-                    <th colspan="2">SETS (Arriba ⬆)</th>
-                    <th rowspan="2" class="th-total">TOTAL<br>TUBOS</th>
-                </tr>
-                <tr>
-                    <th class="sub-th">SETI</th>
-                    <th class="sub-th">SETS</th>
-                    <th class="sub-th">SETI</th>
-                    <th class="sub-th">SETS</th>
-                    <th class="sub-th">Calc.</th>
-                    <th class="sub-th">Físicos</th>
-                    <th class="sub-th">Calc.</th>
-                    <th class="sub-th">Físicos</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-body">
-                </tbody>
-        </table>
-    </div>
-
-    <div class="table-container hidden" id="vista-bandeja">
-        <div class="bandeja-resumen">
+    <!-- ======================================================== -->
+    <!-- SECCIÓN 1: CALCULADORA DE TORRES / EDIFICIOS (VERTICAL) -->
+    <!-- ======================================================== -->
+    <div id="seccion-torres">
+        <div class="header-panel">
             <div class="input-group">
-                <label>ALTO BANDEJA (mm):</label>
-                <input type="number" id="in-alto-bandeja" value="80" style="width: 100px; font-weight: bold; font-size: 14px;" onchange="recalcularTodo()">
+                <label>Piso más alto (Cubierta):</label>
+                <input type="number" id="in-pisos" value="28" min="1">
             </div>
-            <div>
-                <span style="font-size: 12px; font-weight: bold; color: var(--primary);">Anchos de Bandeja Comerciales Recomendados en Gabinetes Principales:</span><br>
-                ⬇️ LLEGADA A SETI: <strong id="bandeja-seti" style="color:var(--secondary); font-size: 16px;">0</strong> mm &nbsp;&nbsp;|&nbsp;&nbsp; 
-                ⬆️ LLEGADA A SETS: <strong id="bandeja-sets" style="color:var(--secondary); font-size: 16px;">0</strong> mm
+            <div class="input-group">
+                <label title="El piso donde inicia la torre y se ubica el SETI. Útil si hay parqueaderos abajo.">Piso del SETI (Base):</label>
+                <input type="number" id="in-piso-base" value="3" min="1">
             </div>
+            <div class="input-group">
+                <label>Aptos/Piso (Por defecto):</label>
+                <input type="number" id="in-aptos" value="6" min="0" onchange="aplicarAptosDefault()">
+            </div>
+            
+            <div class="input-group chk-group">
+                <input type="checkbox" id="chk-linea-extra" onchange="generarTablaTorres()" style="width: 16px; height: 16px; cursor: pointer;">
+                <label for="chk-linea-extra" style="margin: 0; cursor: pointer; color: #333;" title="Si se activa, muestra el paso por el piso base antes de entrar al SETI (Ej. Piso 4 a Piso 3).">Mostrar Línea Extra (Paso SETI)</label>
+            </div>
+
+            <button class="btn-calc" onclick="generarTablaTorres()">Generar Infraestructura</button>
+            
+            <div class="input-group" style="margin-left: 10px; border-left: 2px solid #eee; padding-left: 15px;">
+                <label>Total PAUs Edificio:</label>
+                <div class="resaltado-pau" id="out-total-pau-torres">0</div>
+            </div>
+
+            <div style="flex-grow: 1;"></div>
+
+            <button id="btn-conexion-torres" class="btn-net" onclick="alternarConexion()"></button>
+            <button class="btn-toggle" onclick="toggleVistaTorres()">🔄 Vista (Tubería/Bandeja)</button>
+            <button class="btn-save" onclick="guardarHTML()" title="Guarda la web completa para que puedas abrirla luego con doble clic">💾 Guardar App (.html)</button>
+            <button class="btn-excel" onclick="exportarExcelTorres()">📊 Excel</button>
+            <button class="btn-pdf" onclick="exportarPDFTorres()">📄 PDF</button>
         </div>
-        <table id="tabla-bandeja">
-            <thead>
-                <tr>
-                    <th class="th-bandeja">Tramo</th>
-                    <th class="th-bandeja">Cálculos para<br>Bandeja SETI</th>
-                    <th class="th-bandeja">Cálculos para<br>Bandeja SETS</th>
-                    <th class="th-bandeja">Ancho Bandeja<br>SETI</th>
-                    <th class="th-bandeja">Ancho Bandeja<br>SETS</th>
-                    <th class="th-bandeja-total">Total Bandejas<br>Portacable (mm)</th>
-                    <th class="th-bandeja-total" style="background-color: var(--accent); color: #000;">Bandeja Comercial<br>Recomendada (mm)</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-body-bandeja">
+
+        <div class="table-container" id="vista-tubos-torres">
+            <table id="tabla-calculo-torres">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Tramo</th>
+                        <th rowspan="2" title="Cantidad de PAUs que ingresan en este nivel">PAUs<br>Nivel</th>
+                        <th colspan="2">PAU Acumulado</th>
+                        <th rowspan="2">Material</th>
+                        <th rowspan="2">Diámetro</th>
+                        <th rowspan="2">Área (AT)</th>
+                        <th rowspan="2">Curvas<br>(>60°)</th>
+                        <th colspan="2">CNC Cables (mm²)</th>
+                        <th colspan="2">SETI (Abajo ⬇)</th>
+                        <th colspan="2">SETS (Arriba ⬆)</th>
+                        <th rowspan="2" class="th-total">TOTAL<br>TUBOS</th>
+                    </tr>
+                    <tr>
+                        <th class="sub-th">SETI</th>
+                        <th class="sub-th">SETS</th>
+                        <th class="sub-th">SETI</th>
+                        <th class="sub-th">SETS</th>
+                        <th class="sub-th">Calc.</th>
+                        <th class="sub-th">Físicos</th>
+                        <th class="sub-th">Calc.</th>
+                        <th class="sub-th">Físicos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body-torres">
                 </tbody>
-        </table>
+            </table>
+        </div>
+
+        <div class="table-container hidden" id="vista-bandeja-torres">
+            <div class="bandeja-resumen">
+                <div class="input-group">
+                    <label>ALTO BANDEJA (mm):</label>
+                    <input type="number" id="in-alto-bandeja" value="80" style="width: 100px; font-weight: bold; font-size: 14px;" onchange="recalcularTorres()">
+                </div>
+                <div>
+                    <span style="font-size: 12px; font-weight: bold; color: var(--primary);">Anchos de Bandeja Comerciales Recomendados en Gabinetes Principales:</span><br>
+                    ⬇️ LLEGADA A SETI: <strong id="bandeja-seti" style="color:var(--secondary); font-size: 16px;">0</strong> mm &nbsp;&nbsp;|&nbsp;&nbsp; 
+                    ⬆️ LLEGADA A SETS: <strong id="bandeja-sets" style="color:var(--secondary); font-size: 16px;">0</strong> mm
+                </div>
+            </div>
+            <table id="tabla-bandeja-torres">
+                <thead>
+                    <tr>
+                        <th class="th-bandeja">Tramo</th>
+                        <th class="th-bandeja">Cálculos para<br>Bandeja SETI</th>
+                        <th class="th-bandeja">Cálculos para<br>Bandeja SETS</th>
+                        <th class="th-bandeja">Ancho Bandeja<br>SETI</th>
+                        <th class="th-bandeja">Ancho Bandeja<br>SETS</th>
+                        <th class="th-bandeja-total">Total Bandejas<br>Portacable (mm)</th>
+                        <th class="th-bandeja-total" style="background-color: var(--accent); color: #000;">Bandeja Comercial<br>Recomendada (mm)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body-bandeja-torres">
+                </tbody>
+            </table>
+        </div>
     </div>
 
+    <!-- ================================================================ -->
+    <!-- SECCIÓN 2: CALCULADORA DE PARCELACIONES / CASAS (HORIZONTAL SETU) -->
+    <!-- ================================================================ -->
+    <div id="seccion-parcelaciones" class="hidden">
+        <div class="header-panel">
+            <button class="btn-add" onclick="agregarFilaParcelacion()">➕ Agregar Tramo</button>
+            <button class="btn-example" onclick="cargarEjemploParcelacion()" title="Carga un ejemplo de parcelación típico">📋 Cargar Ejemplo</button>
+            <button class="btn-clear" onclick="limpiarTablaParcelacion()" title="Borra todos los tramos">🗑️ Limpiar Todo</button>
+
+            <div class="input-group" style="margin-left: 10px; border-left: 2px solid #eee; padding-left: 15px;">
+                <label>Total PAUs / Casas:</label>
+                <div class="resaltado-pau" id="out-total-pau-parc">0</div>
+            </div>
+
+            <div class="input-group" style="margin-left: 10px; border-left: 2px solid #eee; padding-left: 15px;">
+                <label>Total Tubos Proyecto:</label>
+                <div class="resaltado-tubos" id="out-total-tubos-parc">0</div>
+            </div>
+
+            <div style="flex-grow: 1;"></div>
+
+            <button id="btn-conexion-parc" class="btn-net" onclick="alternarConexion()"></button>
+            <button class="btn-save" onclick="guardarHTML()" title="Guarda la web completa con tus tramos para abrirla con doble clic">💾 Guardar App (.html)</button>
+            <button class="btn-excel" onclick="exportarExcelParcelacion()">📊 Excel</button>
+            <button class="btn-pdf" onclick="exportarPDFParcelacion()">📄 PDF</button>
+        </div>
+
+        <!-- TARJETAS DE RESUMEN -->
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-title">Tramos Configurados</div>
+                <div class="card-value" id="card-tramos">0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">PAUs Totales</div>
+                <div class="card-value" id="card-paus">0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Tubos SETI (Físicos)</div>
+                <div class="card-value" id="card-tubos-seti" style="color: var(--secondary);">0</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Tubos SETS (Físicos)</div>
+                <div class="card-value" id="card-tubos-sets" style="color: var(--secondary);">0</div>
+            </div>
+            <div class="card card-success">
+                <div class="card-title">Gran Total de Tubos</div>
+                <div class="card-value" id="card-total-tubos" style="color: var(--success);">0</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="tabla-calculo-parcelaciones">
+                <thead>
+                    <tr>
+                        <th colspan="2">Tramo</th>
+                        <th rowspan="2" title="Cantidad de PAUs o Unidades Inmobiliarias que pasan por este tramo">PAUs / TU</th>
+                        <th rowspan="2">Material</th>
+                        <th rowspan="2">Diámetro</th>
+                        <th rowspan="2" title="Área interior útil del tubo según RETIE/RITEL">Área (AT)<br>(mm²)</th>
+                        <th rowspan="2" title="Curvas mayores a 60 grados">Curvas<br>(>60°)</th>
+                        <th colspan="2">CNC Cables (mm²)</th>
+                        <th colspan="2">Distribución SETI</th>
+                        <th colspan="2">Distribución SETS</th>
+                        <th rowspan="2" class="th-total" title="Suma de Tubos Físicos SETI + SETS">TOTAL<br>TUBOS</th>
+                        <th rowspan="2">Acciones</th>
+                    </tr>
+                    <tr>
+                        <th class="sub-th">Desde</th>
+                        <th class="sub-th">Hasta</th>
+                        <th class="sub-th">SETI</th>
+                        <th class="sub-th">SETS</th>
+                        <th class="sub-th">Cálc.</th>
+                        <th class="sub-th">Físicos</th>
+                        <th class="sub-th">Cálc.</th>
+                        <th class="sub-th">Físicos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body-parcelaciones">
+                </tbody>
+            </table>
+            <div id="empty-state-parc" class="empty-state hidden">
+                No hay tramos configurados. Haz clic en <strong>➕ Agregar Tramo</strong> o en <strong>📋 Cargar Ejemplo</strong> para comenzar.
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MOTOR JAVASCRIPT: INTEGRACIÓN DE AMBOS APLICATIVOS       -->
+    <!-- ======================================================== -->
     <script>
-        function toggleVista() {
-            const vistaTubos = document.getElementById('vista-tubos');
-            const vistaBandeja = document.getElementById('vista-bandeja');
+        var modoActivo = localStorage.getItem('ritelCalculadoraModo') || 'torres';
+
+        function cambiarModoApp(modo) {
+            modoActivo = modo;
+            localStorage.setItem('ritelCalculadoraModo', modo);
+            
+            const btnTorres = document.getElementById('tab-btn-torres');
+            const btnParc = document.getElementById('tab-btn-parcelaciones');
+            const secTorres = document.getElementById('seccion-torres');
+            const secParc = document.getElementById('seccion-parcelaciones');
+            const subHeader = document.getElementById('sub-header-info');
+
+            if (modo === 'torres') {
+                btnTorres.classList.add('active');
+                btnParc.classList.remove('active');
+                secTorres.classList.remove('hidden');
+                secParc.classList.add('hidden');
+                subHeader.textContent = "Normativa RITEL 2025 (CRC) — Canalización de Distribución Vertical en Edificios y Torres (SETI / SETS)";
+            } else {
+                btnTorres.classList.remove('active');
+                btnParc.classList.add('active');
+                secTorres.classList.add('hidden');
+                secParc.classList.remove('hidden');
+                subHeader.textContent = "Normativa RITEL 2025 (CRC) — Canalización de Distribución Horizontal en Parcelaciones y Casas desde Salón SETU";
+                if (document.querySelectorAll('#tabla-body-parcelaciones tr').length === 0) {
+                    cargarEjemploParcelacion();
+                }
+            }
+        }
+
+        // ==========================================
+        // FUNCIONES DE REDONDEO
+        // ==========================================
+        function redondearTubosTorres(valor) {
+            if (valor === 0) return 0;
+            let v = Math.round(valor * 1000) / 1000;
+            let entero = Math.floor(v);
+            let decimal = v - entero;
+            return (decimal >= 0.1) ? entero + 1 : entero;
+        }
+
+        function redondearBandejaTorres(valor) {
+            if (valor <= 0) return 0;
+            let baseCien = Math.floor(valor / 100) * 100;
+            let residuo = valor - baseCien;
+            let redondeado = (residuo >= 10) ? baseCien + 100 : baseCien;
+            return Math.max(200, redondeado);
+        }
+
+        // ==========================================
+        // LÓGICA DE TORRES / EDIFICIOS
+        // ==========================================
+        function toggleVistaTorres() {
+            const vistaTubos = document.getElementById('vista-tubos-torres');
+            const vistaBandeja = document.getElementById('vista-bandeja-torres');
             if (vistaTubos.classList.contains('hidden')) {
                 vistaTubos.classList.remove('hidden');
                 vistaBandeja.classList.add('hidden');
@@ -325,23 +604,7 @@
             }
         }
 
-        function redondearTubos(valor) {
-            if (valor === 0) return 0;
-            let v = Math.round(valor * 1000) / 1000;
-            let entero = Math.floor(v);
-            let decimal = v - entero;
-            return (decimal >= 0.1) ? entero + 1 : entero;
-        }
-
-        function redondearBandeja(valor) {
-            if (valor <= 0) return 0;
-            let baseCien = Math.floor(valor / 100) * 100;
-            let residuo = valor - baseCien;
-            let redondeado = (residuo >= 10) ? baseCien + 100 : baseCien;
-            return Math.max(200, redondeado);
-        }
-
-        function generarTabla() {
+        function generarTablaTorres() {
             const pisos = parseInt(document.getElementById('in-pisos').value) || 0;
             let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
             const aptosDefault = parseInt(document.getElementById('in-aptos').value) || 0;
@@ -353,8 +616,8 @@
                 return;
             }
 
-            const tbodyTubos = document.getElementById('tabla-body');
-            const tbodyBandeja = document.getElementById('tabla-body-bandeja');
+            const tbodyTubos = document.getElementById('tabla-body-torres');
+            const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
             tbodyTubos.innerHTML = '';
             tbodyBandeja.innerHTML = '';
 
@@ -394,28 +657,30 @@
 
                 trTubo.innerHTML = `
                     <td><strong>${nombreTramo}</strong></td>
-                    <td><input type="number" class="input-mini in-pau-piso" value="${valorPauInicial}" min="0" onchange="recalcularTodo()"></td>
+                    <td><input type="number" class="input-mini in-pau-piso" value="${valorPauInicial}" min="0" onchange="recalcularTorres()"></td>
                     <td class="val-pau-seti">0</td>
                     <td class="val-pau-sets">0</td>
                     <td>
-                        <select class="input-sel sel-mat" onchange="recalcularTodo()">
+                        <select class="input-sel sel-mat" onchange="recalcularTorres()">
                             <option value="SCH40" selected>SCH40</option>
                             <option value="PVC">PVC</option>
                             <option value="EMT">EMT</option>
                         </select>
                     </td>
                     <td>
-                        <select class="input-sel sel-dia" onchange="recalcularTodo()">
+                        <select class="input-sel sel-dia" onchange="recalcularTorres()">
                             <option value='1/2"'>1/2"</option>
                             <option value='3/4"'>3/4"</option>
                             <option value='1"'>1"</option>
                             <option value='1 1/4"'>1 1/4"</option>
                             <option value='1 1/2"'>1 1/2"</option>
                             <option value='2"' selected>2"</option>
+                            <option value='2 1/2"'>2 1/2"</option>
+                            <option value='3"'>3"</option>
                         </select>
                     </td>
                     <td class="val-at">2138.44</td>
-                    <td><input type="number" class="input-mini in-curvas" value="${curvasDefault}" min="0" onchange="recalcularTodo()"></td>
+                    <td><input type="number" class="input-mini in-curvas" value="${curvasDefault}" min="0" onchange="recalcularTorres()"></td>
                     <td class="val-cnc-seti">0.00</td>
                     <td class="val-cnc-sets">0.00</td>
                     <td class="val-tub-seti-c">0.000</td>
@@ -437,23 +702,23 @@
                 `;
                 tbodyBandeja.appendChild(trBandeja);
             }
-            recalcularTodo();
+            recalcularTorres();
         }
 
         function aplicarAptosDefault() {
             let aptos = parseInt(document.getElementById('in-aptos').value) || 0;
             let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
             
-            document.querySelectorAll('#tabla-body tr').forEach(tr => {
+            document.querySelectorAll('#tabla-body-torres tr').forEach(tr => {
                 let nivel = parseInt(tr.dataset.nivel);
                 if(nivel > pisoBase || (nivel === pisoBase && pisoBase === 1)) {
                     tr.querySelector('.in-pau-piso').value = aptos;
                 }
             });
-            recalcularTodo();
+            recalcularTorres();
         }
 
-        function recalcularTodo() {
+        function recalcularTorres() {
             let pisos = parseInt(document.getElementById('in-pisos').value) || 0;
             let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
             let mostrarLineaExtra = document.getElementById('chk-linea-extra').checked;
@@ -461,8 +726,8 @@
             
             let limiteInferior = (pisoBase > 1 && !mostrarLineaExtra) ? pisoBase : pisoBase - 1;
 
-            let filasTubo = document.querySelectorAll('#tabla-body tr');
-            let filasBandeja = document.querySelectorAll('#tabla-body-bandeja tr');
+            let filasTubo = document.querySelectorAll('#tabla-body-torres tr');
+            let filasBandeja = document.querySelectorAll('#tabla-body-bandeja-torres tr');
             if(filasTubo.length === 0) return;
 
             let pausArray = {};
@@ -475,7 +740,7 @@
                 totalEdificio += val;
             });
 
-            document.getElementById('out-total-pau').textContent = totalEdificio;
+            document.getElementById('out-total-pau-torres').textContent = totalEdificio;
 
             filasTubo.forEach((trTubo, index) => {
                 let nivel = parseInt(trTubo.dataset.nivel);
@@ -506,8 +771,8 @@
                 let tubCalcSeti = tubos.tubCalcSeti;
                 let tubCalcSets = tubos.tubCalcSets;
 
-                let tubFisSeti = pauSeti === 0 ? 0 : redondearTubos(tubCalcSeti);
-                let tubFisSets = pauSets === 0 ? 0 : redondearTubos(tubCalcSets);
+                let tubFisSeti = pauSeti === 0 ? 0 : redondearTubosTorres(tubCalcSeti);
+                let tubFisSets = pauSets === 0 ? 0 : redondearTubosTorres(tubCalcSets);
 
                 trTubo.querySelector('.val-cnc-seti').textContent = cncSeti.toFixed(2);
                 trTubo.querySelector('.val-cnc-sets').textContent = cncSets.toFixed(2);
@@ -517,7 +782,7 @@
                 trTubo.querySelector('.val-tub-sets-f').textContent = tubFisSets;
                 trTubo.querySelector('.val-total').textContent = tubFisSeti + tubFisSets;
 
-                // --- MATEMÁTICA BANDEJAS ---
+                // MATEMÁTICA BANDEJAS
                 let bandejas = RitelFormulas.calcularBandejas(pauSeti, pauSets, altoBandeja);
                 let calcBanSeti = bandejas.calcBanSeti;
                 let calcBanSets = bandejas.calcBanSets;
@@ -531,16 +796,173 @@
                 trBandeja.querySelector('.ban-ancho-sets').textContent = anchoSets.toFixed(2);
                 trBandeja.querySelector('.ban-total').textContent = anchoTotal.toFixed(2);
                 
-                trBandeja.querySelector('.ban-recomendada').textContent = redondearBandeja(anchoTotal);
+                trBandeja.querySelector('.ban-recomendada').textContent = redondearBandejaTorres(anchoTotal);
             });
 
-            let finalRiti = filasBandeja[filasBandeja.length - 1].querySelector('.ban-recomendada').textContent;
-            let finalRits = filasBandeja[0].querySelector('.ban-recomendada').textContent;
-            
-            document.getElementById('bandeja-seti').textContent = finalRiti;
-            document.getElementById('bandeja-sets').textContent = finalRits;
+            if (filasBandeja.length > 0) {
+                let finalRiti = filasBandeja[filasBandeja.length - 1].querySelector('.ban-recomendada').textContent;
+                let finalRits = filasBandeja[0].querySelector('.ban-recomendada').textContent;
+                document.getElementById('bandeja-seti').textContent = finalRiti;
+                document.getElementById('bandeja-sets').textContent = finalRits;
+            }
         }
 
+        // ==========================================
+        // LÓGICA DE PARCELACIONES / CASAS (SETU)
+        // ==========================================
+        function agregarFilaParcelacion(desdeVal, hastaVal, pauVal, matVal, diaVal, curvasVal) {
+            const tbody = document.getElementById('tabla-body-parcelaciones');
+            const emptyState = document.getElementById('empty-state-parc');
+            emptyState.classList.add('hidden');
+
+            let num = tbody.children.length + 1;
+            let desde = desdeVal !== undefined ? desdeVal : (num === 1 ? 'SETU' : `CD-${String(num - 1).padStart(2, '0')}`);
+            let hasta = hastaVal !== undefined ? hastaVal : `CD-${String(num).padStart(2, '0')}`;
+            let pau = pauVal !== undefined ? pauVal : (num === 1 ? 20 : 10);
+            let material = matVal !== undefined ? matVal : 'PVC';
+            let diametro = diaVal !== undefined ? diaVal : '2"';
+            let curvas = curvasVal !== undefined ? curvasVal : 0;
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="input-tramo in-desde" value="${desde}" onchange="recalcularParcelacion()" placeholder="Desde"></td>
+                <td><input type="text" class="input-tramo in-hasta" value="${hasta}" onchange="recalcularParcelacion()" placeholder="Hasta"></td>
+                <td><input type="number" class="input-mini in-pau-parc" value="${pau}" min="0" onchange="recalcularParcelacion()"></td>
+                <td>
+                    <select class="input-sel sel-mat" onchange="recalcularParcelacion()">
+                        <option value="PVC" ${material === 'PVC' ? 'selected' : ''}>PVC</option>
+                        <option value="SCH40" ${material === 'SCH40' ? 'selected' : ''}>SCH40</option>
+                        <option value="EMT" ${material === 'EMT' ? 'selected' : ''}>EMT</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="input-sel sel-dia" onchange="recalcularParcelacion()">
+                        <option value='1/2"' ${diametro === '1/2"' ? 'selected' : ''}>1/2"</option>
+                        <option value='3/4"' ${diametro === '3/4"' ? 'selected' : ''}>3/4"</option>
+                        <option value='1"' ${diametro === '1"' ? 'selected' : ''}>1"</option>
+                        <option value='1 1/4"' ${diametro === '1 1/4"' ? 'selected' : ''}>1 1/4"</option>
+                        <option value='1 1/2"' ${diametro === '1 1/2"' ? 'selected' : ''}>1 1/2"</option>
+                        <option value='2"' ${diametro === '2"' ? 'selected' : ''}>2"</option>
+                        <option value='2 1/2"' ${diametro === '2 1/2"' ? 'selected' : ''}>2 1/2"</option>
+                        <option value='3"' ${diametro === '3"' ? 'selected' : ''}>3"</option>
+                    </select>
+                </td>
+                <td class="val-at">2368.92</td>
+                <td><input type="number" class="input-mini in-curvas" value="${curvas}" min="0" onchange="recalcularParcelacion()"></td>
+                <td class="val-cnc-seti">0.00</td>
+                <td class="val-cnc-sets">0.00</td>
+                <td class="val-tub-seti-c">0.000</td>
+                <td class="tubos-fisicos val-tub-seti-f">0</td>
+                <td class="val-tub-sets-c">0.000</td>
+                <td class="tubos-fisicos val-tub-sets-f">0</td>
+                <td class="tubos-total-cell val-total">0</td>
+                <td>
+                    <button class="btn-icon btn-copy" onclick="duplicarFilaParcelacion(this)" title="Duplicar tramo">📋</button>
+                    <button class="btn-icon btn-delete" onclick="eliminarFilaParcelacion(this)" title="Eliminar tramo">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            recalcularParcelacion();
+        }
+
+        function eliminarFilaParcelacion(btn) {
+            let tr = btn.closest('tr');
+            tr.remove();
+            let tbody = document.getElementById('tabla-body-parcelaciones');
+            if (tbody.children.length === 0) {
+                document.getElementById('empty-state-parc').classList.remove('hidden');
+            }
+            recalcularParcelacion();
+        }
+
+        function duplicarFilaParcelacion(btn) {
+            let tr = btn.closest('tr');
+            let desde = tr.querySelector('.in-desde').value;
+            let hasta = tr.querySelector('.in-hasta').value;
+            let pau = tr.querySelector('.in-pau-parc').value;
+            let mat = tr.querySelector('.sel-mat').value;
+            let dia = tr.querySelector('.sel-dia').value;
+            let curvas = tr.querySelector('.in-curvas').value;
+            agregarFilaParcelacion(desde, hasta, pau, mat, dia, curvas);
+        }
+
+        function limpiarTablaParcelacion() {
+            if (confirm('¿Estás seguro de que deseas borrar todos los tramos de parcelación?')) {
+                document.getElementById('tabla-body-parcelaciones').innerHTML = '';
+                document.getElementById('empty-state-parc').classList.remove('hidden');
+                recalcularParcelacion();
+            }
+        }
+
+        function cargarEjemploParcelacion() {
+            const tbody = document.getElementById('tabla-body-parcelaciones');
+            tbody.innerHTML = '';
+
+            const ejemplo = [
+                { desde: 'SETU',  hasta: 'CD-01', pau: 60, mat: 'PVC', dia: '3"', curvas: 0 },
+                { desde: 'CD-01', hasta: 'CD-02', pau: 19, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-02', hasta: 'CD-03', pau: 19, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-03', hasta: 'CD-04', pau: 17, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-04', hasta: 'CD-05', pau: 17, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-05', hasta: 'CD-06', pau: 15, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-06', hasta: 'CD-07', pau: 15, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-07', hasta: 'CD-08', pau: 2,  mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-07', hasta: 'CD-09', pau: 13, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-09', hasta: 'CD-10', pau: 11, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-01', hasta: 'CD-19', pau: 40, mat: 'PVC', dia: '2"', curvas: 0 },
+                { desde: 'CD-19', hasta: 'CD-20', pau: 40, mat: 'PVC', dia: '2"', curvas: 0 }
+            ];
+
+            ejemplo.forEach(e => agregarFilaParcelacion(e.desde, e.hasta, e.pau, e.mat, e.dia, e.curvas));
+            if (!document.getElementById('in-proyecto').value) {
+                document.getElementById('in-proyecto').value = "PARCELACIÓN HORIZONTES";
+            }
+        }
+
+        function recalcularParcelacion() {
+            let filas = document.querySelectorAll('#tabla-body-parcelaciones tr');
+            let totalPaus = 0;
+            let totalTubosSeti = 0;
+            let totalTubosSets = 0;
+            let granTotalTubos = 0;
+
+            filas.forEach(tr => {
+                let paus = parseInt(tr.querySelector('.in-pau-parc').value) || 0;
+                let material = tr.querySelector('.sel-mat').value;
+                let diametro = tr.querySelector('.sel-dia').value;
+                let curvas = parseInt(tr.querySelector('.in-curvas').value) || 0;
+
+                totalPaus += paus;
+
+                let res = RitelFormulas.calcularTramoParcelacion(paus, material, diametro, curvas);
+
+                tr.querySelector('.val-at').textContent = res.areaTubo.toFixed(2);
+                tr.querySelector('.val-cnc-seti').textContent = res.cncSeti.toFixed(2);
+                tr.querySelector('.val-cnc-sets').textContent = res.cncSets.toFixed(2);
+                tr.querySelector('.val-tub-seti-c').textContent = res.tubCalcSeti.toFixed(3);
+                tr.querySelector('.val-tub-seti-f').textContent = res.tubFisSeti;
+                tr.querySelector('.val-tub-sets-c').textContent = res.tubCalcSets.toFixed(3);
+                tr.querySelector('.val-tub-sets-f').textContent = res.tubFisSets;
+                tr.querySelector('.val-total').textContent = res.totalTubos;
+
+                totalTubosSeti += res.tubFisSeti;
+                totalTubosSets += res.tubFisSets;
+                granTotalTubos += res.totalTubos;
+            });
+
+            document.getElementById('out-total-pau-parc').textContent = totalPaus;
+            document.getElementById('out-total-tubos-parc').textContent = granTotalTubos;
+
+            document.getElementById('card-tramos').textContent = filas.length;
+            document.getElementById('card-paus').textContent = totalPaus;
+            document.getElementById('card-tubos-seti').textContent = totalTubosSeti;
+            document.getElementById('card-tubos-sets').textContent = totalTubosSets;
+            document.getElementById('card-total-tubos').textContent = granTotalTubos;
+        }
+
+        // ==========================================
+        // GUARDAR HTML
+        // ==========================================
         function guardarHTML() {
             document.querySelectorAll('input').forEach(input => {
                 if(input.type === 'checkbox') {
@@ -561,7 +983,7 @@
             let blob = new Blob([htmlContent], {type: "text/html;charset=utf-8"});
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
-            let nombre = document.getElementById('in-proyecto').value.trim() || 'Proyecto_Calculo';
+            let nombre = document.getElementById('in-proyecto').value.trim() || 'Calculo_RITEL_2025';
             
             a.href = url;
             a.download = `${nombre}.html`; 
@@ -569,6 +991,9 @@
             URL.revokeObjectURL(url);
         }
 
+        // ==========================================
+        // EXPORTACIÓN A EXCEL (.XLSX)
+        // ==========================================
         function aplicarEstilosExcel(ws, indexFinEncabezado) {
             if (!ws['!ref']) return;
             let rango = XLSX.utils.decode_range(ws['!ref']);
@@ -587,7 +1012,7 @@
                     if (R === 0) {
                         if (C === 0) {
                             celda.s = {
-                                font: { name: "Arial", sz: 14, bold: true, color: { rgb: "FFFFFF" } },
+                                font: { name: "Arial", sz: 13, bold: true, color: { rgb: "FFFFFF" } },
                                 fill: { fgColor: { rgb: "004080" } },
                                 alignment: { vertical: "center", horizontal: "center" }
                             };
@@ -610,7 +1035,6 @@
                     let esEncabezado = (R >= 2 && R <= indexFinEncabezado);
                     let esFilaPar = (R > indexFinEncabezado && (R - indexFinEncabezado) % 2 === 0);
 
-                    // Estos estilos solo se verán en modo Online, el modo Offline los ignorará pacíficamente
                     celda.s = {
                         font: {
                             name: "Arial",
@@ -638,16 +1062,16 @@
             
             ws['!cols'] = Object.keys(anchos).map(C => ({ wch: Math.min(Math.max(anchos[C] + 4, 10), 30) }));
             if(!ws['!rows']) ws['!rows'] = [];
-            ws['!rows'][0] = { hpt: 30 }; 
+            ws['!rows'][0] = { hpt: 28 }; 
         }
 
-        function exportarExcel() {
-            let nombreStr = document.getElementById('in-proyecto').value.trim() || "Proyecto Sin Nombre";
+        function exportarExcelTorres() {
+            let nombreStr = document.getElementById('in-proyecto').value.trim() || "Proyecto Torres RITEL";
             let nombreMayus = `PROYECTO: ${nombreStr.toUpperCase()}`;
             let wb = XLSX.utils.book_new();
             
-            let tablaTubos = document.getElementById("tabla-calculo").cloneNode(true);
-            let originalesTubos = document.getElementById("tabla-calculo").querySelectorAll('tbody tr');
+            let tablaTubos = document.getElementById("tabla-calculo-torres").cloneNode(true);
+            let originalesTubos = document.getElementById("tabla-calculo-torres").querySelectorAll('tbody tr');
             
             tablaTubos.querySelectorAll('tbody tr').forEach((tr, i) => {
                 let origTr = originalesTubos[i];
@@ -665,9 +1089,9 @@
 
             let wsTubos = XLSX.utils.table_to_sheet(tablaTubos);
             aplicarEstilosExcel(wsTubos, 3);
-            XLSX.utils.book_append_sheet(wb, wsTubos, "Tubería");
+            XLSX.utils.book_append_sheet(wb, wsTubos, "Tubería Torres");
 
-            let tablaBandejas = document.getElementById("tabla-bandeja").cloneNode(true);
+            let tablaBandejas = document.getElementById("tabla-bandeja-torres").cloneNode(true);
             let theadBandejas = tablaBandejas.querySelector('thead');
             
             theadBandejas.insertAdjacentHTML('afterbegin', `
@@ -677,25 +1101,114 @@
 
             let wsBandejas = XLSX.utils.table_to_sheet(tablaBandejas);
             aplicarEstilosExcel(wsBandejas, 2);
-            XLSX.utils.book_append_sheet(wb, wsBandejas, "Bandejas");
+            XLSX.utils.book_append_sheet(wb, wsBandejas, "Bandejas Torres");
 
-            XLSX.writeFile(wb, `${nombreStr}.xlsx`);
+            XLSX.writeFile(wb, `${nombreStr}_Torres.xlsx`);
         }
 
-        function exportarPDF() {
+        function exportarExcelParcelacion() {
+            let nombreStr = document.getElementById('in-proyecto').value.trim() || "Proyecto Parcelacion RITEL";
+            let nombreMayus = `PROYECTO: ${nombreStr.toUpperCase()} - RED DE DISTRIBUCIÓN HORIZONTAL (SETU)`;
+            let wb = XLSX.utils.book_new();
+            
+            let filas = document.querySelectorAll('#tabla-body-parcelaciones tr');
+            if (filas.length === 0) {
+                alert("No hay tramos para exportar.");
+                return;
+            }
+
+            // 1. HOJA RESUMEN DE TRAMOS
+            let datosResumen = [
+                [nombreMayus],
+                [],
+                ["Desde", "Hasta", "PAUs / TU", "Material", "Diámetro", "Área Tubo (mm²)", "Curvas (>60°)", "CNC SETI (mm²)", "CNC SETS (mm²)", "SETI Cálc.", "SETI Físicos", "SETS Cálc.", "SETS Físicos", "TOTAL TUBOS"]
+            ];
+
+            // 2. HOJA FORMATO OFICIAL RITEL (2 filas por tramo)
+            let datosDetallados = [
+                [nombreMayus],
+                [],
+                ["Desde", "Hasta", "PAUs/TU", "Canalización", "Tipo Tubería", "Diámetro Tubería", "No Curvas", "CapNoCa (CNC mm²)", "Área Tubería Usada (mm²)", "Denominador (mm²)", "Cálculo Tubos", "Cantidad de Tubos", "Total de Tubos"]
+            ];
+
+            filas.forEach(tr => {
+                let desde = tr.querySelector('.in-desde').value;
+                let hasta = tr.querySelector('.in-hasta').value;
+                let pau = parseInt(tr.querySelector('.in-pau-parc').value) || 0;
+                let mat = tr.querySelector('.sel-mat').value;
+                let dia = tr.querySelector('.sel-dia').value;
+                let curvas = parseInt(tr.querySelector('.in-curvas').value) || 0;
+
+                let res = RitelFormulas.calcularTramoParcelacion(pau, mat, dia, curvas);
+
+                datosResumen.push([
+                    desde, hasta, pau, mat, dia,
+                    parseFloat(res.areaTubo.toFixed(2)),
+                    curvas,
+                    parseFloat(res.cncSeti.toFixed(2)),
+                    parseFloat(res.cncSets.toFixed(2)),
+                    parseFloat(res.tubCalcSeti.toFixed(3)),
+                    res.tubFisSeti,
+                    parseFloat(res.tubCalcSets.toFixed(3)),
+                    res.tubFisSets,
+                    res.totalTubos
+                ]);
+
+                datosDetallados.push([
+                    desde, hasta, pau, "Distribución SETI", mat, dia, curvas,
+                    parseFloat(res.cncSeti.toFixed(2)),
+                    parseFloat(res.areaTubo.toFixed(2)),
+                    parseFloat(res.denominador.toFixed(2)),
+                    parseFloat(res.tubCalcSeti.toFixed(2)),
+                    res.tubFisSeti,
+                    res.totalTubos
+                ]);
+                datosDetallados.push([
+                    "", "", pau, "Distribución SETS", mat, dia, curvas,
+                    parseFloat(res.cncSets.toFixed(2)),
+                    parseFloat(res.areaTubo.toFixed(2)),
+                    parseFloat(res.denominador.toFixed(2)),
+                    parseFloat(res.tubCalcSets.toFixed(2)),
+                    res.tubFisSets,
+                    ""
+                ]);
+            });
+
+            let wsResumen = XLSX.utils.aoa_to_sheet(datosResumen);
+            wsResumen['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 13 } }];
+            aplicarEstilosExcel(wsResumen, 2);
+            XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen Tramos");
+
+            let wsDetalle = XLSX.utils.aoa_to_sheet(datosDetallados);
+            wsDetalle['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 12 } }];
+            aplicarEstilosExcel(wsDetalle, 2);
+            XLSX.utils.book_append_sheet(wb, wsDetalle, "Formato RITEL 2025");
+
+            XLSX.writeFile(wb, `${nombreStr}_Parcelacion.xlsx`);
+        }
+
+        // ==========================================
+        // EXPORTACIÓN A PDF (.PDF)
+        // ==========================================
+        function exportarPDFTorres() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
-            let nombre = document.getElementById('in-proyecto').value.trim() || "Sin Nombre";
+            let nombre = document.getElementById('in-proyecto').value.trim() || "Proyecto Torres";
             
-            let esVistaTubos = !document.getElementById('vista-tubos').classList.contains('hidden');
-            let tablaId = esVistaTubos ? '#tabla-calculo' : '#tabla-bandeja';
+            let esVistaTubos = !document.getElementById('vista-tubos-torres').classList.contains('hidden');
+            let tablaId = esVistaTubos ? '#tabla-calculo-torres' : '#tabla-bandeja-torres';
             let tituloDoc = esVistaTubos ? 'Tubería' : 'Bandejas';
 
-            doc.text(`Memoria de Cálculo de ${tituloDoc} - Proyecto: ${nombre}`, 14, 15);
+            doc.setFontSize(14);
+            doc.setTextColor(0, 64, 128);
+            doc.text(`Memoria de Cálculo de ${tituloDoc} - Torres / Edificios`, 14, 12);
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.text(`Proyecto: ${nombre}   |   Norma: RITEL 2025   |   Distribución Vertical SETI / SETS`, 14, 18);
             
             doc.autoTable({
                 html: tablaId,
-                startY: 20,
+                startY: 22,
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center' },
                 headStyles: { fillColor: esVistaTubos ? [0, 64, 128] : [43, 120, 228] },
@@ -706,27 +1219,112 @@
                     }
                 }
             });
-            doc.save(`${tituloDoc}_${nombre}.pdf`);
+            doc.save(`${tituloDoc}_Torres_${nombre}.pdf`);
         }
 
+        function exportarPDFParcelacion() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            let nombre = document.getElementById('in-proyecto').value.trim() || "Proyecto Parcelación";
+            let totalPau = document.getElementById('out-total-pau-parc').textContent;
+            let totalTubos = document.getElementById('out-total-tubos-parc').textContent;
+
+            doc.setFontSize(14);
+            doc.setTextColor(0, 64, 128);
+            doc.text(`Memoria de Cálculo de Tuberías - Parcelaciones / Casas (SETU)`, 14, 12);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.text(`Proyecto: ${nombre}   |   Norma: RITEL 2025   |   Total PAUs: ${totalPau}   |   Total Tubos: ${totalTubos}`, 14, 18);
+            
+            let filas = document.querySelectorAll('#tabla-body-parcelaciones tr');
+            let bodyData = [];
+
+            filas.forEach(tr => {
+                bodyData.push([
+                    tr.querySelector('.in-desde').value,
+                    tr.querySelector('.in-hasta').value,
+                    tr.querySelector('.in-pau-parc').value,
+                    tr.querySelector('.sel-mat').value,
+                    tr.querySelector('.sel-dia').value,
+                    tr.querySelector('.val-at').textContent,
+                    tr.querySelector('.in-curvas').value,
+                    tr.querySelector('.val-cnc-seti').textContent,
+                    tr.querySelector('.val-cnc-sets').textContent,
+                    tr.querySelector('.val-tub-seti-c').textContent,
+                    tr.querySelector('.val-tub-seti-f').textContent,
+                    tr.querySelector('.val-tub-sets-c').textContent,
+                    tr.querySelector('.val-tub-sets-f').textContent,
+                    tr.querySelector('.val-total').textContent
+                ]);
+            });
+
+            doc.autoTable({
+                head: [
+                    [
+                        { content: 'Tramo', colSpan: 2, styles: { halign: 'center' } },
+                        { content: 'PAUs', rowSpan: 2, styles: { halign: 'center' } },
+                        { content: 'Material', rowSpan: 2, styles: { halign: 'center' } },
+                        { content: 'Diámetro', rowSpan: 2, styles: { halign: 'center' } },
+                        { content: 'Área AT (mm²)', rowSpan: 2, styles: { halign: 'center' } },
+                        { content: 'Curvas', rowSpan: 2, styles: { halign: 'center' } },
+                        { content: 'CNC Cables (mm²)', colSpan: 2, styles: { halign: 'center' } },
+                        { content: 'Dist. SETI', colSpan: 2, styles: { halign: 'center' } },
+                        { content: 'Dist. SETS', colSpan: 2, styles: { halign: 'center' } },
+                        { content: 'TOTAL TUBOS', rowSpan: 2, styles: { halign: 'center', fillColor: [242, 169, 0], textColor: [0, 0, 0] } }
+                    ],
+                    [
+                        { content: 'Desde' },
+                        { content: 'Hasta' },
+                        { content: 'SETI' },
+                        { content: 'SETS' },
+                        { content: 'Cálc.' },
+                        { content: 'Físicos' },
+                        { content: 'Cálc.' },
+                        { content: 'Físicos' }
+                    ]
+                ],
+                body: bodyData,
+                startY: 22,
+                theme: 'grid',
+                styles: { fontSize: 7.5, halign: 'center', cellPadding: 2 },
+                headStyles: { fillColor: [0, 64, 128], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [244, 248, 251] }
+            });
+
+            doc.save(`Tuberia_Parcelacion_${nombre.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        // ==========================================
+        // INICIALIZACIÓN AL CARGAR LA PÁGINA
+        // ==========================================
         window.onload = function() {
-            // Actualizar diseño del botón de conexión según el modo guardado
-            var btnConexion = document.getElementById('btn-conexion');
-            if(appMode === 'offline') {
-                btnConexion.innerHTML = "🔌 Modo: OFFLINE";
-                btnConexion.style.backgroundColor = "#6c757d";
-                btnConexion.title = "Haz clic para cambiar a modo Online (Requiere Internet)";
-            } else {
-                btnConexion.innerHTML = "🌐 Modo: ONLINE";
-                btnConexion.style.backgroundColor = "#28a745";
-                btnConexion.title = "Haz clic para cambiar a modo Offline (Sin Internet)";
+            var btnConexionTorres = document.getElementById('btn-conexion-torres');
+            var btnConexionParc = document.getElementById('btn-conexion-parc');
+            var textoConexion = (appMode === 'offline') ? "🔌 Modo: OFFLINE" : "🌐 Modo: ONLINE";
+            var colorConexion = (appMode === 'offline') ? "#6c757d" : "#28a745";
+            var titleConexion = (appMode === 'offline') ? "Haz clic para cambiar a modo Online (Requiere Internet)" : "Haz clic para cambiar a modo Offline (Sin Internet)";
+
+            if(btnConexionTorres) {
+                btnConexionTorres.innerHTML = textoConexion;
+                btnConexionTorres.style.backgroundColor = colorConexion;
+                btnConexionTorres.title = titleConexion;
+            }
+            if(btnConexionParc) {
+                btnConexionParc.innerHTML = textoConexion;
+                btnConexionParc.style.backgroundColor = colorConexion;
+                btnConexionParc.title = titleConexion;
             }
 
-            if(document.querySelectorAll('#tabla-body tr').length === 0) {
-                generarTabla();
+            // Inicializar Torres
+            if(document.querySelectorAll('#tabla-body-torres tr').length === 0) {
+                generarTablaTorres();
             } else {
-                recalcularTodo(); 
+                recalcularTorres(); 
             }
+
+            // Inicializar modo según memoria
+            cambiarModoApp(modoActivo);
         };
     </script>
 </body>
