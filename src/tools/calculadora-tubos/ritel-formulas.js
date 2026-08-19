@@ -1,45 +1,35 @@
 /**
  * ritel-formulas.js
  * 
- * Este archivo contiene las constantes y fórmulas matemáticas basadas en la norma RITEL.
+ * Este archivo contiene las constantes y fórmulas matemáticas basadas en la norma RITEL 2025.
  * Centralizar esto facilita las actualizaciones si la norma cambia en el futuro.
  */
 
 // ==========================================
-// 1. CONSTANTES PARA TUBERÍAS (CABLES)
+// 1. CONSTANTES PARA TUBERÍAS (CABLES) - NORMA RITEL 2025
+// Aplicable tanto a Edificios/Torres como a Parcelaciones/Casas
 // ==========================================
-// A. Torres / Edificios (Distribución Vertical)
 const CONSTANTES = {
-    // Cables base que llegan al SETI: 6 cables coaxiales de red de distribución
-    // Área de 1 Coaxial = 35.78464 mm2 => 3 * 35.78 = 107.34
+    // Red Base SETI: 3 cables coaxiales (diámetro mínimo 6.75 mm)
+    // Área de 1 Coaxial = PI * (6.75/2)^2 = 35.7847 mm2 => 3 * 35.78 = 107.34 mm2
     BASE_SETI: 107.34,  
     
-    // Cables por cada PAU adicional hacia SETI: 2 Fibras Ópticas + 1 Coaxial
-    // Área de 1 Fibra = 10.75 mm2. Área de 1 Coaxial = 35.78 mm2
-    // Total = 1 * 10.75 + 35.78 = 46.53
+    // Por cada PAU hacia SETI: 1 Fibra Óptica (3.7 mm) + 1 Coaxial (6.75 mm)
+    // Área de 1 Fibra (3.7 mm) = PI * (3.7/2)^2 = 10.75 mm2. Área Coaxial = 35.78 mm2
+    // Total = 1 * 10.75 + 35.78 = 46.53 mm2
     FACTOR_SETI: 46.53, 
 
-    // Cables base que llegan al SETS: 10 cables (ej: multipares o coaxiales base)
-    // 10 * 35.78 = 357.8 (Aprox)
+    // Red Base SETS: 10 cables coaxiales (diámetro mínimo 6.75 mm)
+    // 10 * 35.7847 = 357.8 mm2
     BASE_SETS: 357.8,
     
-    // Cables por cada PAU adicional hacia SETS: 1 cable adicional
+    // Por cada PAU hacia SETS: 1 Fibra Óptica (3.7 mm)
+    // 1 * 10.75 = 10.75 mm2
     FACTOR_SETS: 10.75
 };
 
-// B. Parcelaciones / Casas (Distribución Horizontal - Salón SETU)
-// Basado en cálculo normativo RITEL 2025 por diámetro real de cables
-const CONSTANTES_PARCELACION = {
-    // Distribución SETI: Base 6 coaxiales (6.75mm) = 6 * PI * (6.75/2)^2
-    BASE_SETI: 214.708222918777,
-    // Factor por PAU: 1 FO (5.6mm) + 2 FO (3.7mm) + 1 Coax (6.75mm)
-    FACTOR_SETI: 81.9189919377623,
-    
-    // Distribución SETS: Base 12 coaxiales (6.75mm) = 12 * PI * (6.75/2)^2
-    BASE_SETS: 429.416445837555,
-    // Factor por PAU: 1 Coax (6.75mm) = 1 * PI * (6.75/2)^2
-    FACTOR_SETS: 35.7847038197962
-};
+// Alias por compatibilidad
+const CONSTANTES_PARCELACION = CONSTANTES;
 
 // ==========================================
 // 2. ÁREA TOTAL (AT) DE LAS TUBERÍAS (mm²)
@@ -56,9 +46,9 @@ const TABLA_AT = {
 // ==========================================
 const RitelFormulas = {
     /**
-     * Calcula la suma del área de la sección transversal (CNC) de los cables que van hacia SETI y SETS (Torres).
-     * @param {number} pauSeti Cantidad de PAUs acumulados hacia el SETI.
-     * @param {number} pauSets Cantidad de PAUs acumulados hacia el SETS.
+     * Calcula la suma del área de la sección transversal (CNC) de los cables que van hacia SETI y SETS.
+     * @param {number} pauSeti Cantidad de PAUs hacia el SETI.
+     * @param {number} pauSets Cantidad de PAUs hacia el SETS.
      * @returns {Object} { cncSeti, cncSets }
      */
     calcularCNC: function(pauSeti, pauSets) {
@@ -68,25 +58,34 @@ const RitelFormulas = {
     },
 
     /**
-     * Calcula la suma del área de la sección transversal (CNC) para Parcelaciones / Casas (SETU).
+     * Calcula CNC para Parcelaciones / Casas (SETU) usando el número de PAUs del tramo.
+     * Base SETI = 107.34 (3 coax 6.75mm) + (PAUs * 46.53 [1 FO 3.7mm + 1 Coax 6.75mm])
+     * Base SETS = 357.80 (10 coax 6.75mm) + (PAUs * 10.75 [1 FO 3.7mm])
      * @param {number} paus Cantidad de PAUs en el tramo.
      * @returns {Object} { cncSeti, cncSets }
      */
     calcularCNCParcelacion: function(paus) {
         if (!paus || paus <= 0) return { cncSeti: 0, cncSets: 0 };
-        let cncSeti = CONSTANTES_PARCELACION.BASE_SETI + (paus * CONSTANTES_PARCELACION.FACTOR_SETI);
-        let cncSets = CONSTANTES_PARCELACION.BASE_SETS + (paus * CONSTANTES_PARCELACION.FACTOR_SETS);
+        let cncSeti = CONSTANTES.BASE_SETI + (paus * CONSTANTES.FACTOR_SETI);
+        let cncSets = CONSTANTES.BASE_SETS + (paus * CONSTANTES.FACTOR_SETS);
         return { cncSeti, cncSets };
     },
 
     /**
-     * Redondeo hacia arriba (ROUNDUP) para parcelaciones según norma y hoja de cálculo oficial.
+     * Redondeo normativo de tubos (decimal >= 0.1 redondea hacia arriba)
      * @param {number} valor 
      * @returns {number}
      */
-    redondearTubosParcelacion: function(valor) {
+    redondearTubos: function(valor) {
         if (!valor || valor <= 0) return 0;
-        return Math.ceil(valor);
+        let v = Math.round(valor * 1000) / 1000;
+        let entero = Math.floor(v);
+        let decimal = v - entero;
+        return (decimal >= 0.1) ? entero + 1 : entero;
+    },
+
+    redondearTubosParcelacion: function(valor) {
+        return this.redondearTubos(valor);
     },
 
     /**
@@ -144,8 +143,8 @@ const RitelFormulas = {
         let cnc = this.calcularCNCParcelacion(paus);
         let tubCalcSeti = cnc.cncSeti / denominador;
         let tubCalcSets = cnc.cncSets / denominador;
-        let tubFisSeti = this.redondearTubosParcelacion(tubCalcSeti);
-        let tubFisSets = this.redondearTubosParcelacion(tubCalcSets);
+        let tubFisSeti = this.redondearTubos(tubCalcSeti);
+        let tubFisSets = this.redondearTubos(tubCalcSets);
         let totalTubos = tubFisSeti + tubFisSets;
 
         return {
