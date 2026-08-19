@@ -1,0 +1,59 @@
+{
+  "version": "2.0",
+  "formato": "SCITIC_RITEL_CALC_BACKUP",
+  "norma": "RITEL 2025",
+  "fechaExportacion": "2026-08-19T17:00:00.000Z",
+  "proyecto": "PROYECTO EJEMPLO RITEL 2025",
+  "modoActivo": "parcelaciones",
+  "torres": {
+    "pisos": 28,
+    "pisoBase": 3,
+    "aptosDefault": 6,
+    "mostrarLineaExtra": false,
+    "altoBandeja": 80,
+    "filas": [
+      { "nivel": 28, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 27, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 26, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 25, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 24, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 23, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 22, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 21, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 20, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 19, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 18, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 17, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 16, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 15, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 14, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 13, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 12, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 11, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 10, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 9, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 8, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 7, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 6, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 5, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 4, "pau": 6, "material": "SCH40", "diametro": "2\"", "curvas": 0 },
+      { "nivel": 3, "pau": 0, "material": "SCH40", "diametro": "2\"", "curvas": 2 }
+    ]
+  },
+  "parcelaciones": {
+    "tramos": [
+      { "desde": "SETU", "hasta": "CD-01", "pau": 60, "material": "PVC", "diametro": "3\"", "curvas": 0 },
+      { "desde": "CD-01", "hasta": "CD-02", "pau": 19, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-02", "hasta": "CD-03", "pau": 19, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-03", "hasta": "CD-04", "pau": 17, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-04", "hasta": "CD-05", "pau": 17, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-05", "hasta": "CD-06", "pau": 15, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-06", "hasta": "CD-07", "pau": 15, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-07", "hasta": "CD-08", "pau": 2, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-07", "hasta": "CD-09", "pau": 13, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-09", "hasta": "CD-10", "pau": 11, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-01", "hasta": "CD-19", "pau": 40, "material": "PVC", "diametro": "2\"", "curvas": 0 },
+      { "desde": "CD-19", "hasta": "CD-20", "pau": 40, "material": "PVC", "diametro": "2\"", "curvas": 0 }
+    ]
+  }
+}
