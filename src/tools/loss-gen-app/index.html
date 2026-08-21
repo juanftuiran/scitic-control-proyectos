@@ -14,10 +14,12 @@
             --bg-dark: #020617;
             --panel-bg: rgba(30, 41, 59, 0.7);
             --card-bg: #1e293b;
+            --card-header-bg: #0f172a;
             --border: rgba(255, 255, 255, 0.12);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --input-bg: #0f172a;
+            --bg-light: rgba(255, 255, 255, 0.03);
             --ok: #10b981;
             --warn: #f59e0b;
             --bad: #ef4444;
@@ -89,36 +91,46 @@
             width: 100%; display: flex; gap: 10px; margin-top: 6px; overflow-x: auto; padding-bottom: 8px;
         }
         .apto-card {
-            background: #fff; border: 1px solid var(--border); border-radius: 6px;
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
             padding: 8px; min-width: 200px; display: flex; flex-direction: column; gap: 6px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .apto-card-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; padding-bottom: 4px;
+            border-bottom: 1px solid var(--border); padding-bottom: 4px;
         }
         .apto-card-header input[type="text"] {
-            font-weight: bold; font-size: 11px; width: 80px; padding: 2px 4px;
-            border: 1px solid transparent; border-radius: 3px; color: var(--primary);
+            font-weight: bold; font-size: 11px; width: 90px; padding: 3px 6px;
+            background: var(--input-bg); color: var(--primary);
+            border: 1px solid var(--border); border-radius: 3px;
         }
         .apto-card-header input[type="text"]:focus {
-            border-color: var(--secondary); background: #f9f9f9;
+            border-color: var(--primary); background: #1a233a; outline: none;
         }
         .apto-card-row {
             display: flex; justify-content: space-between; align-items: center; font-size: 10px;
         }
+        .apto-card-row label {
+            color: var(--text-muted);
+        }
         .apto-card-row input[type="number"] {
-            width: 50px; padding: 3px; border: 1px solid #ccc; border-radius: 3px; text-align: center;
+            width: 50px; padding: 3px; background: var(--input-bg); color: var(--text-main);
+            border: 1px solid var(--border); border-radius: 3px; text-align: center;
         }
         .tomas-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
-            background: var(--bg-light); padding: 4px; border-radius: 4px;
+            background: var(--input-bg); padding: 6px; border-radius: 4px;
+            border: 1px solid var(--border);
         }
         .toma-input-wrapper {
             display: flex; flex-direction: column; align-items: center;
         }
-        .toma-input-wrapper label { font-size: 9px; color: #666; margin-bottom: 2px; }
-        .toma-input-wrapper input { width: 100%; text-align: center; padding: 2px; font-size: 10px; border: 1px solid #ccc; border-radius: 3px; }
+        .toma-input-wrapper label { font-size: 9px; color: var(--primary-blue); font-weight: bold; margin-bottom: 2px; }
+        .toma-input-wrapper input {
+            width: 100%; text-align: center; padding: 3px; font-size: 10px;
+            background: var(--card-bg); color: var(--text-main);
+            border: 1px solid var(--border); border-radius: 3px;
+        }
 
         /* ── Botones ── */
         button {
@@ -129,81 +141,83 @@
         }
         button:active { transform: scale(0.97); }
         .btn-calc  { background: var(--primary); }
-        .btn-calc:hover  { background: #00264d; }
+        .btn-calc:hover  { background: #c2410c; }
         .btn-config { background: var(--secondary); }
-        .btn-config:hover { background: #005bb5; }
+        .btn-config:hover { background: #0369a1; }
         .btn-save  { background: var(--accent); color: #000; }
         .btn-save:hover { filter: brightness(0.9); }
-        .btn-excel { background: #1D6F42; }
-        .btn-excel:hover { background: #155a34; }
-        .btn-pdf   { background: #D32F2F; }
-        .btn-pdf:hover { background: #b71c1c; }
+        .btn-excel { background: #16a34a; }
+        .btn-excel:hover { background: #15803d; }
+        .btn-pdf   { background: #dc2626; }
+        .btn-pdf:hover { background: #b91c1c; }
 
         /* ── Contenedor de tablas ── */
         .table-container {
-            overflow-x: auto; background: white;
-            border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto; background: var(--panel-bg);
+            backdrop-filter: blur(12px); border: 1px solid var(--border);
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             margin-bottom: 16px;
         }
         table { width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }
         th {
-            background-color: var(--primary); color: white;
-            padding: 7px 6px; border: 1px solid rgba(255,255,255,0.2);
+            background-color: var(--input-bg); color: var(--primary-blue);
+            padding: 7px 6px; border: 1px solid var(--border);
             font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 2;
         }
-        th.sub-th { background-color: var(--secondary); font-size: 11px; }
-        th.th-accent { background-color: var(--accent); color: #000; }
-        th.th-result { background-color: #1a5276; }
+        th.sub-th { background-color: rgba(2, 132, 199, 0.25); color: var(--text-main); font-size: 11px; }
+        th.th-accent { background-color: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+        th.th-result { background-color: rgba(14, 165, 233, 0.3); color: #7dd3fc; }
         td {
             padding: 5px 4px; border: 1px solid var(--border);
-            white-space: nowrap;
+            white-space: nowrap; color: var(--text-main);
         }
         tr:nth-child(even) { background-color: var(--bg-light); }
-        tr:hover { background-color: #e3ecf6; }
+        tr:hover { background-color: rgba(255, 255, 255, 0.06); }
 
         .piso-cell {
-            font-weight: bold; color: var(--primary);
-            background-color: #e8f0fe !important;
+            font-weight: bold; color: var(--primary-blue);
+            background-color: rgba(15, 23, 42, 0.7) !important;
             font-size: 11px; writing-mode: horizontal-tb;
             text-align: center; vertical-align: middle;
         }
-        .bold-cell { font-weight: bold; }
+        .bold-cell { font-weight: bold; color: var(--text-main); }
 
         /* ── Inputs dentro de celdas ── */
         .cell-edit {
             width: 58px; text-align: center; padding: 3px 2px;
-            border: 1px solid #ddd; border-radius: 3px;
-            font-size: 11px; background: #fff;
+            border: 1px solid var(--border); border-radius: 3px;
+            font-size: 11px; background: var(--input-bg); color: var(--text-main);
             transition: all 0.2s;
         }
         .cell-edit:focus {
-            border-color: var(--secondary); background: #e8f4ff;
-            outline: none; box-shadow: 0 0 0 2px rgba(0,115,230,0.2);
+            border-color: var(--primary); background: #1e293b;
+            outline: none; box-shadow: 0 0 0 2px rgba(234,88,12,0.25);
         }
         .bold-input { font-weight: bold; color: var(--primary); }
-        .calc-cell { color: #555; font-variant-numeric: tabular-nums; }
+        .calc-cell { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
         /* ── Nivel de señal colores ── */
-        .nivel-ok   { color: var(--ok); font-weight: bold; }
-        .nivel-warn { color: #e67e00; font-weight: bold; }
-        .nivel-bad  { color: var(--bad); font-weight: bold; background: #ffe6e6 !important; }
+        .nivel-ok   { color: #34d399; font-weight: bold; }
+        .nivel-warn { color: #fbbf24; font-weight: bold; }
+        .nivel-bad  { color: #f87171; font-weight: bold; background: rgba(239, 68, 68, 0.2) !important; }
 
         /* ── Resumen ── */
-        .summary-row td { font-weight: bold; background: #fff3cd !important; border-top: 2px solid var(--accent); }
-        .summary-row.max-row td { background: #d4edda !important; }
-        .summary-row.min-row td { background: #f8d7da !important; }
-        .summary-row.diff-row td { background: #fff3cd !important; border-top: 2px solid var(--accent); }
-        .summary-label { text-align: right; font-size: 11px; color: var(--primary); }
+        .summary-row td { font-weight: bold; border-top: 2px solid var(--accent); }
+        .summary-row.max-row td { background: rgba(16, 185, 129, 0.15) !important; color: #6ee7b7 !important; }
+        .summary-row.min-row td { background: rgba(239, 68, 68, 0.15) !important; color: #fca5a5 !important; }
+        .summary-row.diff-row td { background: rgba(245, 158, 11, 0.15) !important; color: #fcd34d !important; border-top: 2px solid var(--accent); }
+        .summary-label { text-align: right; font-size: 11px; color: var(--primary-blue); }
 
         /* ── Config de pisos ── */
         .floor-config-table th { font-size: 11px; padding: 6px 8px; }
         .floor-config-table td { padding: 4px 6px; }
         .floor-config-table .input-mini {
             width: 55px; text-align: center; padding: 4px;
-            border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
+            border: 1px solid var(--border); border-radius: 4px; font-size: 12px;
+            background: var(--input-bg); color: var(--text-main);
         }
         .floor-config-table .input-mini:focus {
-            border-color: var(--secondary); outline: none;
+            border-color: var(--primary); outline: none;
         }
         .chain-cell {
             vertical-align: middle;
@@ -215,27 +229,28 @@
             display: block; padding: 4px 6px;
             border-radius: 4px; font-size: 11px;
             font-weight: bold; color: white; margin: 0 auto 6px auto;
-            text-align: center; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            text-align: center; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .chain-direction-sel {
             display: block; font-size: 11px; padding: 4px; width: 100%;
-            border-radius: 4px; border: 1px solid #bbb;
-            background: #ffffff; font-weight: bold; color: #333;
+            border-radius: 4px; border: 1px solid var(--border);
+            background: var(--input-bg); font-weight: bold; color: var(--text-main);
             cursor: pointer; text-align: center;
         }
 
         /* ── Info panel ── */
         .info-panel {
-            display: flex; gap: 16px; padding: 10px 16px;
-            background: linear-gradient(135deg, #e8f0fe, #f4f8fb);
+            display: flex; gap: 16px; padding: 12px 20px;
+            background: var(--panel-bg); backdrop-filter: blur(12px);
+            border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             border-radius: 8px; margin-bottom: 12px;
             flex-wrap: wrap; align-items: center;
         }
         .info-item {
             display: flex; flex-direction: column; align-items: center;
         }
-        .info-label { font-size: 10px; color: #666; text-transform: uppercase; }
-        .info-value { font-size: 16px; font-weight: bold; color: var(--primary); }
+        .info-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-value { font-size: 16px; font-weight: bold; color: var(--primary-blue); }
 
         /* ── Utilidades ── */
         @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -538,8 +553,8 @@
             card.className = 'apto-card template-item';
             card.style.minWidth = '110px';
             card.innerHTML = `
-                <div class="apto-card-header" style="justify-content: center; background: #f0f0f0;">
-                    <span style="font-weight:bold; font-size:10px;">PISO ${p + 1} (Relativo)</span>
+                <div class="apto-card-header" style="justify-content: center;">
+                    <span style="font-weight:bold; font-size:10px; color: var(--primary-blue);">PISO ${p + 1} (Relativo)</span>
                 </div>
                 <div class="apto-card-row">
                     <label>Deriv (dB):</label>
@@ -736,9 +751,9 @@
                                 '<option value="descendente">⬇️ Descendente</option>' +
                                 '<option value="ascendente">⬆️ Ascendente</option>' +
                             '</select>' +
-                            '<div style="margin-top: 6px; font-size: 10px; color: #444;">' +
-                                '<label style="display:block; margin-bottom: 2px;">Dist. Base (m):</label>' +
-                                '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 50px; text-align:center; padding: 2px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                            '<div style="margin-top: 6px; font-size: 10px; color: var(--text-muted);">' +
+                                '<label style="display:block; margin-bottom: 2px; color: var(--text-muted);">Dist. Base (m):</label>' +
+                                '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 55px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
                             '</div>' +
                             '</td>';
                 }
@@ -912,7 +927,7 @@
                     let html = '';
 
                     if (isFirstOfFloor) {
-                        html += '<td rowspan="' + totalTomasPiso + '" class="piso-cell">PISO ' + floor.piso + '<br><span style="font-size:9px;color:#666">' + (floor.direccionCadena === 'descendente' ? '⬇' : '⬆') + '</span></td>';
+                        html += '<td rowspan="' + totalTomasPiso + '" class="piso-cell">PISO ' + floor.piso + '<br><span style="font-size:9px;color:var(--text-muted)">' + (floor.direccionCadena === 'descendente' ? '⬇' : '⬆') + '</span></td>';
                     }
 
                     if (t === 1) {
