@@ -74,6 +74,7 @@ function formatearHoras(horas) {
     const totalMin = Math.round(h * 60);
     const hrs = Math.floor(totalMin / 60);
     const min = totalMin % 60;
+    if (hrs === 0 && min === 0) return '0h';
     if (hrs === 0) return min + 'min';
     if (min === 0) return hrs + 'h';
     return hrs + 'h ' + min + 'min';
@@ -653,36 +654,52 @@ function mostrar(lista) {
 }
 
 function animarNumero(id, finalValue, sufijo, esMoneda = false) {
-    const obj = document.getElementById(id); if (!obj) return;
+    const obj = document.getElementById(id); 
+    if (!obj) return;
     
-    // Safety check for NaN
-    let val = finalValue;
+    // Safety check for NaN / null / undefined
+    let val = parseFloat(finalValue);
     if (isNaN(val) || val === null || val === undefined) val = 0;
 
-    // Si el elemento no es visible (display:none), no animamos para evitar que se quede congelado
+    const formatearValor = (v) => {
+        if (id === 'stat-horas') {
+            return formatearHoras(v);
+        }
+        if (esMoneda) {
+            return sufijo + Math.round(v).toLocaleString('es-CO');
+        }
+        return Math.round(v).toLocaleString('es-CO') + (sufijo || '');
+    };
+
+    // Si el elemento no es visible (display:none), asignar formateado directamente
     if (obj.offsetParent === null) {
-        obj.innerHTML = esMoneda ? sufijo + val.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + val : val + sufijo);
+        obj.innerHTML = formatearValor(val);
         return;
     }
 
-    let startTimestamp = null; const duration = 800;
+    if (obj._animFrameId) {
+        window.cancelAnimationFrame(obj._animFrameId);
+    }
+
+    let startTimestamp = null; 
+    const duration = 600;
+
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentVal = Math.floor(easeOut * val);
-        obj.innerHTML = esMoneda ? sufijo + currentVal.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + currentVal : currentVal + sufijo);
-        if (progress < 1) window.requestAnimationFrame(step);
-        else obj.innerHTML = esMoneda ? sufijo + val.toLocaleString('es-CO') : (sufijo === "$" ? sufijo + val : val + sufijo);
+        const currentVal = easeOut * val;
+
+        if (progress < 1) {
+            obj.innerHTML = formatearValor(currentVal);
+            obj._animFrameId = window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = formatearValor(val);
+            obj._animFrameId = null;
+        }
     };
-    window.requestAnimationFrame(step);
-    // Tras la animación, si es el stat de horas, sobreescribir con formato legible
-    if (id === 'stat-horas') {
-        setTimeout(() => {
-            const elFinal = document.getElementById(id);
-            if (elFinal) elFinal.innerHTML = formatearHoras(val);
-        }, 830);
-    }
+
+    obj._animFrameId = window.requestAnimationFrame(step);
 }
 
 function verDetalle(nombre) {
