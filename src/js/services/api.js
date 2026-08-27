@@ -10,6 +10,19 @@ class APIService {
     // AUTH — Supabase Authentication nativo
     // ==========================================
 
+    // Obtener perfil cacheado de forma síncrona/instantánea
+    getCachedSession() {
+        try {
+            const cached = localStorage.getItem('scitic_user_profile');
+            if (cached) {
+                return JSON.parse(cached);
+            }
+        } catch (e) {
+            console.error("Error leyendo perfil cacheado:", e);
+        }
+        return null;
+    }
+
     // Login con Supabase Auth (email + password)
     async login(email, password) {
         try {
@@ -27,7 +40,9 @@ class APIService {
                 .single();
             if (perfilError) throw perfilError;
 
-            return { usuario: email, name: perfil.nombre, role: perfil.rol };
+            const userProfile = { usuario: email, name: perfil.nombre, role: perfil.rol };
+            localStorage.setItem('scitic_user_profile', JSON.stringify(userProfile));
+            return userProfile;
         } catch (error) {
             console.error("Error en login:", error);
             return null;
@@ -36,26 +51,41 @@ class APIService {
 
     // Cerrar sesión
     async logout() {
-        await this.db.auth.signOut();
+        try {
+            localStorage.removeItem('scitic_user_profile');
+            await this.db.auth.signOut();
+        } catch (error) {
+            console.error("Error en logout:", error);
+        }
     }
 
     // Verificar sesión activa al cargar la app
     async getSession() {
         try {
-            const { data: { session } } = await this.db.auth.getSession();
-            if (!session) return null;
+            const { data: { session }, error: sessionError } = await this.db.auth.getSession();
+            if (sessionError || !session) {
+                localStorage.removeItem('scitic_user_profile');
+                return null;
+            }
+
+            const cached = this.getCachedSession();
 
             const { data: perfil, error } = await this.db
                 .from('perfiles')
                 .select('nombre, rol')
                 .eq('id', session.user.id)
                 .single();
-            if (error) throw error;
+            if (error) {
+                if (cached) return cached;
+                throw error;
+            }
 
-            return { usuario: session.user.email, name: perfil.nombre, role: perfil.rol };
+            const userProfile = { usuario: session.user.email, name: perfil.nombre, role: perfil.rol };
+            localStorage.setItem('scitic_user_profile', JSON.stringify(userProfile));
+            return userProfile;
         } catch (error) {
             console.error("Error verificando sesión:", error);
-            return null;
+            return this.getCachedSession();
         }
     }
 

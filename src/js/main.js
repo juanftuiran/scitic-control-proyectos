@@ -112,17 +112,52 @@ function actualizarPreviewHoras(val) {
 // ==========================================
 // 2. INICIALIZACIÓN Y AUTENTICACIÓN
 // ==========================================
-window.onload = async function () {
-    // Verificar sesión activa de Supabase Auth
-    const sesion = await window.API.getSession();
-    if (sesion) {
-        usuarioActual = sesion;
+async function inicializarAuth() {
+    // 1. Verificamos de forma síncrona si hay sesión cacheada en el navegador
+    const cachedSession = window.API.getCachedSession();
+
+    if (cachedSession) {
+        usuarioActual = cachedSession;
+        // Iniciar la app de inmediato sin parpadeos de login
         iniciarApp();
+
+        // Validar en segundo plano con Supabase para confirmar vigencia y sincronizar cambios de perfil
+        window.API.getSession().then(sesionValida => {
+            if (!sesionValida) {
+                // Si la sesión fue revocada o expiró
+                cerrarSesion();
+            } else if (usuarioActual && (sesionValida.role !== usuarioActual.role || sesionValida.name !== usuarioActual.name)) {
+                // Si cambiaron datos de perfil en el backend, actualizar reactivamente
+                usuarioActual = sesionValida;
+                document.getElementById('displayUserName').innerText = usuarioActual.name;
+                document.getElementById('displayUserRole').innerText = usuarioActual.role;
+                aplicarPermisos();
+                aplicarPermisosWidget();
+            }
+        }).catch(err => {
+            console.warn("Validación de sesión en background:", err);
+        });
     } else {
-        document.getElementById('loginView').style.display = 'flex';
-        document.getElementById('appView').style.display = 'none';
+        // No hay sesión en caché, verificar con Supabase
+        showLoader("Verificando sesión...");
+        const sesion = await window.API.getSession();
+        hideLoader();
+        if (sesion) {
+            usuarioActual = sesion;
+            iniciarApp();
+        } else {
+            document.getElementById('loginView').style.display = 'flex';
+            document.getElementById('appView').style.display = 'none';
+        }
     }
-};
+}
+
+// Ejecutar inicialización inmediatamente sin esperar a window.onload
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarAuth);
+} else {
+    inicializarAuth();
+}
 
 async function iniciarSesion() {
     const u = document.getElementById('inUser').value.trim().toLowerCase();
@@ -143,6 +178,7 @@ async function iniciarSesion() {
         if (result) {
             usuarioActual = result;
             errorMsg.style.display = 'none';
+            sessionStorage.removeItem('scitic_login_audited');
             Toast.success(`Bienvenido, ${usuarioActual.name}`);
             iniciarApp();
         } else {
@@ -157,6 +193,7 @@ async function iniciarSesion() {
 }
 
 async function cerrarSesion() {
+    sessionStorage.removeItem('scitic_login_audited');
     await window.API.logout();
     location.reload();
 }
@@ -198,30 +235,45 @@ function descargarAuditoria() {
     Toast.success("Auditoría descargada exitosamente.");
 }
 
+let cargandoApp = false;
+
 async function iniciarApp() {
+    if (cargandoApp) return;
+    cargandoApp = true;
+
     showLoader("Cargando entorno de trabajo...");
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('appView').style.display = 'block';
-    document.getElementById('displayUserName').innerText = "Cargando...";
+    if (usuarioActual) {
+        document.getElementById('displayUserName').innerText = usuarioActual.name;
+        document.getElementById('displayUserRole').innerText = usuarioActual.role;
+    } else {
+        document.getElementById('displayUserName').innerText = "Cargando...";
+    }
 
     aplicarPermisos();
     aplicarPermisosWidget();
 
-    const registrosDb = await window.API.getRegistros();
-    if (registrosDb) datos = registrosDb;
+    try {
+        // Carga en paralelo de datos para máxima velocidad
+        const [registrosDb, auditDb, gastosDb, usersDb] = await Promise.all([
+            window.API.getRegistros(),
+            window.API.getAuditoria(),
+            window.API.getGastos(),
+            window.API.getUsuarios()
+        ]);
 
-    const auditDb = await window.API.getAuditoria();
-    if (auditDb) auditoria = auditDb;
-
-    const gastosDb = await window.API.getGastos();
-    if (gastosDb) gastosDatos = gastosDb;
-
-    const usersDb = await window.API.getUsuarios();
-    if (usersDb) {
-        window.usuariosGlobal = usersDb;
-        trabajadoresActivosParaPendientes = usersDb
-            .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
-            .map(u => u.nombre.trim());
+        if (registrosDb) datos = registrosDb;
+        if (auditDb) auditoria = auditDb;
+        if (gastosDb) gastosDatos = gastosDb;
+        if (usersDb) {
+            window.usuariosGlobal = usersDb;
+            trabajadoresActivosParaPendientes = usersDb
+                .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
+                .map(u => u.nombre.trim());
+        }
+    } catch (e) {
+        console.error("Error al cargar datos iniciales:", e);
     }
 
     recalcularProgresos();
@@ -230,12 +282,18 @@ async function iniciarApp() {
     inicializarDatosGlobales();
     inicializarDatosGlobalesGastos();
 
-    document.getElementById('displayUserName').innerText = usuarioActual.name;
-    document.getElementById('displayUserRole').innerText = usuarioActual.role;
+    if (usuarioActual) {
+        document.getElementById('displayUserName').innerText = usuarioActual.name;
+        document.getElementById('displayUserRole').innerText = usuarioActual.role;
+    }
     hideLoader();
+    cargandoApp = false;
     
-    // Registrar login sin bloquear la carga
-    registrarAuditoria("LOGIN", "El usuario inició sesión.");
+    // Registrar login sin bloquear la carga y evitando duplicar en refrescos
+    if (!sessionStorage.getItem('scitic_login_audited')) {
+        sessionStorage.setItem('scitic_login_audited', 'true');
+        registrarAuditoria("LOGIN", "El usuario inició sesión.");
+    }
 }
 
 function generarIdUnico() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
