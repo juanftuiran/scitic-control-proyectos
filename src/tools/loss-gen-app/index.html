@@ -680,9 +680,11 @@
 
         const pisosEnEstaCadena = rowsChain.length;
         
-        // Buscar el input de dist-base de esta cadena (está en la primera celda de la primera fila de la cadena)
+        // Buscar los inputs de dist-base y dist-extra de esta cadena
         const baseInput = rowsChain[0].querySelector('.chain-base-dist-input');
+        const extraInput = rowsChain[0].querySelector('.chain-extra-dist-input');
         const distBaseDistr = baseInput ? (parseFloat(baseInput.value) || 0) : (parseFloat(document.getElementById('dist-base-distr').value) || 10);
+        const distExtraDistr = extraInput ? (parseFloat(extraInput.value) || 0) : 0;
         const distIncPiso  = parseFloat(document.getElementById('dist-inc-piso').value) || 3.5;
 
         rowsChain.forEach((row, p) => {
@@ -698,8 +700,10 @@
                 derivacion = parseFloat(templateItems[p_eff].querySelector('.tpl-deriv').value) || 0;
                 paso = parseFloat(templateItems[p_eff].querySelector('.tpl-paso').value) || 0;
             }
-            let distDistrEst = distBaseDistr + (p_eff * distIncPiso);
-            let formulaDistr = `${distBaseDistr}+(${distIncPiso}*${p_eff})`;
+            let distDistrEst = distBaseDistr + distExtraDistr + (p_eff * distIncPiso);
+            
+            let baseTerms = (distExtraDistr !== 0) ? `${distBaseDistr}+${distExtraDistr}` : `${distBaseDistr}`;
+            let formulaDistr = (p_eff > 0) ? `${baseTerms}+(${distIncPiso}*${p_eff})` : `${baseTerms}`;
 
             const inputDeriv = row.querySelector('[data-field="derivacion"]');
             const inputPaso = row.querySelector('[data-field="paso"]');
@@ -751,9 +755,15 @@
                                 '<option value="descendente">⬇️ Descendente</option>' +
                                 '<option value="ascendente">⬆️ Ascendente</option>' +
                             '</select>' +
-                            '<div style="margin-top: 6px; font-size: 10px; color: var(--text-muted);">' +
-                                '<label style="display:block; margin-bottom: 2px; color: var(--text-muted);">Dist. Base (m):</label>' +
-                                '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 55px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                            '<div style="margin-top: 6px; font-size: 10px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; align-items: center;">' +
+                                '<div style="width: 100%;">' +
+                                    '<label style="display:block; margin-bottom: 2px; color: var(--text-muted); font-size: 9.5px;">Dist. Base (m):</label>' +
+                                    '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 60px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                                '</div>' +
+                                '<div style="width: 100%;">' +
+                                    '<label style="display:block; margin-bottom: 2px; color: var(--text-muted); font-size: 9.5px;">Dist. Extra (m):</label>' +
+                                    '<input type="number" class="chain-extra-dist-input" value="0" step="0.5" style="width: 60px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                                '</div>' +
                             '</div>' +
                             '</td>';
                 }
@@ -761,7 +771,7 @@
                 let conectoresBase = parseInt(document.getElementById('conectores-base').value) || 10;
                 let conectoresEst = conectoresBase + (p * 2);
                 let distDistrEst = distBaseDistr + (p * distIncPiso);
-                let formulaDistr = `${distBaseDistr}+(${distIncPiso}*${p})`;
+                let formulaDistr = (p > 0) ? `${distBaseDistr}+(${distIncPiso}*${p})` : `${distBaseDistr}`;
 
                 let derivacion = 15;
                 let paso = 1.5;
