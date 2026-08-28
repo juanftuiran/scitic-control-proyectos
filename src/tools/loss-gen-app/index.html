@@ -146,6 +146,10 @@
         .btn-config:hover { background: #0369a1; }
         .btn-save  { background: var(--accent); color: #000; }
         .btn-save:hover { filter: brightness(0.9); }
+        .btn-json-save { background: #8b5cf6; }
+        .btn-json-save:hover { background: #7c3aed; }
+        .btn-json-load { background: #0d9488; }
+        .btn-json-load:hover { background: #0f766e; }
         .btn-excel { background: #16a34a; }
         .btn-excel:hover { background: #15803d; }
         .btn-pdf   { background: #dc2626; }
@@ -357,6 +361,9 @@
         <div class="spacer" style="width:100%; margin-top:6px;"></div>
         <button class="btn-config" onclick="toggleConfigPisos()">🔧 Config. Pisos</button>
         <button class="btn-calc" onclick="generarTabla()">⚡ Generar Tabla</button>
+        <button class="btn-json-save" onclick="guardarJSON()">💾 Guardar JSON</button>
+        <button class="btn-json-load" onclick="document.getElementById('input-cargar-json').click()">📂 Cargar JSON</button>
+        <input type="file" id="input-cargar-json" accept=".json" style="display:none" onchange="cargarJSON(event)">
         <button class="btn-save" onclick="guardarHTML()">💾 HTML</button>
         <button class="btn-excel" onclick="exportarExcel()">📊 Excel</button>
         <button class="btn-pdf" onclick="exportarPDF()">📄 PDF</button>
@@ -1462,6 +1469,413 @@
         });
 
         doc.save(projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '.pdf');
+    }
+
+    // ════════════════════════════════════════
+    // GUARDAR Y CARGAR JSON (BACKUP COMPLETO)
+    // ════════════════════════════════════════
+    function guardarJSON() {
+        const projectName = document.getElementById('project-title').value.trim() || 'Nuevo Proyecto TDT';
+        
+        // 1. Configuración del Sistema
+        const useRG11 = document.getElementById('use-rg11').checked;
+        const sistema = {
+            useRG11: useRG11,
+            nivelSalida: parseFloat(document.getElementById('nivel-salida').value) || 113,
+            cableTroncal: document.getElementById('cable-troncal').value,
+            cableDistribucion: document.getElementById('cable-distribucion').value,
+            tipoConector: document.getElementById('tipo-conector').value,
+            tipoToma: document.getElementById('tipo-toma').value
+        };
+
+        // 2. Parámetros de la Torre
+        const torre = {
+            numTorres: parseInt(document.getElementById('num-torres').value) || 1,
+            numPisos: parseInt(document.getElementById('num-pisos').value) || 5,
+            aptosPiso: parseInt(document.getElementById('aptos-piso').value) || 2,
+            tomasApto: parseInt(document.getElementById('tomas-apto').value) || 2,
+            pisosCadena: parseInt(document.getElementById('pisos-cadena').value) || 5,
+            distRG11Default: parseFloat(document.getElementById('dist-rg11-default').value) || 107,
+            distBaseDistr: parseFloat(document.getElementById('dist-base-distr').value) || 10,
+            distIncPiso: parseFloat(document.getElementById('dist-inc-piso').value) || 3.5,
+            conectoresBase: parseInt(document.getElementById('conectores-base').value) || 10
+        };
+
+        // 3. Plantilla de Cadena
+        const plantillaCadena = [];
+        document.querySelectorAll('#chain-template-container .template-item').forEach(item => {
+            plantillaCadena.push({
+                derivacion: parseFloat(item.querySelector('.tpl-deriv')?.value) || 0,
+                paso: parseFloat(item.querySelector('.tpl-paso')?.value) || 0
+            });
+        });
+
+        // 4. Matriz de Apartamentos y Tomas
+        const matrizAptos = [];
+        document.querySelectorAll('#aptos-matrix-container .apto-card').forEach((card, idx) => {
+            const name = card.querySelector('.apto-name-input')?.value || ('APTO-' + String(idx + 1).padStart(2, '0'));
+            const disp = parseFloat(card.querySelector('.apto-disp-input')?.value) || 0;
+            const numTomas = parseInt(card.querySelector('.apto-num-tomas')?.value) || 1;
+            const tomasDist = Array.from(card.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value) || 0);
+            matrizAptos.push({ name, disp, numTomas, tomasDist });
+        });
+
+        // 5. Configuración de Pisos y Cadenas
+        const cadenasConfig = [];
+        const floorConfigBody = document.getElementById('floor-config-body');
+        if (floorConfigBody) {
+            floorConfigBody.querySelectorAll('.chain-cell').forEach((cell, idx) => {
+                const sel = cell.querySelector('.chain-direction-sel');
+                const baseIn = cell.querySelector('.chain-base-dist-input');
+                const extraIn = cell.querySelector('.chain-extra-dist-input');
+                cadenasConfig.push({
+                    cadenaIndex: sel ? parseInt(sel.dataset.chain) || idx : idx,
+                    direccion: sel ? sel.value : 'descendente',
+                    distBase: baseIn ? parseFloat(baseIn.value) || 0 : torre.distBaseDistr,
+                    distExtra: extraIn ? parseFloat(extraIn.value) || 0 : 0
+                });
+            });
+        }
+
+        const pisosConfig = [];
+        if (floorConfigBody) {
+            for (const row of floorConfigBody.children) {
+                const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
+                if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
+                const match = pisoCell.textContent.match(/\d+/);
+                if (!match) continue;
+                const piso = parseInt(match[0]);
+
+                const inputDistr = row.querySelector('[data-field="dist-rg6-distr"]');
+
+                pisosConfig.push({
+                    piso: piso,
+                    aptos: parseInt(row.querySelector('[data-field="aptos"]')?.value) || 2,
+                    tomas: parseInt(row.querySelector('[data-field="tomas"]')?.value) || 2,
+                    derivacion: parseFloat(row.querySelector('[data-field="derivacion"]')?.value) || 0,
+                    paso: parseFloat(row.querySelector('[data-field="paso"]')?.value) || 0,
+                    splitterTorre: parseFloat(row.querySelector('[data-field="splitter-torre"]')?.value) || 0,
+                    splitterApto: parseFloat(row.querySelector('[data-field="splitter-apto"]')?.value) || 0,
+                    distRG11: parseFloat(row.querySelector('[data-field="dist-rg11"]')?.value) || 0,
+                    distRG6Distr: parseFloat(inputDistr?.value) || 0,
+                    distRG6DistrFormula: inputDistr?.dataset.formula || String(parseFloat(inputDistr?.value) || 0),
+                    conectores: parseInt(row.querySelector('[data-field="conectores"]')?.value) || 0
+                });
+            }
+        }
+
+        // 6. Filas de Resultados
+        const filasResultados = [];
+        const isResultsVisible = !document.getElementById('results-section').classList.contains('hidden');
+        let currentPiso = null;
+        let currentApto = null;
+
+        document.querySelectorAll('#results-body tr').forEach(tr => {
+            const pisoCell = tr.querySelector('.piso-cell');
+            if (pisoCell) {
+                const clone = pisoCell.cloneNode(true);
+                const span = clone.querySelector('span');
+                if (span) clone.removeChild(span);
+                const pText = clone.textContent.trim().replace(/<br>/g, '');
+                const m = pText.match(/\d+/);
+                currentPiso = m ? parseInt(m[0]) : null;
+            }
+
+            const tds = tr.querySelectorAll('td');
+            for (const td of tds) {
+                const text = td.textContent.trim();
+                if (text.startsWith('APTO')) currentApto = text;
+            }
+
+            const tomaCell = tr.querySelector('.bold-cell');
+            const tomaText = tomaCell ? tomaCell.textContent.trim() : '';
+
+            filasResultados.push({
+                piso: currentPiso,
+                apto: currentApto,
+                toma: tomaText,
+                distRG11: getInputValue(tr, 'dist-rg11'),
+                distRG6: getInputValue(tr, 'dist-rg6'),
+                numConect: getInputValue(tr, 'num-conect'),
+                derivadorDB: getInputValue(tr, 'derivador-db'),
+                repartidorDB: getInputValue(tr, 'repartidor-db'),
+                tomaDB: getInputValue(tr, 'toma-db'),
+                ampDB: getInputValue(tr, 'amp-db'),
+                distr: parseFloat(tr.dataset.distr) || 0,
+                distrFormula: tr.dataset.distrFormula || '',
+                disp: parseFloat(tr.dataset.disp) || 0,
+                tomaDist: parseFloat(tr.dataset.tomaDist) || 0,
+                derivFormula: tr.dataset.derivFormula || '',
+                repartFormula: tr.dataset.repartFormula || ''
+            });
+        });
+
+        const dataExport = {
+            version: '1.0',
+            formato: 'SCITIC_LOSS_CALC_BACKUP',
+            fechaExportacion: new Date().toISOString(),
+            proyecto: projectName,
+            sistema: sistema,
+            torre: torre,
+            plantillaCadena: plantillaCadena,
+            matrizAptos: matrizAptos,
+            cadenasConfig: cadenasConfig,
+            pisosConfig: pisosConfig,
+            tablaGenerada: isResultsVisible && filasResultados.length > 0,
+            filasResultados: filasResultados
+        };
+
+        const jsonString = JSON.stringify(dataExport, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const safeName = projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ _-]/g, '_') || 'proyecto-tdt';
+        a.download = safeName + '.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    function cargarJSON(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (!data || typeof data !== 'object') {
+                    alert('El archivo no contiene un formato JSON válido.');
+                    return;
+                }
+
+                // 1. Restaurar Título
+                if (data.proyecto) {
+                    document.getElementById('project-title').value = data.proyecto;
+                }
+
+                // 2. Restaurar Sistema
+                if (data.sistema) {
+                    document.getElementById('use-rg11').checked = !!data.sistema.useRG11;
+                    if (data.sistema.nivelSalida !== undefined) {
+                        document.getElementById('nivel-salida').value = data.sistema.nivelSalida;
+                    }
+                    if (data.sistema.cableTroncal) {
+                        document.getElementById('cable-troncal').value = data.sistema.cableTroncal;
+                    }
+                    if (data.sistema.cableDistribucion) {
+                        document.getElementById('cable-distribucion').value = data.sistema.cableDistribucion;
+                    }
+                    if (data.sistema.tipoConector) {
+                        document.getElementById('tipo-conector').value = data.sistema.tipoConector;
+                    }
+                    if (data.sistema.tipoToma) {
+                        document.getElementById('tipo-toma').value = data.sistema.tipoToma;
+                    }
+                    toggleRG11Config();
+                }
+
+                // 3. Restaurar Parámetros de la Torre
+                if (data.torre) {
+                    if (data.torre.numTorres !== undefined) document.getElementById('num-torres').value = data.torre.numTorres;
+                    if (data.torre.numPisos !== undefined) document.getElementById('num-pisos').value = data.torre.numPisos;
+                    if (data.torre.aptosPiso !== undefined) document.getElementById('aptos-piso').value = data.torre.aptosPiso;
+                    if (data.torre.tomasApto !== undefined) document.getElementById('tomas-apto').value = data.torre.tomasApto;
+                    if (data.torre.pisosCadena !== undefined) document.getElementById('pisos-cadena').value = data.torre.pisosCadena;
+                    if (data.torre.distRG11Default !== undefined) document.getElementById('dist-rg11-default').value = data.torre.distRG11Default;
+                    if (data.torre.distBaseDistr !== undefined) document.getElementById('dist-base-distr').value = data.torre.distBaseDistr;
+                    if (data.torre.distIncPiso !== undefined) document.getElementById('dist-inc-piso').value = data.torre.distIncPiso;
+                    if (data.torre.conectoresBase !== undefined) document.getElementById('conectores-base').value = data.torre.conectoresBase;
+                }
+
+                // 4. Restaurar Plantilla de Cadena
+                actualizarPlantillaCadena();
+                if (Array.isArray(data.plantillaCadena) && data.plantillaCadena.length > 0) {
+                    const items = document.querySelectorAll('#chain-template-container .template-item');
+                    data.plantillaCadena.forEach((tpl, idx) => {
+                        if (items[idx]) {
+                            const inDeriv = items[idx].querySelector('.tpl-deriv');
+                            const inPaso = items[idx].querySelector('.tpl-paso');
+                            if (inDeriv && tpl.derivacion !== undefined) inDeriv.value = tpl.derivacion;
+                            if (inPaso && tpl.paso !== undefined) inPaso.value = tpl.paso;
+                        }
+                    });
+                }
+
+                // 5. Restaurar Matriz de Apartamentos
+                if (Array.isArray(data.matrizAptos) && data.matrizAptos.length > 0) {
+                    const container = document.getElementById('aptos-matrix-container');
+                    container.innerHTML = '';
+                    data.matrizAptos.forEach((apto, a) => {
+                        const card = document.createElement('div');
+                        card.className = 'apto-card';
+                        card.dataset.apto = a;
+                        const numTomas = (apto.tomasDist && apto.tomasDist.length > 0) ? apto.tomasDist.length : (apto.numTomas || 1);
+                        
+                        card.innerHTML = `
+                            <div class="apto-card-header">
+                                <input type="text" class="apto-name-input" value="${apto.name || ('APTO-' + String(a+1).padStart(2,'0'))}" title="Nombre del apartamento">
+                            </div>
+                            <div class="apto-card-row">
+                                <label title="Distancia de dispersión en metros">Disp. (m):</label>
+                                <input type="number" class="apto-disp-input" value="${apto.disp !== undefined ? apto.disp : ((a+1)*3)}" step="0.5">
+                            </div>
+                            <div class="apto-card-row">
+                                <label>Cant. Tomas:</label>
+                                <input type="number" class="apto-num-tomas" value="${numTomas}" min="1" max="12" onchange="actualizarTomasGrid(this.closest('.apto-card'))">
+                            </div>
+                            <div class="tomas-grid"></div>
+                        `;
+                        container.appendChild(card);
+
+                        const tomasGrid = card.querySelector('.tomas-grid');
+                        for (let t = 0; t < numTomas; t++) {
+                            const distVal = (apto.tomasDist && apto.tomasDist[t] !== undefined) ? apto.tomasDist[t] : ((t + 1) * 1.5);
+                            tomasGrid.innerHTML += `
+                                <div class="toma-input-wrapper">
+                                    <label>T${t+1} (m)</label>
+                                    <input type="number" class="toma-dist-input" value="${distVal}" step="0.5">
+                                </div>
+                            `;
+                        }
+                    });
+                } else {
+                    actualizarMatrizCableadoUI();
+                }
+
+                // 6. Generar y Restaurar Configuración de Pisos
+                generarConfigPisos();
+
+                const floorConfigBody = document.getElementById('floor-config-body');
+
+                // Restaurar Cadenas Config
+                if (Array.isArray(data.cadenasConfig)) {
+                    data.cadenasConfig.forEach(chain => {
+                        const sel = floorConfigBody.querySelector(`.chain-direction-sel[data-chain="${chain.cadenaIndex}"]`);
+                        if (sel) {
+                            sel.value = chain.direccion || 'descendente';
+                            const parentTd = sel.closest('td');
+                            if (parentTd) {
+                                const baseIn = parentTd.querySelector('.chain-base-dist-input');
+                                const extraIn = parentTd.querySelector('.chain-extra-dist-input');
+                                if (baseIn && chain.distBase !== undefined) baseIn.value = chain.distBase;
+                                if (extraIn && chain.distExtra !== undefined) extraIn.value = chain.distExtra;
+                            }
+                        }
+                    });
+                }
+
+                // Restaurar Pisos Config
+                if (Array.isArray(data.pisosConfig)) {
+                    data.pisosConfig.forEach(pConf => {
+                        for (const row of floorConfigBody.children) {
+                            const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
+                            if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
+                            const match = pisoCell.textContent.match(/\d+/);
+                            if (match && parseInt(match[0]) === pConf.piso) {
+                                if (pConf.aptos !== undefined) {
+                                    const el = row.querySelector('[data-field="aptos"]');
+                                    if (el) el.value = pConf.aptos;
+                                }
+                                if (pConf.tomas !== undefined) {
+                                    const el = row.querySelector('[data-field="tomas"]');
+                                    if (el) el.value = pConf.tomas;
+                                }
+                                if (pConf.derivacion !== undefined) {
+                                    const el = row.querySelector('[data-field="derivacion"]');
+                                    if (el) el.value = pConf.derivacion;
+                                }
+                                if (pConf.paso !== undefined) {
+                                    const el = row.querySelector('[data-field="paso"]');
+                                    if (el) el.value = pConf.paso;
+                                }
+                                if (pConf.splitterTorre !== undefined) {
+                                    const el = row.querySelector('[data-field="splitter-torre"]');
+                                    if (el) el.value = pConf.splitterTorre;
+                                }
+                                if (pConf.splitterApto !== undefined) {
+                                    const el = row.querySelector('[data-field="splitter-apto"]');
+                                    if (el) el.value = pConf.splitterApto;
+                                }
+                                if (pConf.distRG11 !== undefined) {
+                                    const el = row.querySelector('[data-field="dist-rg11"]');
+                                    if (el) el.value = pConf.distRG11;
+                                }
+                                if (pConf.distRG6Distr !== undefined) {
+                                    const el = row.querySelector('[data-field="dist-rg6-distr"]');
+                                    if (el) {
+                                        el.value = pConf.distRG6Distr;
+                                        if (pConf.distRG6DistrFormula) el.dataset.formula = pConf.distRG6DistrFormula;
+                                    }
+                                }
+                                if (pConf.conectores !== undefined) {
+                                    const el = row.querySelector('[data-field="conectores"]');
+                                    if (el) el.value = pConf.conectores;
+                                }
+                                break;
+                            }
+                        }
+                    });
+                }
+
+                configGenerada = true;
+
+                // 7. Generar y Llenar Tabla de Resultados
+                generarTabla();
+
+                // Restaurar celdas personalizadas en la tabla de resultados si existen
+                if (Array.isArray(data.filasResultados) && data.filasResultados.length > 0) {
+                    const trs = document.querySelectorAll('#results-body tr');
+                    data.filasResultados.forEach((fData, idx) => {
+                        if (trs[idx]) {
+                            const tr = trs[idx];
+                            if (fData.distRG11 !== undefined) {
+                                const inp = tr.querySelector('[data-col="dist-rg11"]');
+                                if (inp) inp.value = fData.distRG11;
+                            }
+                            if (fData.distRG6 !== undefined) {
+                                const inp = tr.querySelector('[data-col="dist-rg6"]');
+                                if (inp) inp.value = fData.distRG6;
+                            }
+                            if (fData.numConect !== undefined) {
+                                const inp = tr.querySelector('[data-col="num-conect"]');
+                                if (inp) inp.value = fData.numConect;
+                            }
+                            if (fData.derivadorDB !== undefined) {
+                                const inp = tr.querySelector('[data-col="derivador-db"]');
+                                if (inp) inp.value = fData.derivadorDB;
+                            }
+                            if (fData.repartidorDB !== undefined) {
+                                const inp = tr.querySelector('[data-col="repartidor-db"]');
+                                if (inp) inp.value = fData.repartidorDB;
+                            }
+                            if (fData.tomaDB !== undefined) {
+                                const inp = tr.querySelector('[data-col="toma-db"]');
+                                if (inp) inp.value = fData.tomaDB;
+                            }
+                            if (fData.ampDB !== undefined) {
+                                const inp = tr.querySelector('[data-col="amp-db"]');
+                                if (inp) inp.value = fData.ampDB;
+                            }
+                            if (fData.distr !== undefined) tr.dataset.distr = fData.distr;
+                            if (fData.distrFormula) tr.dataset.distrFormula = fData.distrFormula;
+                            if (fData.disp !== undefined) tr.dataset.disp = fData.disp;
+                            if (fData.tomaDist !== undefined) tr.dataset.tomaDist = fData.tomaDist;
+                            if (fData.derivFormula) tr.dataset.derivFormula = fData.derivFormula;
+                            if (fData.repartFormula) tr.dataset.repartFormula = fData.repartFormula;
+                        }
+                    });
+                    recalcularTodo();
+                }
+
+                alert('¡Proyecto y tabla cargados exitosamente desde archivo JSON!');
+            } catch (err) {
+                console.error(err);
+                alert('Error al leer o procesar el archivo JSON: ' + err.message);
+            } finally {
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
     }
 
     function guardarHTML() {
