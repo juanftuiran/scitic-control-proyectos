@@ -132,6 +132,22 @@
             border: 1px solid var(--border); border-radius: 3px;
         }
 
+        
+        /* ── Leyendas / Signos de Interrogación ── */
+        .help-tip {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: rgba(56, 189, 248, 0.2); color: #38bdf8;
+            font-size: 10px; font-weight: bold; cursor: help;
+            margin-left: 3px; vertical-align: middle; user-select: none;
+            transition: all 0.2s;
+        }
+        .help-tip:hover {
+            background: #38bdf8; color: #020617; transform: scale(1.15);
+        }
+        .chain-bifurc-fields.hidden { display: none !important; }
+        .ritel-row td { background: rgba(16, 185, 129, 0.1) !important; color: #34d399 !important; font-weight: bold; border-top: 2px solid #10b981; }
+        .ritel-row.ritel-bad td { background: rgba(239, 68, 68, 0.1) !important; color: #f87171 !important; border-top: 2px solid #ef4444; }
         /* ── Botones ── */
         button {
             padding: 9px 16px; border: none; border-radius: 5px;
@@ -280,29 +296,42 @@
     <div class="header-panel">
         <div class="panel-section-title">
             <span><span class="icon">📡</span> Configuración del Sistema</span>
-            <label class="checkbox-group" title="Habilita una segunda columna de cable troncal (para grandes distancias/exteriores)">
-                <input type="checkbox" id="use-rg11" onchange="toggleRG11Config()"> Usar Cable Troncal Adicional (RG11)
+            <label class="checkbox-group" title="Habilita una segunda columna de cable troncal (para grandes distancias o exteriores)">
+                <input type="checkbox" id="use-rg11" onchange="toggleRG11Config()"> Usar Cable Troncal Adicional (RG11) <span class="help-tip" title="Habilita columna de cable grueso RG11 para tramos largos entre cabecera y torre">?</span>
             </label>
         </div>
         <div class="input-group">
-            <label>Nivel Salida (dBµV)</label>
-            <input type="number" id="nivel-salida" value="113" step="0.1" min="0">
+            <label>Nivel Salida (dBµV) <span class="help-tip" title="Nivel de señal entregado por la central selectiva o cabecera en cubierta (110 a 115 dBµV según norma RITEL)">?</span></label>
+            <input type="number" id="nivel-salida" value="110" step="0.1" min="0">
         </div>
         <div class="input-group rg11-field hidden">
-            <label>Cable Troncal</label>
+            <label>Cable Troncal <span class="help-tip" title="Modelo de cable coaxial RG11 de bajas pérdidas para alimentación troncal">?</span></label>
             <select id="cable-troncal"></select>
         </div>
         <div class="input-group">
-            <label>Cable Distribución</label>
+            <label>Cable Distribución <span class="help-tip" title="Modelo de cable coaxial RG6 para la distribución vertical piso a piso">?</span></label>
             <select id="cable-distribucion"></select>
         </div>
         <div class="input-group">
-            <label>Tipo Conector</label>
+            <label>Tipo Conector <span class="help-tip" title="Atenuación estimada por cada conector de compresión tipo F (0.1 a 0.2 dB)">?</span></label>
             <select id="tipo-conector"></select>
         </div>
         <div class="input-group">
-            <label>Tipo Toma</label>
+            <label>Tipo Toma <span class="help-tip" title="Pérdida de paso/inserción en la toma de usuario final para TV (0.5 a 1.0 dB)">?</span></label>
             <select id="tipo-toma"></select>
+        </div>
+        <div class="input-group" style="min-width: 320px;">
+            <label class="checkbox-group" style="font-weight: bold; color: var(--primary-blue); cursor: pointer;" title="Compensa pérdidas en torres altas inyectando ganancia a un bloque de pisos">
+                <input type="checkbox" id="use-amplificador" checked onchange="toggleAmplificadorConfig()"> ¿Llevar Amplificador de Línea? <span class="help-tip" title="Activa un amplificador activo de línea para torres de gran altura (> 12 pisos)">?</span>
+            </label>
+            <div id="amp-config-fields" style="display:flex; gap:6px; align-items:center; background:var(--input-bg); padding:4px 10px; border:1px solid var(--border); border-radius:4px; margin-top:4px;">
+                <span style="font-size:11px; color:var(--text-muted);" title="Rango de pisos cubierto">Pisos:</span>
+                <input type="number" id="amp-piso-desde" value="14" min="1" style="width:50px; text-align:center;" title="Piso superior del tramo amplificado" onchange="onAmpInputChange()">
+                <span style="font-size:11px; color:var(--text-muted);">a</span>
+                <input type="number" id="amp-piso-hasta" value="1" min="1" style="width:50px; text-align:center;" title="Piso inferior del tramo amplificado" onchange="onAmpInputChange()">
+                <span style="font-size:11px; color:var(--text-muted); margin-left:4px;" title="Ganancia entregada por el amplificador en dB">Ganancia (dB):</span>
+                <input type="number" id="amp-valor" value="20" step="0.5" style="width:60px; text-align:center; font-weight:bold; color:#10b981;" title="Ganancia del amplificador en dB (ej. 20 dB)" onchange="onAmpInputChange()">
+            </div>
         </div>
     </div>
 
@@ -310,50 +339,50 @@
     <div class="header-panel">
         <div class="panel-section-title"><span class="icon">🏢</span> Configuración de la Torre y Matriz de Longitudes</div>
         <div class="input-group">
-            <label>N° Torres</label>
+            <label>N° Torres <span class="help-tip" title="Cantidad de torres en el conjunto residencial">?</span></label>
             <input type="number" id="num-torres" value="1" min="1" max="10">
         </div>
         <div class="input-group">
-            <label>N° Pisos</label>
-            <input type="number" id="num-pisos" value="5" min="1" max="60" onchange="onTowerDimensionsChange()">
+            <label>N° Pisos <span class="help-tip" title="Total de plantas o pisos habitables de la torre">?</span></label>
+            <input type="number" id="num-pisos" value="30" min="1" max="60" onchange="onTowerDimensionsChange()">
         </div>
         <div class="input-group">
-            <label>Aptos / Piso</label>
-            <input type="number" id="aptos-piso" value="2" min="1" max="20" onchange="onTowerDimensionsChange()">
+            <label>Aptos / Piso <span class="help-tip" title="Número de viviendas o apartamentos por cada nivel de planta">?</span></label>
+            <input type="number" id="aptos-piso" value="4" min="1" max="20" onchange="onTowerDimensionsChange()">
         </div>
         <div class="input-group">
-            <label>Tomas / Apto</label>
-            <input type="number" id="tomas-apto" value="2" min="1" max="8" onchange="onTowerDimensionsChange()">
+            <label>Tomas / Apto <span class="help-tip" title="Cantidad de tomas de televisión (TV) por apartamento">?</span></label>
+            <input type="number" id="tomas-apto" value="1" min="1" max="8" onchange="onTowerDimensionsChange()">
         </div>
         <div class="input-group">
-            <label>Pisos por Cadena</label>
-            <input type="number" id="pisos-cadena" value="5" min="1" max="60" onchange="onTowerDimensionsChange()" title="Cuántos pisos se conectan en serie">
+            <label>Pisos por Cadena <span class="help-tip" title="Cuántos pisos van conectados en serie por cada bajante vertical independiente (ej. 4 para torre de 30 pisos dividida en cadenas de 4)">?</span></label>
+            <input type="number" id="pisos-cadena" value="4" min="1" max="60" onchange="onTowerDimensionsChange()">
         </div>
         <div class="input-group rg11-field hidden">
-            <label>Dist. Troncal (m)</label>
+            <label>Dist. Troncal (m) <span class="help-tip" title="Longitud de cable RG11 desde la antena hasta la entrada de la bajante">?</span></label>
             <input type="number" id="dist-rg11-default" value="107" min="0" step="0.5" onchange="autoUpdateFloorConfig()">
         </div>
         <div class="input-group">
-            <label>Dist. Distr. Base (m)</label>
-            <input type="number" id="dist-base-distr" value="10" min="0" step="0.5" onchange="autoUpdateFloorConfig()" title="Distancia base al primer piso de la cadena">
+            <label>Dist. Distr. Base (m) <span class="help-tip" title="Metros de cable vertical desde la cabecera hasta el primer piso atendido">?</span></label>
+            <input type="number" id="dist-base-distr" value="35" min="0" step="0.5" onchange="autoUpdateFloorConfig()">
         </div>
         <div class="input-group">
-            <label>Salto Piso a Piso (m)</label>
-            <input type="number" id="dist-inc-piso" value="3.5" min="0" step="0.5" onchange="autoUpdateFloorConfig()" title="Metros adicionales que se suman en la columna vertical entre pisos continuos (+3.5m habitual)">
+            <label>Salto Piso a Piso (m) <span class="help-tip" title="Metros de cable coaxial vertical que se suman entre pisos continuos (típicamente 3.0 a 3.5m)">?</span></label>
+            <input type="number" id="dist-inc-piso" value="3.5" min="0" step="0.5" onchange="autoUpdateFloorConfig()">
         </div>
 
         <!-- Plantilla Típica de Cadena -->
-        <div class="panel-section-title" style="margin-top: 10px; border-bottom: none;"><span class="icon">🔗</span> Plantilla de Cadena (Atenuación)</div>
+        <div class="panel-section-title" style="margin-top: 10px; border-bottom: none;"><span class="icon">🔗</span> Plantilla de Cadena (Atenuación) <span class="help-tip" title="Atenuaciones predeterminadas aplicadas en cascada piso a piso">?</span></div>
         <div class="matrix-section" style="padding-bottom: 4px; margin-top: 0;">
             <div class="input-group" style="min-width: 120px;">
-                <label>Conectores Base</label>
+                <label>Conectores Base <span class="help-tip" title="Cantidad mínima de conectores F iniciales en el sistema">?</span></label>
                 <input type="number" id="conectores-base" value="10" min="0" onchange="autoUpdateFloorConfig()">
             </div>
             <div id="chain-template-container" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
         </div>
 
         <!-- Matriz Dinámica de Dispersión por Apartamento y Distancia por Toma -->
-        <div class="panel-section-title" style="margin-top: 10px; border-bottom: none;"><span class="icon">📐</span> Matriz de Distancias (Por Apto y Toma)</div>
+        <div class="panel-section-title" style="margin-top: 10px; border-bottom: none;"><span class="icon">📐</span> Matriz de Distancias (Por Apto y Toma) <span class="help-tip" title="Longitudes horizontales de cable desde el splitter de piso hasta cada toma interna">?</span></div>
         <div class="matrix-section" id="aptos-matrix-container">
             <!-- Tarjetas de apartamento se insertarán aquí dinámicamente -->
         </div>
@@ -371,21 +400,27 @@
 
     <!-- ═══════════════ CONFIG DE PISOS ═══════════════ -->
     <div id="floor-config-section" class="hidden fade-in">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:12px; font-weight:bold; color:var(--primary-blue);"><span class="icon">🏢</span> Configuración Detallada por Pisos</span>
+            <label class="checkbox-group" style="height:30px; padding:4px 10px; font-size:11px; cursor:pointer;" title="Habilita el campo de atenuación de bifurcación en las cadenas que se deriven de un acoplador o splitter troncal">
+                <input type="checkbox" id="use-bifurcacion" checked onchange="toggleBifurcacionColumna()"> ¿Bifurcación Troncal (Acoplador / Splitter)? <span class="help-tip" title="Permite configurar atenuación de bifurcación para bloques de pisos alimentados por acoplador troncal">?</span>
+            </label>
+        </div>
         <div class="table-container floor-config-section">
             <table class="floor-config-table" id="floor-config-table">
                 <thead>
                     <tr>
-                        <th title="Configuración de la cadena de derivadores">Cadena / Sentido</th>
-                        <th>Piso</th>
-                        <th>N° Aptos</th>
-                        <th>Tomas/Apto</th>
-                        <th title="Atenuación hacia la toma en este piso">Derivación<br>(dB)</th>
-                        <th title="Atenuación hacia el siguiente piso en la cadena">Paso<br>(dB)</th>
-                        <th>Splitter<br>Torre (dB)</th>
-                        <th>Splitter<br>Apto (dB)</th>
-                        <th class="rg11-col hidden">Dist.<br>Troncal (m)</th>
-                        <th title="Distancia acumulada en el eje vertical (Base + Incrementos por Piso)">Dist. Distribución<br>Vertical (m)</th>
-                        <th>Conectores</th>
+                        <th>Cadena / Sentido <span class="help-tip" title="Bajante vertical, sentido de cableado, distancias base y parámetros de bifurcación por bloque">?</span></th>
+                        <th>Piso <span class="help-tip" title="Nivel de planta de la torre">?</span></th>
+                        <th>N° Aptos <span class="help-tip" title="Apartamentos atendidos en este piso">?</span></th>
+                        <th>Tomas/Apto <span class="help-tip" title="Tomas por apartamento en este piso">?</span></th>
+                        <th>Derivación (dB) <span class="help-tip" title="Atenuación hacia la vivienda en el derivador de piso (ej. 24, 20, 16, 12 dB)">?</span></th>
+                        <th>Paso (dB) <span class="help-tip" title="Pérdida de paso hacia el piso inferior (ej. 2.3, 2.2, 2.5 dB, o 0 para terminal)">?</span></th>
+                        <th>Splitter Torre (dB) <span class="help-tip" title="Atenuación del repartidor de pasillo de piso para los apartamentos (ej. 8 dB)">?</span></th>
+                        <th>Splitter Apto (dB) <span class="help-tip" title="Atenuación del repartidor interno dentro del apartamento (ej. 4 dB)">?</span></th>
+                        <th class="rg11-col hidden">Dist. Troncal (m) <span class="help-tip" title="Metros de cable troncal RG11">?</span></th>
+                        <th>Dist. Distribución (m) <span class="help-tip" title="Metros de cable vertical acumulados hasta este piso">?</span></th>
+                        <th>Conectores <span class="help-tip" title="Cantidad acumulada de conectores F">?</span></th>
                     </tr>
                 </thead>
                 <tbody id="floor-config-body"></tbody>
@@ -406,12 +441,12 @@
                         <th colspan="3" class="sub-th rg11-col hidden">Cable Troncal</th>
                         <th colspan="3">Cable Distribución (RG6 Total)</th>
                         <th colspan="2" class="sub-th">Conectores</th>
-                        <th rowspan="3" title="Suma en cascada calculada automáticamente">Derivador<br>(dB)</th>
-                        <th rowspan="3">Repartidor<br>(dB)</th>
-                        <th rowspan="3">Toma<br>(dB)</th>
-                        <th rowspan="3">Amplif.<br>(dB)</th>
-                        <th colspan="2" class="th-accent">Pérdida Total</th>
-                        <th colspan="2" class="th-result">Nivel de Señal</th>
+                        <th rowspan="3">Derivador (dB) <span class="help-tip" title="Pérdidas acumuladas de paso superiores más la derivación de este piso">?</span></th>
+                        <th rowspan="3">Repartidor (dB) <span class="help-tip" title="Suma de Splitter Torre + Splitter Apto + Bifurcación troncal si aplica">?</span></th>
+                        <th rowspan="3">Toma (dB) <span class="help-tip" title="Pérdida en la toma final de usuario">?</span></th>
+                        <th rowspan="3">Amplif. (dB) <span class="help-tip" title="Ganancia del amplificador de línea para este bloque de pisos (resta a pérdidas)">?</span></th>
+                        <th colspan="2" class="th-accent">Pérdida Total <span class="help-tip" title="Atenuación neta total desde cabecera hasta la toma de usuario">?</span></th>
+                        <th colspan="2" class="th-result">Nivel de Señal <span class="help-tip" title="Nivel en dBµV recibido en el televisor (Norma RITEL: 47 a 70 dBµV)">?</span></th>
                     </tr>
                     <tr>
                         <th class="sub-th rg11-col hidden">Dist (m)</th>
@@ -487,9 +522,12 @@
         populateSelect('tipo-conector', CONSTANTES.conectores, 'F-Standard');
         populateSelect('tipo-toma', CONSTANTES.tomas, 'Standard');
         toggleRG11Config();
+        toggleAmplificadorConfig();
+        toggleBifurcacionColumna();
         actualizarPlantillaCadena();
         actualizarMatrizCableadoUI();
         generarConfigPisos();
+        generarTabla(); // Cargue automático por defecto de la tabla llena con estos valores!
     }
 
     function populateSelect(id, obj, defaultKey) {
@@ -502,6 +540,51 @@
             if (key === defaultKey) opt.selected = true;
             sel.appendChild(opt);
         }
+    }
+
+    
+    // ════════════════════════════════════════
+    // CONTROL DE AMPLIFICADOR Y BIFURCACIÓN
+    // ════════════════════════════════════════
+    function toggleAmplificadorConfig() {
+        const checked = document.getElementById('use-amplificador').checked;
+        const fields = document.getElementById('amp-config-fields');
+        if (checked) {
+            fields.classList.remove('hidden');
+            if (!document.getElementById('amp-piso-desde').value) {
+                const numPisos = parseInt(document.getElementById('num-pisos').value) || 30;
+                document.getElementById('amp-piso-desde').value = Math.floor(numPisos / 2);
+            }
+        } else {
+            fields.classList.add('hidden');
+        }
+        if (!document.getElementById('results-section').classList.contains('hidden')) {
+            generarTabla();
+        }
+    }
+
+    function onAmpInputChange() {
+        if (!document.getElementById('results-section').classList.contains('hidden')) {
+            generarTabla();
+        }
+    }
+
+    function toggleBifurcacionColumna() {
+        const checked = document.getElementById('use-bifurcacion').checked;
+        document.querySelectorAll('.chain-bifurc-fields').forEach(el => {
+            if (checked) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        });
+        if (!document.getElementById('results-section').classList.contains('hidden')) {
+            generarTabla();
+        }
+    }
+
+    function getValoresDerivadorDefault(posicionEnCadena, totalPisosEnCadena) {
+        if (posicionEnCadena === 0) return { derivacion: 25, paso: 1.5 };
+        if (posicionEnCadena === 1) return { derivacion: 20, paso: 2.0 };
+        if (posicionEnCadena === 2) return { derivacion: 15, paso: 4.0 };
+        return { derivacion: 15, paso: 4.0 };
     }
 
     function toggleRG11Config() {
@@ -543,12 +626,9 @@
         container.innerHTML = '';
 
         for (let p = 0; p < pisosCadena; p++) {
-            let defDeriv = 15;
-            let defPaso = 1.5;
-            
-            // Valores por defecto inteligentes
-            if (p === 0) { defDeriv = 25; defPaso = 0.5; }
-            else if (p === pisosCadena - 1) { defDeriv = 10; defPaso = 2.0; }
+            const defVals = getValoresDerivadorDefault(p, pisosCadena);
+            let defDeriv = defVals.derivacion;
+            let defPaso = defVals.paso;
 
             // Restaurar si existe
             if (oldVals[p]) {
@@ -593,9 +673,10 @@
 
         container.innerHTML = '';
 
+        const defaultDisps = [15, 16, 16, 19];
         for (let a = 0; a < numAptos; a++) {
             const estado = estadoActual[a] || {};
-            const defaultDisp = estado.disp !== undefined ? estado.disp : ((a + 1) * 3);
+            const defaultDisp = estado.disp !== undefined ? estado.disp : (defaultDisps[a] !== undefined ? defaultDisps[a] : ((a + 1) * 3));
             const defaultName = estado.name !== undefined && estado.name.trim() !== '' ? estado.name : ('APTO-' + String(a + 1).padStart(2, '0'));
             const numTomasApto = estado.numTomas !== undefined ? estado.numTomas : tomasGlobal;
             
@@ -622,7 +703,7 @@
             // Llenar la grid de tomas
             const tomasGrid = card.querySelector('.tomas-grid');
             for(let t = 0; t < numTomasApto; t++) {
-                const defDist = (estado.tomasDist && estado.tomasDist[t] !== undefined) ? estado.tomasDist[t] : ((t + 1) * 1.5);
+                const defDist = (estado.tomasDist && estado.tomasDist[t] !== undefined) ? estado.tomasDist[t] : 15;
                 tomasGrid.innerHTML += `
                     <div class="toma-input-wrapper">
                         <label>T${t+1} (m)</label>
@@ -642,7 +723,7 @@
         grid.innerHTML = '';
         
         for(let t = 0; t < numTomas; t++) {
-            const defDist = oldVals[t] !== undefined ? oldVals[t] : ((t + 1) * 1.5);
+            const defDist = oldVals[t] !== undefined ? oldVals[t] : 15;
             grid.innerHTML += `
                 <div class="toma-input-wrapper">
                     <label>T${t+1} (m)</label>
@@ -756,6 +837,11 @@
                 let html = '';
 
                 if (p === 0) {
+                    const useAmpNow = document.getElementById('use-amplificador')?.checked;
+                    const useBifurcNow = document.getElementById('use-bifurcacion')?.checked;
+                    let cableExtraDef = (useAmpNow && c > 0) ? 24.0 : 0.0;
+                    let bifurcDerivDef = (c > 0) ? 1.8 : 0.0;
+
                     html += '<td rowspan="' + pisosEnEstaCadena + '" class="chain-cell" style="background: ' + color + '12;">' +
                             '<div class="chain-indicator" style="background:' + color + '">CADENA ' + (c + 1) + '</div>' +
                             '<select class="chain-direction-sel" data-chain="' + c + '" onchange="onChainDirectionChange(' + c + ', this.value)">' +
@@ -764,12 +850,18 @@
                             '</select>' +
                             '<div style="margin-top: 6px; font-size: 10px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; align-items: center;">' +
                                 '<div style="width: 100%;">' +
-                                    '<label style="display:block; margin-bottom: 2px; color: var(--text-muted); font-size: 9.5px;">Dist. Base (m):</label>' +
-                                    '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 60px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                                    '<label style="display:block; margin-bottom: 2px; color: var(--text-muted); font-size: 9.5px;" title="Distancia base vertical desde cabecera">Dist. Base (m) <span class="help-tip" title="Metros de cable vertical desde la cabecera hasta el primer piso de esta bajante">?</span>:</label>' +
+                                    '<input type="number" class="chain-base-dist-input" value="' + distBaseDistr + '" step="0.5" style="width: 65px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
                                 '</div>' +
                                 '<div style="width: 100%;">' +
-                                    '<label style="display:block; margin-bottom: 2px; color: var(--text-muted); font-size: 9.5px;">Dist. Extra (m):</label>' +
-                                    '<input type="number" class="chain-extra-dist-input" value="0" step="0.5" style="width: 60px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="onChainDirectionChange(' + c + ', this.closest(\'td\').querySelector(\'.chain-direction-sel\').value)">' +
+                                    '<label style="display:block; margin-bottom: 2px; color: var(--text-muted); font-size: 9.5px;" title="Cable troncal extra cuando hay amplificador o salto especial">Cable Extra (m) <span class="help-tip" title="Metros de cable troncal extra entre el acoplador/bifurcación y esta bajante (ej. 24 m)">?</span>:</label>' +
+                                    '<input type="number" class="chain-cable-extra-input" value="' + cableExtraDef + '" step="0.5" style="width: 65px; text-align:center; padding: 3px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 3px;" onchange="if(!document.getElementById(\'results-section\').classList.contains(\'hidden\'))generarTabla()">' +
+                                '</div>' +
+                                '<div class="chain-bifurc-fields ' + (useBifurcNow ? '' : 'hidden') + '" style="width: 100%; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 4px; margin-top:2px;">' +
+                                    '<div style="width: 100%;">' +
+                                        '<label style="display:block; margin-bottom: 2px; color: #fbbf24; font-size: 9.5px;" title="Atenuación de bifurcación troncal para este bloque de pisos (se suma al derivador)">Bifurcación (dB) <span class="help-tip" title="Atenuación de bifurcación troncal para este bloque de pisos que se suma al derivador (ej. 1.8 dB)">?</span>:</label>' +
+                                        '<input type="number" class="chain-bifurc-deriv-input" value="' + bifurcDerivDef + '" step="0.1" style="width: 65px; text-align:center; padding: 3px; background: var(--input-bg); color: #fbbf24; border: 1px solid var(--border); border-radius: 3px;" onchange="if(!document.getElementById(\'results-section\').classList.contains(\'hidden\'))generarTabla()">' +
+                                    '</div>' +
                                 '</div>' +
                             '</div>' +
                             '</td>';
@@ -780,15 +872,16 @@
                 let distDistrEst = distBaseDistr + (p * distIncPiso);
                 let formulaDistr = (p > 0) ? `${distBaseDistr}+(${distIncPiso}*${p})` : `${distBaseDistr}`;
 
-                let derivacion = 15;
-                let paso = 1.5;
+                const defLadder = getValoresDerivadorDefault(p, pisosEnEstaCadena);
+                let derivacion = defLadder.derivacion;
+                let paso = defLadder.paso;
                 const templateItems = document.querySelectorAll('#chain-template-container .template-item');
                 if (templateItems[p]) {
                     derivacion = parseFloat(templateItems[p].querySelector('.tpl-deriv').value) || 0;
                     paso = parseFloat(templateItems[p].querySelector('.tpl-paso').value) || 0;
                 }
 
-                html += '<td><strong>PISO ' + pisoActual + '</strong></td>' +
+                html += '<td class="piso-cfg-cell"><strong>PISO ' + pisoActual + '</strong></td>' +
                     '<td><input type="number" class="input-mini" value="' + aptos + '" min="1" max="20" data-floor="' + pisoActual + '" data-field="aptos"></td>' +
                     '<td><input type="number" class="input-mini" value="' + tomas + '" min="1" max="8" data-floor="' + pisoActual + '" data-field="tomas"></td>' +
                     '<td><input type="number" class="input-mini" value="' + derivacion + '" step="0.5" data-floor="' + pisoActual + '" data-field="derivacion"></td>' +
@@ -816,34 +909,65 @@
         const floors = [];
         const floorConfigBody = document.getElementById('floor-config-body');
         
+        const useAmp = document.getElementById('use-amplificador')?.checked;
+        const ampDesde = parseInt(document.getElementById('amp-piso-desde')?.value) || 0;
+        const ampHasta = parseInt(document.getElementById('amp-piso-hasta')?.value) || 0;
+        const ampGain = parseFloat(document.getElementById('amp-valor')?.value) || 0;
+        const minAmpPiso = Math.min(ampDesde, ampHasta);
+        const maxAmpPiso = Math.max(ampDesde, ampHasta);
+
+        const useBifurc = document.getElementById('use-bifurcacion')?.checked;
+
+        // Recoger parámetros de cada cadena (Dirección, Cable Extra, Bifurcación)
+        const chainParams = [];
         const direcciones = [];
         floorConfigBody.querySelectorAll('.chain-direction-sel').forEach(sel => {
-            direcciones.push(sel.value);
+            const dir = sel.value || 'descendente';
+            direcciones.push(dir);
+            const parentTd = sel.closest('td');
+            const cableExtra = parentTd ? (parseFloat(parentTd.querySelector('.chain-cable-extra-input')?.value) || 0) : 0;
+            const bifurcDeriv = (useBifurc && parentTd) ? (parseFloat(parentTd.querySelector('.chain-bifurc-deriv-input')?.value) || 0) : 0;
+            chainParams.push({
+                direccion: dir,
+                cableExtra: cableExtra,
+                bifurcDeriv: bifurcDeriv
+            });
         });
 
         for (const row of floorConfigBody.children) {
-            const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
-            if(!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
+            const pisoCell = row.querySelector('.piso-cfg-cell') || Array.from(row.cells).find(c => c.textContent.includes('PISO'));
+            if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
 
-            const piso = parseInt(pisoCell.textContent.match(/\d+/)[0]);
+            const match = pisoCell.textContent.match(/\d+/);
+            if (!match) continue;
+            const piso = parseInt(match[0]);
             const cadenaIndex = Math.floor((numPisos - piso) / pisosCadena);
 
             const inputDistr = row.querySelector('[data-field="dist-rg6-distr"]');
+            if (!inputDistr) continue;
+            const cParam = chainParams[cadenaIndex] || { direccion: 'descendente', cableExtra: 0, bifurcDeriv: 0 };
+
+            const hasAmp = useAmp && (piso >= minAmpPiso && piso <= maxAmpPiso);
+            const ampDB = hasAmp ? ampGain : 0;
 
             floors.push({
                 piso: piso,
                 cadenaIndex: cadenaIndex,
-                direccionCadena: direcciones[cadenaIndex] || 'descendente',
-                aptos: parseInt(row.querySelector('[data-field="aptos"]').value) || 2,
-                tomas: parseInt(row.querySelector('[data-field="tomas"]').value) || 2,
-                derivacion: parseFloat(row.querySelector('[data-field="derivacion"]').value) || 0,
-                paso: parseFloat(row.querySelector('[data-field="paso"]').value) || 0,
-                splitterTorre: parseFloat(row.querySelector('[data-field="splitter-torre"]').value) || 0,
-                splitterApto: parseFloat(row.querySelector('[data-field="splitter-apto"]').value) || 0,
+                direccionCadena: cParam.direccion || 'descendente',
+                aptos: parseInt(row.querySelector('[data-field="aptos"]')?.value) || 2,
+                tomas: parseInt(row.querySelector('[data-field="tomas"]')?.value) || 2,
+                derivacion: parseFloat(row.querySelector('[data-field="derivacion"]')?.value) || 0,
+                paso: parseFloat(row.querySelector('[data-field="paso"]')?.value) || 0,
+                cableExtra: cParam.cableExtra,
+                bifurcDeriv: cParam.bifurcDeriv,
+                hasAmp: hasAmp,
+                ampDB: ampDB,
+                splitterTorre: parseFloat(row.querySelector('[data-field="splitter-torre"]')?.value) || 0,
+                splitterApto: parseFloat(row.querySelector('[data-field="splitter-apto"]')?.value) || 0,
                 distRG11: parseFloat(row.querySelector('[data-field="dist-rg11"]')?.value) || 0,
                 distRG6Distr: parseFloat(inputDistr.value) || 0,
                 distRG6DistrFormula: inputDistr.dataset.formula || String(parseFloat(inputDistr.value) || 0),
-                conectores: parseInt(row.querySelector('[data-field="conectores"]').value) || 0,
+                conectores: parseInt(row.querySelector('[data-field="conectores"]')?.value) || 0,
             });
         }
 
@@ -856,12 +980,12 @@
 
         for (let i = 0; i < chains.length; i++) {
             const chain = chains[i];
-            const direccion = direcciones[i] || 'descendente';
+            const direccion = (chainParams[i] && chainParams[i].direccion) || direcciones[i] || 'descendente';
             const cadenaData = chain.map(f => ({ derivacion: f.derivacion, paso: f.paso }));
             
             for (let j = 0; j < chain.length; j++) {
                 const floorObj = chain[j];
-                floorObj.derivadorTotal = MotorCalculo.calcularPerdidaDerivador(cadenaData, j, direccion);
+                const baseDeriv = MotorCalculo.calcularPerdidaDerivador(cadenaData, j, direccion);
 
                 const parts = [floorObj.derivacion];
                 if (direccion === 'descendente') {
@@ -869,6 +993,15 @@
                 } else {
                     for (let k = chain.length - 1; k > j; k--) parts.push(cadenaData[k].paso);
                 }
+
+                // Sumar Bifurcación (dB) al Derivador si está configurado
+                let extraBifurc = 0;
+                if (floorObj.bifurcDeriv > 0) {
+                    parts.push(floorObj.bifurcDeriv);
+                    extraBifurc += floorObj.bifurcDeriv;
+                }
+
+                floorObj.derivadorTotal = baseDeriv + extraBifurc;
                 floorObj.derivadorFormula = parts.join('+');
             }
         }
@@ -931,15 +1064,18 @@
                     
                     const dispApto = dataApto.disp;
                     const distToma = dataApto.tomasDist[t - 1];
-                    const distRG6Total = floor.distRG6Distr + dispApto + distToma;
+                    const distRG6Total = floor.distRG6Distr + dispApto + distToma + floor.cableExtra;
+
+                    const distrFormulaWithExtra = (floor.cableExtra > 0) ? (floor.distRG6DistrFormula + '+' + floor.cableExtra) : floor.distRG6DistrFormula;
+                    const repartFormula = floor.splitterTorre + '+' + floor.splitterApto;
 
                     const tr = document.createElement('tr');
-                    tr.dataset.distr = floor.distRG6Distr;
-                    tr.dataset.distrFormula = floor.distRG6DistrFormula;
+                    tr.dataset.distr = floor.distRG6Distr + floor.cableExtra;
+                    tr.dataset.distrFormula = distrFormulaWithExtra;
                     tr.dataset.disp = dispApto;
                     tr.dataset.tomaDist = distToma;
                     tr.dataset.derivFormula = floor.derivadorFormula;
-                    tr.dataset.repartFormula = floor.splitterTorre + '+' + floor.splitterApto;
+                    tr.dataset.repartFormula = repartFormula;
 
                     let html = '';
 
@@ -969,7 +1105,7 @@
                     html += '<td><input type="number" class="cell-edit" value="' + floor.derivadorTotal.toFixed(1) + '" step="0.1" data-col="derivador-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
                     html += '<td><input type="number" class="cell-edit bold-input" value="' + repartidorTotal.toFixed(1) + '" step="0.1" data-col="repartidor-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
                     html += '<td><input type="number" class="cell-edit" value="' + toma.atenuacion + '" step="0.1" data-col="toma-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
-                    html += '<td><input type="number" class="cell-edit" value="0" step="0.1" data-col="amp-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
+                    html += '<td><input type="number" class="cell-edit bold-input" value="' + floor.ampDB + '" step="0.1" data-col="amp-db" onchange="recalcularFila(this.closest(\'tr\'))"></td>';
 
                     html += '<td class="calc-cell" data-col="perdida-baja" style="font-weight:bold">—</td>';
                     html += '<td class="calc-cell" data-col="perdida-alta" style="font-weight:bold">—</td>';
@@ -1106,10 +1242,19 @@
             '<td>Diferencia max/min</td>';
         tbody.appendChild(trDiff);
 
-        colorearNivel(trMax.children[5], resumen.maxNivelBaja);
-        colorearNivel(trMax.children[6], resumen.maxNivelAlta);
-        colorearNivel(trMin.children[5], resumen.minNivelBaja);
-        colorearNivel(trMin.children[6], resumen.minNivelAlta);
+        colorearNivel(trMax.children[3], resumen.maxNivelBaja);
+        colorearNivel(trMax.children[4], resumen.maxNivelAlta);
+        colorearNivel(trMin.children[3], resumen.minNivelBaja);
+        colorearNivel(trMin.children[4], resumen.minNivelAlta);
+
+        // Fila Normativa RITEL
+        const trRitel = document.createElement('tr');
+        trRitel.className = 'summary-row ritel-row' + (resumen.cumpleRitel ? '' : ' ritel-bad');
+        trRitel.innerHTML = '<td colspan="3" class="summary-label">NORMA RITEL <span class="help-tip" title="Normativa CRC 5405: 47 a 70 dBµV en tomas y desbalance máx 12 dB">?</span></td>' +
+            '<td colspan="2">' + (resumen.cumpleRitel ? '✅ CUMPLE RANGO (47 - 70 dBµV)' : '⚠️ NO CUMPLE RANGO (47 - 70 dBµV)') + '</td>' +
+            '<td colspan="2">Desbalance: ' + resumen.desbalanceTotal.toFixed(1) + ' dB (Máx 12 dB)</td>' +
+            '<td>' + (resumen.desbalanceTotal <= 12 ? '✅ Desbalance Conforme' : '⚠️ Desbalance Excesivo') + '</td>';
+        tbody.appendChild(trRitel);
     }
 
     function actualizarInfoPanel(floors) {
@@ -1495,6 +1640,11 @@
             aptosPiso: parseInt(document.getElementById('aptos-piso').value) || 2,
             tomasApto: parseInt(document.getElementById('tomas-apto').value) || 2,
             pisosCadena: parseInt(document.getElementById('pisos-cadena').value) || 5,
+            useAmplificador: document.getElementById('use-amplificador').checked,
+            ampPisoDesde: parseInt(document.getElementById('amp-piso-desde').value) || 11,
+            ampPisoHasta: parseInt(document.getElementById('amp-piso-hasta').value) || 1,
+            ampValor: parseFloat(document.getElementById('amp-valor').value) || 25.0,
+            useBifurcacion: document.getElementById('use-bifurcacion').checked,
             distRG11Default: parseFloat(document.getElementById('dist-rg11-default').value) || 107,
             distBaseDistr: parseFloat(document.getElementById('dist-base-distr').value) || 10,
             distIncPiso: parseFloat(document.getElementById('dist-inc-piso').value) || 3.5,
@@ -1527,12 +1677,15 @@
             floorConfigBody.querySelectorAll('.chain-cell').forEach((cell, idx) => {
                 const sel = cell.querySelector('.chain-direction-sel');
                 const baseIn = cell.querySelector('.chain-base-dist-input');
-                const extraIn = cell.querySelector('.chain-extra-dist-input');
+                const cableIn = cell.querySelector('.chain-cable-extra-input');
+                const bifurcIn = cell.querySelector('.chain-bifurc-deriv-input');
                 cadenasConfig.push({
                     cadenaIndex: sel ? parseInt(sel.dataset.chain) || idx : idx,
                     direccion: sel ? sel.value : 'descendente',
                     distBase: baseIn ? parseFloat(baseIn.value) || 0 : torre.distBaseDistr,
-                    distExtra: extraIn ? parseFloat(extraIn.value) || 0 : 0
+                    distExtra: 0,
+                    cableExtra: cableIn ? parseFloat(cableIn.value) || 0 : 0,
+                    bifurcDeriv: bifurcIn ? parseFloat(bifurcIn.value) || 0 : 0
                 });
             });
         }
@@ -1540,7 +1693,7 @@
         const pisosConfig = [];
         if (floorConfigBody) {
             for (const row of floorConfigBody.children) {
-                const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
+                const pisoCell = row.querySelector('.piso-cfg-cell') || Array.from(row.cells).find(c => c.textContent.includes('PISO'));
                 if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
                 const match = pisoCell.textContent.match(/\d+/);
                 if (!match) continue;
@@ -1759,6 +1912,10 @@
                                 const extraIn = parentTd.querySelector('.chain-extra-dist-input');
                                 if (baseIn && chain.distBase !== undefined) baseIn.value = chain.distBase;
                                 if (extraIn && chain.distExtra !== undefined) extraIn.value = chain.distExtra;
+                                const cableIn = parentTd.querySelector('.chain-cable-extra-input');
+                                if (cableIn && chain.cableExtra !== undefined) cableIn.value = chain.cableExtra;
+                                const bifurcDerIn = parentTd.querySelector('.chain-bifurc-deriv-input');
+                                if (bifurcDerIn && chain.bifurcDeriv !== undefined) bifurcDerIn.value = chain.bifurcDeriv;
                             }
                         }
                     });
@@ -1768,7 +1925,7 @@
                 if (Array.isArray(data.pisosConfig)) {
                     data.pisosConfig.forEach(pConf => {
                         for (const row of floorConfigBody.children) {
-                            const pisoCell = row.querySelector('td:nth-child(' + (row.cells.length === 11 ? 2 : 1) + ')');
+                            const pisoCell = row.querySelector('.piso-cfg-cell') || Array.from(row.cells).find(c => c.textContent.includes('PISO'));
                             if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
                             const match = pisoCell.textContent.match(/\d+/);
                             if (match && parseInt(match[0]) === pConf.piso) {
