@@ -377,24 +377,52 @@
     <div id="seccion-torres">
         <div class="header-panel">
             <div class="input-group">
-                <label>Piso más alto (Cubierta):</label>
-                <input type="number" id="in-pisos" value="28" min="1">
+                <label>Tipo de Edificio:</label>
+                <select id="sel-tipo-torre" class="input-sel" onchange="cambiarTipoTorre()" style="font-weight: bold; color: var(--primary-blue);">
+                    <option value="estandar" selected>🏢 Edificio Estándar (1 a N)</option>
+                    <option value="atipica">🏗️ Torre Atípica (Pisos Especiales)</option>
+                </select>
             </div>
-            <div class="input-group">
-                <label title="El piso donde inicia la torre y se ubica el SETI. Útil si hay parqueaderos abajo.">Piso del SETI (Base):</label>
-                <input type="number" id="in-piso-base" value="3" min="1">
+
+            <!-- Panel Modo Estándar -->
+            <div id="panel-torre-estandar" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <div class="input-group">
+                    <label>Piso más alto (Cubierta):</label>
+                    <input type="number" id="in-pisos" value="28" min="1">
+                </div>
+                <div class="input-group">
+                    <label title="El piso donde inicia la torre y se ubica el SETI. Útil si hay parqueaderos abajo.">Piso del SETI (Base):</label>
+                    <input type="number" id="in-piso-base" value="3" min="1">
+                </div>
+                <div class="input-group">
+                    <label>Aptos/Piso (Por defecto):</label>
+                    <input type="number" id="in-aptos" value="6" min="0" onchange="aplicarAptosDefault()">
+                </div>
+                
+                <div class="input-group chk-group">
+                    <input type="checkbox" id="chk-linea-extra" onchange="generarTablaTorres()" style="width: 16px; height: 16px; cursor: pointer;">
+                    <label for="chk-linea-extra" style="margin: 0; cursor: pointer; color: var(--text-main);" title="Si se activa, muestra el paso por el piso base antes de entrar al SETI (Ej. Piso 4 a Piso 3).">Mostrar Línea Extra (Paso SETI)</label>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Aptos/Piso (Por defecto):</label>
-                <input type="number" id="in-aptos" value="6" min="0" onchange="aplicarAptosDefault()">
-            </div>
-            
-            <div class="input-group chk-group">
-                <input type="checkbox" id="chk-linea-extra" onchange="generarTablaTorres()" style="width: 16px; height: 16px; cursor: pointer;">
-                <label for="chk-linea-extra" style="margin: 0; cursor: pointer; color: var(--text-main);" title="Si se activa, muestra el paso por el piso base antes de entrar al SETI (Ej. Piso 4 a Piso 3).">Mostrar Línea Extra (Paso SETI)</label>
+
+            <!-- Panel Modo Atípico -->
+            <div id="panel-torre-atipica" class="hidden" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <div class="input-group">
+                    <label title="Ingresa los nombres de los pisos en orden de altura (desde la cubierta hacia abajo) separados por comas.">Secuencia de Pisos (de arriba a abajo):</label>
+                    <input type="text" id="in-pisos-atipicos" value="5, 4, 3, 2, 1, 99, 98, 97, 96, 95" style="width: 250px;" class="input-tramo">
+                </div>
+                <div class="input-group">
+                    <label title="Indica en cuál de estos pisos está instalado el salón SETI.">Piso del SETI:</label>
+                    <input type="text" id="in-piso-seti-atipico" value="1" style="width: 65px;" class="input-mini">
+                </div>
+                <div class="input-group">
+                    <label>Aptos/Piso:</label>
+                    <input type="number" id="in-aptos-atipico" value="8" min="0" style="width: 65px;" class="input-mini" onchange="aplicarAptosDefault()">
+                </div>
             </div>
 
             <button class="btn-calc" onclick="generarTablaTorres()">Generar Infraestructura</button>
+            <button class="btn-add" onclick="agregarFilaTorres()" title="Agregar un piso o nivel a la torre">➕ Agregar Nivel</button>
             
             <div class="input-group" style="margin-left: 10px; border-left: 1px solid var(--border); padding-left: 15px;">
                 <label>Total PAUs Edificio:</label>
@@ -416,15 +444,17 @@
                     <tr>
                         <th rowspan="2">Tramo</th>
                         <th rowspan="2" title="Cantidad de PAUs que ingresan en este nivel">PAUs<br>Nivel</th>
+                        <th rowspan="2" title="Marcar si los PAUs de este nivel conectan directamente en SETI (punto fijo). No se cuentan para tubos verticales de SETI, pero sí en SETS.">Directo<br>SETI</th>
                         <th colspan="2">PAU Acumulado</th>
                         <th rowspan="2">Material</th>
                         <th rowspan="2">Diámetro</th>
                         <th rowspan="2">Área (AT)</th>
                         <th rowspan="2">Curvas<br>(>60°)</th>
                         <th colspan="2">CNC Cables (mm²)</th>
-                        <th colspan="2">SETI (Abajo ⬇)</th>
+                        <th colspan="2">SETI (Alimentación ↕)</th>
                         <th colspan="2">SETS (Arriba ⬆)</th>
                         <th rowspan="2" class="th-total">TOTAL<br>TUBOS</th>
+                        <th rowspan="2">Acción</th>
                     </tr>
                     <tr>
                         <th class="sub-th">SETI</th>
@@ -589,11 +619,7 @@
         // FUNCIONES DE REDONDEO
         // ==========================================
         function redondearTubosTorres(valor) {
-            if (valor === 0) return 0;
-            let v = Math.round(valor * 1000) / 1000;
-            let entero = Math.floor(v);
-            let decimal = v - entero;
-            return (decimal >= 0.1) ? entero + 1 : entero;
+            return RitelFormulas.redondearTubos(valor);
         }
 
         function redondearBandejaTorres(valor) {
@@ -619,16 +645,155 @@
             }
         }
 
+        function cambiarTipoTorre() {
+            let tipo = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+            let panelEstandar = document.getElementById('panel-torre-estandar');
+            let panelAtipica = document.getElementById('panel-torre-atipica');
+            if (tipo === 'estandar') {
+                if (panelEstandar) panelEstandar.classList.remove('hidden');
+                if (panelAtipica) panelAtipica.classList.add('hidden');
+            } else {
+                if (panelEstandar) panelEstandar.classList.add('hidden');
+                if (panelAtipica) panelAtipica.classList.remove('hidden');
+            }
+            generarTablaTorres();
+        }
+
+        function crearFilaTorresDOM(pisoNombre, tramoNombre, pauVal, directoSetiVal, curvasVal, isSeti) {
+            const tbodyTubos = document.getElementById('tabla-body-torres');
+            const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+
+            let trTubo = document.createElement('tr');
+            let trBandeja = document.createElement('tr');
+
+            trTubo.dataset.piso = String(pisoNombre);
+            trTubo.dataset.isSeti = isSeti ? 'true' : 'false';
+            trBandeja.dataset.piso = String(pisoNombre);
+            trBandeja.dataset.isSeti = isSeti ? 'true' : 'false';
+
+            let badgeSeti = isSeti ? ' <span style="background: rgba(14, 165, 233, 0.2); color: var(--primary-blue); font-size: 10px; padding: 2px 5px; border-radius: 4px; border: 1px solid var(--primary-blue); font-weight: bold;">🏢 SETI</span>' : '';
+
+            let celdaDirectoSeti = isSeti ? 
+                `<input type="checkbox" class="chk-directo-seti" ${directoSetiVal ? 'checked' : ''} onchange="recalcularTorres()" title="Marcar si los PAUs del piso SETI conectan directamente en SETI (no requieren tubos verticales adicionales en SETI)" style="width: 16px; height: 16px; cursor: pointer;">` :
+                `<span style="color: var(--text-muted); font-weight: bold;">-</span>`;
+
+            trTubo.innerHTML = `
+                <td style="text-align: left; padding-left: 8px;">
+                    <input type="text" class="input-tramo in-tramo-nombre" value="${tramoNombre}" style="width: 175px; text-align: left; font-size: 11.5px;" onchange="actualizarNombreTramo(this)">
+                    ${badgeSeti}
+                </td>
+                <td><input type="number" class="input-mini in-pau-piso" value="${pauVal}" min="0" onchange="recalcularTorres()"></td>
+                <td style="text-align: center;">${celdaDirectoSeti}</td>
+                <td class="val-pau-seti">0</td>
+                <td class="val-pau-sets">0</td>
+                <td>
+                    <select class="input-sel sel-mat" onchange="recalcularTorres()">
+                        <option value="SCH40" selected>SCH40</option>
+                        <option value="PVC">PVC</option>
+                        <option value="EMT">EMT</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="input-sel sel-dia" onchange="recalcularTorres()">
+                        <option value='1/2"'>1/2"</option>
+                        <option value='3/4"'>3/4"</option>
+                        <option value='1"'>1"</option>
+                        <option value='1 1/4"'>1 1/4"</option>
+                        <option value='1 1/2"'>1 1/2"</option>
+                        <option value='2"' selected>2"</option>
+                        <option value='2 1/2"'>2 1/2"</option>
+                        <option value='3"'>3"</option>
+                    </select>
+                </td>
+                <td class="val-at">2123.72</td>
+                <td><input type="number" class="input-mini in-curvas" value="${curvasVal}" min="0" onchange="recalcularTorres()"></td>
+                <td class="val-cnc-seti">0.00</td>
+                <td class="val-cnc-sets">0.00</td>
+                <td class="val-tub-seti-c">0.000</td>
+                <td class="tubos-fisicos val-tub-seti-f">0</td>
+                <td class="val-tub-sets-c">0.000</td>
+                <td class="tubos-fisicos val-tub-sets-f">0</td>
+                <td class="tubos-total-cell val-total">0</td>
+                <td>
+                    <button class="btn-icon btn-delete" onclick="eliminarFilaTorres(this)" title="Eliminar nivel">🗑️</button>
+                </td>
+            `;
+            tbodyTubos.appendChild(trTubo);
+
+            trBandeja.innerHTML = `
+                <td style="text-align: left; padding-left: 8px;"><strong>${tramoNombre}</strong></td>
+                <td class="ban-calc-seti">0.00</td>
+                <td class="ban-calc-sets">0.00</td>
+                <td class="ban-ancho-seti">0.00</td>
+                <td class="ban-ancho-sets">0.00</td>
+                <td class="tubos-total-cell ban-total">0.00</td>
+                <td class="tubos-total-cell ban-recomendada" style="font-size: 14px; background-color: rgba(245, 158, 11, 0.2); color: var(--accent);">0</td>
+            `;
+            tbodyBandeja.appendChild(trBandeja);
+        }
+
+        function actualizarNombreTramo(input) {
+            let tr = input.closest('tr');
+            let idx = Array.from(tr.parentElement.children).indexOf(tr);
+            let tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+            if (tbodyBandeja.children[idx]) {
+                tbodyBandeja.children[idx].querySelector('td:first-child').innerHTML = `<strong>${input.value}</strong>`;
+            }
+        }
+
+        function agregarFilaTorres(nombrePisoPersonalizado) {
+            let tbodyTubos = document.getElementById('tabla-body-torres');
+            let num = tbodyTubos.children.length + 1;
+            let pisoNombre = nombrePisoPersonalizado || `P-${num}`;
+            let tramoNombre = `Tramo ${num}`;
+            let aptos = parseInt(document.getElementById('in-aptos')?.value) || 6;
+            crearFilaTorresDOM(pisoNombre, tramoNombre, aptos, false, 0, false);
+            recalcularTorres();
+        }
+
+        function eliminarFilaTorres(btn) {
+            let tr = btn.closest('tr');
+            let idx = Array.from(tr.parentElement.children).indexOf(tr);
+            tr.remove();
+            let tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+            if (tbodyBandeja && tbodyBandeja.children[idx]) {
+                tbodyBandeja.children[idx].remove();
+            }
+            recalcularTorres();
+        }
+
         function generarTablaTorres() {
-            const pisos = parseInt(document.getElementById('in-pisos').value) || 0;
-            let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
-            const aptosDefault = parseInt(document.getElementById('in-aptos').value) || 0;
-            const mostrarLineaExtra = document.getElementById('chk-linea-extra').checked;
-            
-            if (pisos < pisoBase) {
-                alert("El piso más alto debe ser mayor o igual al piso del SETI.");
-                document.getElementById('in-pisos').value = pisoBase;
-                return;
+            let tipoTorre = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+            let listaPisos = [];
+            let setiPisoNombre = "";
+            let aptosDefault = 0;
+            let mostrarLineaExtra = document.getElementById('chk-linea-extra')?.checked || false;
+
+            if (tipoTorre === 'estandar') {
+                let pisos = parseInt(document.getElementById('in-pisos').value) || 0;
+                let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
+                aptosDefault = parseInt(document.getElementById('in-aptos').value) || 0;
+
+                if (pisos < pisoBase) {
+                    alert("El piso más alto debe ser mayor o igual al piso del SETI.");
+                    document.getElementById('in-pisos').value = pisoBase;
+                    return;
+                }
+
+                for (let p = pisos; p >= pisoBase; p--) {
+                    listaPisos.push(String(p));
+                }
+                setiPisoNombre = String(pisoBase);
+            } else {
+                let inputTexto = document.getElementById('in-pisos-atipicos')?.value || '';
+                let partes = inputTexto.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                if (partes.length === 0) {
+                    alert("Por favor ingresa la secuencia de pisos separados por comas (ej. 5, 4, 3, 2, 1, 99, 98, 97, 96, 95).");
+                    return;
+                }
+                listaPisos = partes;
+                setiPisoNombre = String(document.getElementById('in-piso-seti-atipico')?.value || '1').trim();
+                aptosDefault = parseInt(document.getElementById('in-aptos-atipico')?.value) || 0;
             }
 
             const tbodyTubos = document.getElementById('tabla-body-torres');
@@ -636,137 +801,161 @@
             tbodyTubos.innerHTML = '';
             tbodyBandeja.innerHTML = '';
 
-            let limiteInferior = (pisoBase > 1 && !mostrarLineaExtra) ? pisoBase : pisoBase - 1;
+            let N = listaPisos.length;
+            let k = listaPisos.indexOf(setiPisoNombre);
+            if (k === -1) k = N - 1;
 
-            for (let i = pisos; i >= limiteInferior; i--) {
-                let trTubo = document.createElement('tr');
-                let trBandeja = document.createElement('tr');
-                
-                trTubo.dataset.nivel = i; 
-                trBandeja.dataset.nivel = i;
-                
+            for (let i = 0; i < N; i++) {
+                let pisoActual = listaPisos[i];
+                let esSeti = (i === k);
                 let nombreTramo = "";
                 let curvasDefault = 0;
-                
-                let valorPauInicial = 0;
-                if (i > pisoBase) {
-                    valorPauInicial = aptosDefault; 
-                } else if (i === pisoBase && pisoBase === 1) {
-                    valorPauInicial = aptosDefault; 
+
+                if (i === 0) {
+                    nombreTramo = `SETS a Piso ${pisoActual}`;
                 } else {
-                    valorPauInicial = 0; 
-                }
-
-                if (i === pisos) { 
-                    nombreTramo = `SETS a Piso ${pisos}`; 
-                } else if (i === limiteInferior) { 
-                    if (limiteInferior === pisoBase) {
-                        nombreTramo = `Piso ${pisoBase + 1} a SETI`; 
+                    let pisoPrevio = listaPisos[i - 1];
+                    if (esSeti) {
+                        nombreTramo = `Piso ${pisoPrevio} a Piso ${pisoActual} (SETI)`;
+                    } else if (i - 1 === k) {
+                        nombreTramo = `Piso ${pisoPrevio} (SETI) a Piso ${pisoActual}`;
                     } else {
-                        nombreTramo = `Piso ${pisoBase} a SETI`; 
+                        nombreTramo = `Piso ${pisoPrevio} a Piso ${pisoActual}`;
                     }
-                    curvasDefault = 2; 
-                } else { 
-                    nombreTramo = `Piso ${i+1} a Piso ${i}`; 
                 }
 
-                trTubo.innerHTML = `
-                    <td><strong>${nombreTramo}</strong></td>
-                    <td><input type="number" class="input-mini in-pau-piso" value="${valorPauInicial}" min="0" onchange="recalcularTorres()"></td>
-                    <td class="val-pau-seti">0</td>
-                    <td class="val-pau-sets">0</td>
-                    <td>
-                        <select class="input-sel sel-mat" onchange="recalcularTorres()">
-                            <option value="SCH40" selected>SCH40</option>
-                            <option value="PVC">PVC</option>
-                            <option value="EMT">EMT</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select class="input-sel sel-dia" onchange="recalcularTorres()">
-                            <option value='1/2"'>1/2"</option>
-                            <option value='3/4"'>3/4"</option>
-                            <option value='1"'>1"</option>
-                            <option value='1 1/4"'>1 1/4"</option>
-                            <option value='1 1/2"'>1 1/2"</option>
-                            <option value='2"' selected>2"</option>
-                            <option value='2 1/2"'>2 1/2"</option>
-                            <option value='3"'>3"</option>
-                        </select>
-                    </td>
-                    <td class="val-at">2138.44</td>
-                    <td><input type="number" class="input-mini in-curvas" value="${curvasDefault}" min="0" onchange="recalcularTorres()"></td>
-                    <td class="val-cnc-seti">0.00</td>
-                    <td class="val-cnc-sets">0.00</td>
-                    <td class="val-tub-seti-c">0.000</td>
-                    <td class="tubos-fisicos val-tub-seti-f">0</td>
-                    <td class="val-tub-sets-c">0.000</td>
-                    <td class="tubos-fisicos val-tub-sets-f">0</td>
-                    <td class="tubos-total-cell val-total">0</td>
-                `;
-                tbodyTubos.appendChild(trTubo);
+                if (esSeti) {
+                    curvasDefault = 2;
+                }
 
-                trBandeja.innerHTML = `
-                    <td><strong>${nombreTramo}</strong></td>
-                    <td class="ban-calc-seti">0.00</td>
-                    <td class="ban-calc-sets">0.00</td>
-                    <td class="ban-ancho-seti">0.00</td>
-                    <td class="ban-ancho-sets">0.00</td>
-                    <td class="tubos-total-cell ban-total">0.00</td>
-                    <td class="tubos-total-cell ban-recomendada" style="font-size: 14px; background-color: rgba(245, 158, 11, 0.2); color: var(--accent);">0</td>
-                `;
-                tbodyBandeja.appendChild(trBandeja);
+                // Por defecto, si es el piso del SETI se activa punto fijo/conexión directa
+                let esDirectoSetiInicial = esSeti;
+
+                crearFilaTorresDOM(pisoActual, nombreTramo, aptosDefault, esDirectoSetiInicial, curvasDefault, esSeti);
             }
+
+            // Si es torre estándar y se marcó línea extra hacia SETI en el piso base
+            if (tipoTorre === 'estandar' && mostrarLineaExtra && k === N - 1) {
+                crearFilaTorresDOM(setiPisoNombre + "-SETI", `Piso ${setiPisoNombre} a SETI`, 0, true, 2, false);
+            }
+
             recalcularTorres();
         }
 
         function aplicarAptosDefault() {
-            let aptos = parseInt(document.getElementById('in-aptos').value) || 0;
-            let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
-            
+            let tipo = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+            let aptos = (tipo === 'estandar') ? 
+                (parseInt(document.getElementById('in-aptos')?.value) || 0) : 
+                (parseInt(document.getElementById('in-aptos-atipico')?.value) || 0);
+
             document.querySelectorAll('#tabla-body-torres tr').forEach(tr => {
-                let nivel = parseInt(tr.dataset.nivel);
-                if(nivel > pisoBase || (nivel === pisoBase && pisoBase === 1)) {
-                    tr.querySelector('.in-pau-piso').value = aptos;
-                }
+                if (tr.dataset.piso && tr.dataset.piso.endsWith('-SETI')) return;
+                let inPau = tr.querySelector('.in-pau-piso');
+                if (inPau) inPau.value = aptos;
             });
             recalcularTorres();
         }
 
         function recalcularTorres() {
-            let pisos = parseInt(document.getElementById('in-pisos').value) || 0;
-            let pisoBase = parseInt(document.getElementById('in-piso-base').value) || 1;
-            let mostrarLineaExtra = document.getElementById('chk-linea-extra').checked;
-            let altoBandeja = parseFloat(document.getElementById('in-alto-bandeja').value) || 80;
-            
-            let limiteInferior = (pisoBase > 1 && !mostrarLineaExtra) ? pisoBase : pisoBase - 1;
+            let altoBandeja = parseFloat(document.getElementById('in-alto-bandeja')?.value) || 80;
 
-            let filasTubo = document.querySelectorAll('#tabla-body-torres tr');
-            let filasBandeja = document.querySelectorAll('#tabla-body-bandeja-torres tr');
-            if(filasTubo.length === 0) return;
+            let filasTubo = Array.from(document.querySelectorAll('#tabla-body-torres tr'));
+            let filasBandeja = Array.from(document.querySelectorAll('#tabla-body-bandeja-torres tr'));
+            let N = filasTubo.length;
+            if (N === 0) return;
 
-            let pausArray = {};
+            // Identificar índice del piso donde se ubica el SETI
+            let tipoTorre = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+            let setiTarget = (tipoTorre === 'estandar') ? 
+                String(document.getElementById('in-piso-base')?.value || '1').trim() : 
+                String(document.getElementById('in-piso-seti-atipico')?.value || '1').trim();
+
+            let k = filasTubo.findIndex(tr => tr.dataset.piso === setiTarget);
+            if (k === -1) {
+                k = filasTubo.findIndex(tr => tr.dataset.isSeti === 'true');
+                if (k === -1) k = N - 1;
+            }
+
+            // Asegurar que solo la fila k tenga isSeti = true y el checkbox visible
+            filasTubo.forEach((tr, idx) => {
+                let esSeti = (idx === k);
+                tr.dataset.isSeti = esSeti ? 'true' : 'false';
+                
+                let tdDirecto = tr.children[2]; // Tercera columna: Directo SETI
+                if (tdDirecto) {
+                    let tieneChk = tdDirecto.querySelector('.chk-directo-seti');
+                    if (esSeti && !tieneChk) {
+                        tdDirecto.innerHTML = `<input type="checkbox" class="chk-directo-seti" checked onchange="recalcularTorres()" title="Marcar si los PAUs del piso SETI conectan directamente en SETI (no requieren tubos verticales adicionales en SETI)" style="width: 16px; height: 16px; cursor: pointer;">`;
+                    } else if (!esSeti && tieneChk) {
+                        tdDirecto.innerHTML = `<span style="color: var(--text-muted); font-weight: bold;">-</span>`;
+                    }
+                }
+            });
+
             let totalEdificio = 0;
-            
-            filasTubo.forEach(tr => {
-                let nivel = parseInt(tr.dataset.nivel);
-                let val = parseInt(tr.querySelector('.in-pau-piso').value) || 0;
-                pausArray[nivel] = val;
-                totalEdificio += val;
+            let pauData = filasTubo.map(tr => {
+                let pau = parseInt(tr.querySelector('.in-pau-piso')?.value) || 0;
+                let chk = tr.querySelector('.chk-directo-seti');
+                let directo = chk ? chk.checked : false;
+                totalEdificio += pau;
+                return { pau, directo };
             });
 
             document.getElementById('out-total-pau-torres').textContent = totalEdificio;
 
-            filasTubo.forEach((trTubo, index) => {
-                let nivel = parseInt(trTubo.dataset.nivel);
-                let trBandeja = filasBandeja[index];
-                
-                let pauSeti = 0;
-                for(let p = nivel + 1; p <= pisos; p++) { pauSeti += (pausArray[p] || 0); }
-                if (nivel === limiteInferior) { pauSeti += (pausArray[nivel] || 0); }
+            // Estado del check Directo SETI (únicamente aplica al piso k)
+            let directoSetiActivo = (k >= 0 && k < N && pauData[k]) ? pauData[k].directo : false;
+
+            filasTubo.forEach((trTubo, i) => {
+                let trBandeja = filasBandeja[i];
+                let esLineaExtra = trTubo.dataset.piso && trTubo.dataset.piso.endsWith('-SETI');
 
                 let pauSets = 0;
-                for(let p = pisoBase; p <= nivel; p++) { pauSets += (pausArray[p] || 0); }
+                let pauSeti = 0;
+
+                if (esLineaExtra) {
+                    pauSets = 0;
+                    pauSeti = totalEdificio;
+                } else {
+                    // 1. SETS: Abastece desde este nivel hasta el último piso inferior (incluye todos los PAUs)
+                    for (let j = i; j < N; j++) {
+                        if (!filasTubo[j].dataset.piso?.endsWith('-SETI')) {
+                            pauSets += pauData[j].pau;
+                        }
+                    }
+
+                    // 2. SETI:
+                    if (i < k) {
+                        // Pisos estrictamente superiores al SETI:
+                        // Cables descienden hacia el SETI (acumula pisos sobre el tramo)
+                        for (let j = 0; j < i; j++) {
+                            pauSeti += pauData[j].pau;
+                        }
+                    } else if (i > k) {
+                        // Pisos estrictamente inferiores al SETI:
+                        // Cables ascienden hacia el SETI (acumula pisos bajo el tramo)
+                        for (let j = i; j < N; j++) {
+                            if (!filasTubo[j].dataset.piso?.endsWith('-SETI')) {
+                                pauSeti += pauData[j].pau;
+                            }
+                        }
+                    } else {
+                        // i === k: Piso donde está ubicado el SETI
+                        // Recibe los cables de los pisos superiores:
+                        let cablesSuperiores = 0;
+                        for (let j = 0; j < k; j++) {
+                            cablesSuperiores += pauData[j].pau;
+                        }
+
+                        if (directoSetiActivo) {
+                            // Conexión directa en SETI: Los PAUs del piso SETI NO requieren tubos adicionales en SETI
+                            pauSeti = cablesSuperiores;
+                        } else {
+                            // Sin conexión directa: Los PAUs del piso SETI requieren tubos hacia SETI
+                            pauSeti = cablesSuperiores + pauData[k].pau;
+                        }
+                    }
+                }
 
                 trTubo.querySelector('.val-pau-seti').textContent = pauSeti;
                 trTubo.querySelector('.val-pau-sets').textContent = pauSets;
@@ -798,25 +987,36 @@
                 trTubo.querySelector('.val-total').textContent = tubFisSeti + tubFisSets;
 
                 // MATEMÁTICA BANDEJAS
-                let bandejas = RitelFormulas.calcularBandejas(pauSeti, pauSets, altoBandeja);
-                let calcBanSeti = bandejas.calcBanSeti;
-                let calcBanSets = bandejas.calcBanSets;
-                let anchoSeti = bandejas.anchoSeti;
-                let anchoSets = bandejas.anchoSets;
-                let anchoTotal = bandejas.anchoTotal;
+                if (trBandeja) {
+                    let bandejas = RitelFormulas.calcularBandejas(pauSeti, pauSets, altoBandeja);
+                    let calcBanSeti = bandejas.calcBanSeti;
+                    let calcBanSets = bandejas.calcBanSets;
+                    let anchoSeti = bandejas.anchoSeti;
+                    let anchoSets = bandejas.anchoSets;
+                    let anchoTotal = bandejas.anchoTotal;
 
-                trBandeja.querySelector('.ban-calc-seti').textContent = calcBanSeti.toFixed(2);
-                trBandeja.querySelector('.ban-calc-sets').textContent = calcBanSets.toFixed(2);
-                trBandeja.querySelector('.ban-ancho-seti').textContent = anchoSeti.toFixed(2);
-                trBandeja.querySelector('.ban-ancho-sets').textContent = anchoSets.toFixed(2);
-                trBandeja.querySelector('.ban-total').textContent = anchoTotal.toFixed(2);
-                
-                trBandeja.querySelector('.ban-recomendada').textContent = redondearBandejaTorres(anchoTotal);
+                    trBandeja.querySelector('.ban-calc-seti').textContent = calcBanSeti.toFixed(2);
+                    trBandeja.querySelector('.ban-calc-sets').textContent = calcBanSets.toFixed(2);
+                    trBandeja.querySelector('.ban-ancho-seti').textContent = anchoSeti.toFixed(2);
+                    trBandeja.querySelector('.ban-ancho-sets').textContent = anchoSets.toFixed(2);
+                    trBandeja.querySelector('.ban-total').textContent = anchoTotal.toFixed(2);
+                    
+                    trBandeja.querySelector('.ban-recomendada').textContent = redondearBandejaTorres(anchoTotal);
+
+                    let nombreTramo = trTubo.querySelector('.in-tramo-nombre')?.value || trTubo.querySelector('td:first-child')?.textContent.trim();
+                    let tdPrimero = trBandeja.querySelector('td:first-child');
+                    if (tdPrimero) tdPrimero.innerHTML = `<strong>${nombreTramo}</strong>`;
+                }
             });
 
             if (filasBandeja.length > 0) {
-                let finalRiti = filasBandeja[filasBandeja.length - 1].querySelector('.ban-recomendada').textContent;
-                let finalRits = filasBandeja[0].querySelector('.ban-recomendada').textContent;
+                let finalRits = filasBandeja[0].querySelector('.ban-recomendada')?.textContent || '0';
+                let valSetiSuperior = (filasBandeja[k] ? parseInt(filasBandeja[k].querySelector('.ban-recomendada')?.textContent) : 0) || 0;
+                let valSetiInferior = (k + 1 < N && filasBandeja[k + 1]) ? (parseInt(filasBandeja[k + 1].querySelector('.ban-recomendada')?.textContent) || 0) : 0;
+                let finalRiti = Math.max(valSetiSuperior, valSetiInferior);
+                if (finalRiti === 0 && filasBandeja[filasBandeja.length - 1]) {
+                    finalRiti = parseInt(filasBandeja[filasBandeja.length - 1].querySelector('.ban-recomendada')?.textContent) || 0;
+                }
                 document.getElementById('bandeja-seti').textContent = finalRiti;
                 document.getElementById('bandeja-sets').textContent = finalRits;
             }
@@ -863,7 +1063,7 @@
                         <option value='3"' ${diametro === '3"' ? 'selected' : ''}>3"</option>
                     </select>
                 </td>
-                <td class="val-at">2368.92</td>
+                <td class="val-at">2349.98</td>
                 <td><input type="number" class="input-mini in-curvas" value="${curvas}" min="0" onchange="recalcularParcelacion()"></td>
                 <td class="val-cnc-seti">0.00</td>
                 <td class="val-cnc-sets">0.00</td>
@@ -984,17 +1184,24 @@
             
             // 1. Datos Torres
             let torresData = {
+                tipoTorre: document.getElementById('sel-tipo-torre')?.value || 'estandar',
                 pisos: parseInt(document.getElementById('in-pisos').value) || 28,
                 pisoBase: parseInt(document.getElementById('in-piso-base').value) || 3,
                 aptosDefault: parseInt(document.getElementById('in-aptos').value) || 6,
-                mostrarLineaExtra: document.getElementById('chk-linea-extra').checked,
+                pisosAtipicos: document.getElementById('in-pisos-atipicos')?.value || '',
+                pisoSetiAtipico: document.getElementById('in-piso-seti-atipico')?.value || '1',
+                aptosAtipico: parseInt(document.getElementById('in-aptos-atipico')?.value) || 8,
+                mostrarLineaExtra: document.getElementById('chk-linea-extra')?.checked || false,
                 altoBandeja: parseFloat(document.getElementById('in-alto-bandeja').value) || 80,
                 filas: []
             };
             
             document.querySelectorAll('#tabla-body-torres tr').forEach(tr => {
                 torresData.filas.push({
-                    nivel: parseInt(tr.dataset.nivel),
+                    piso: tr.dataset.piso || '',
+                    tramo: tr.querySelector('.in-tramo-nombre')?.value || '',
+                    isSeti: tr.dataset.isSeti === 'true',
+                    directoSeti: tr.querySelector('.chk-directo-seti')?.checked || false,
                     pau: parseInt(tr.querySelector('.in-pau-piso')?.value) || 0,
                     material: tr.querySelector('.sel-mat')?.value || 'SCH40',
                     diametro: tr.querySelector('.sel-dia')?.value || '2"',
@@ -1020,7 +1227,7 @@
             });
 
             let backup = {
-                version: "2.0",
+                version: "2.1",
                 formato: "SCITIC_RITEL_CALC_BACKUP",
                 norma: "RITEL 2025",
                 fechaExportacion: new Date().toISOString(),
@@ -1063,29 +1270,46 @@
 
                     // Restaurar Torres
                     if (data.torres) {
+                        if (data.torres.tipoTorre) {
+                            let selTipo = document.getElementById('sel-tipo-torre');
+                            if (selTipo) {
+                                selTipo.value = data.torres.tipoTorre;
+                                cambiarTipoTorre();
+                            }
+                        }
                         if (data.torres.pisos !== undefined) document.getElementById('in-pisos').value = data.torres.pisos;
                         if (data.torres.pisoBase !== undefined) document.getElementById('in-piso-base').value = data.torres.pisoBase;
                         if (data.torres.aptosDefault !== undefined) document.getElementById('in-aptos').value = data.torres.aptosDefault;
+                        if (data.torres.pisosAtipicos !== undefined && document.getElementById('in-pisos-atipicos')) document.getElementById('in-pisos-atipicos').value = data.torres.pisosAtipicos;
+                        if (data.torres.pisoSetiAtipico !== undefined && document.getElementById('in-piso-seti-atipico')) document.getElementById('in-piso-seti-atipico').value = data.torres.pisoSetiAtipico;
+                        if (data.torres.aptosAtipico !== undefined && document.getElementById('in-aptos-atipico')) document.getElementById('in-aptos-atipico').value = data.torres.aptosAtipico;
                         if (data.torres.mostrarLineaExtra !== undefined) document.getElementById('chk-linea-extra').checked = !!data.torres.mostrarLineaExtra;
                         if (data.torres.altoBandeja !== undefined) document.getElementById('in-alto-bandeja').value = data.torres.altoBandeja;
 
-                        generarTablaTorres();
-
                         if (Array.isArray(data.torres.filas) && data.torres.filas.length > 0) {
-                            let filasMap = {};
-                            data.torres.filas.forEach(f => { filasMap[f.nivel] = f; });
+                            const tbodyTubos = document.getElementById('tabla-body-torres');
+                            const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+                            tbodyTubos.innerHTML = '';
+                            tbodyBandeja.innerHTML = '';
 
-                            document.querySelectorAll('#tabla-body-torres tr').forEach(tr => {
-                                let nivel = parseInt(tr.dataset.nivel);
-                                if (filasMap[nivel]) {
-                                    let f = filasMap[nivel];
-                                    if (f.pau !== undefined) tr.querySelector('.in-pau-piso').value = f.pau;
+                            data.torres.filas.forEach(f => {
+                                crearFilaTorresDOM(
+                                    f.piso || f.nivel || '1',
+                                    f.tramo || `Tramo ${f.piso || f.nivel}`,
+                                    f.pau !== undefined ? f.pau : 0,
+                                    !!f.directoSeti,
+                                    f.curvas !== undefined ? f.curvas : 0,
+                                    !!f.isSeti
+                                );
+                                let tr = tbodyTubos.lastElementChild;
+                                if (tr) {
                                     if (f.material) tr.querySelector('.sel-mat').value = f.material;
                                     if (f.diametro) tr.querySelector('.sel-dia').value = f.diametro;
-                                    if (f.curvas !== undefined) tr.querySelector('.in-curvas').value = f.curvas;
                                 }
                             });
                             recalcularTorres();
+                        } else {
+                            generarTablaTorres();
                         }
                     }
 
@@ -1202,16 +1426,24 @@
             
             tablaTubos.querySelectorAll('tbody tr').forEach((tr, i) => {
                 let origTr = originalesTubos[i];
-                tr.querySelector('td:nth-child(2)').textContent = origTr.querySelector('.in-pau-piso').value;
-                tr.querySelector('td:nth-child(5)').textContent = origTr.querySelector('.sel-mat').value;
-                tr.querySelector('td:nth-child(6)').textContent = origTr.querySelector('.sel-dia').value;
-                tr.querySelector('td:nth-child(8)').textContent = origTr.querySelector('.in-curvas').value;
+                tr.querySelector('td:nth-child(1)').textContent = origTr.querySelector('.in-tramo-nombre')?.value || origTr.querySelector('td:nth-child(1)').textContent.trim();
+                tr.querySelector('td:nth-child(2)').textContent = origTr.querySelector('.in-pau-piso')?.value || '0';
+                let chkDirecto = origTr.querySelector('.chk-directo-seti');
+                tr.querySelector('td:nth-child(3)').textContent = chkDirecto ? (chkDirecto.checked ? "SÍ" : "NO") : "-";
+                tr.querySelector('td:nth-child(6)').textContent = origTr.querySelector('.sel-mat')?.value || 'SCH40';
+                tr.querySelector('td:nth-child(7)').textContent = origTr.querySelector('.sel-dia')?.value || '2"';
+                tr.querySelector('td:nth-child(9)').textContent = origTr.querySelector('.in-curvas')?.value || '0';
+                let lastTd = tr.querySelector('td:last-child');
+                if (lastTd) lastTd.remove();
             });
+
+            let lastTh = tablaTubos.querySelector('thead tr:first-child th:last-child');
+            if (lastTh && lastTh.textContent.includes('Acción')) lastTh.remove();
             
             let theadTubos = tablaTubos.querySelector('thead');
             theadTubos.insertAdjacentHTML('afterbegin', `
-                <tr><th colspan="15">${nombreMayus}</th></tr>
-                <tr><th colspan="15"></th></tr>
+                <tr><th colspan="16">${nombreMayus}</th></tr>
+                <tr><th colspan="16"></th></tr>
             `);
 
             let wsTubos = XLSX.utils.table_to_sheet(tablaTubos);
@@ -1335,14 +1567,20 @@
                 html: tablaId,
                 startY: 22,
                 theme: 'grid',
-                styles: { fontSize: 8, halign: 'center' },
+                styles: { fontSize: 7, halign: 'center' },
                 headStyles: { fillColor: [15, 23, 42], textColor: [248, 250, 252] },
                 didParseCell: function(data) {
                     if (data.section === 'body') {
+                        let chk = data.cell.raw.querySelector('.chk-directo-seti');
+                        if (chk) {
+                            data.cell.text = [chk.checked ? "SÍ" : "NO"];
+                            return;
+                        }
                         let elem = data.cell.raw.querySelector('select, input');
-                        if(elem) { data.cell.text = [elem.value]; }
+                        if (elem) { data.cell.text = [elem.value]; }
                     }
-                }
+                },
+                columns: esVistaTubos ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] : undefined
             });
             doc.save(`${tituloDoc}_Torres_${nombre}.pdf`);
         }
