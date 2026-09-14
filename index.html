@@ -9,8 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./src/css/styles.css?v=8">
-    <link rel="stylesheet" href="./src/css/toast.css?v=8">
+    <link rel="stylesheet" href="./src/css/styles.css?v=9">
+    <link rel="stylesheet" href="./src/css/toast.css?v=9">
 </head>
 
 <body>
@@ -271,7 +271,7 @@
         <!-- Nuevo Módulo de Gastos -->
         <div id="gastosModule" style="display: none;">
             
-            <section class="dashboard-grid perm-mod-admin" id="statsGastosContainer">
+            <section class="dashboard-grid" id="statsGastosContainer">
                 <div class="stat-card glass-panel" style="border-left: 4px solid var(--primary);">
                     <h4>Total Gastos</h4>
                     <p id="stat-gastos-total">$0</p>
@@ -284,9 +284,16 @@
                     <h4>Pendiente por Pagar</h4>
                     <p id="stat-gastos-pendiente">$0</p>
                 </div>
-                <div class="stat-card glass-panel" style="border-left: 4px solid #06b6d4;">
-                    <h4>Saldos a Favor Disp.</h4>
+                <div class="stat-card glass-panel stat-card-saldo-favor" id="cardSaldoFavorGastos" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 id="stat-saldo-favor-titulo" style="color: #22d3ee; margin: 0;">Saldo a Favor</h4>
+                        <span style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 6px; padding: 2px 7px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Disponible</span>
+                    </div>
                     <p id="stat-gastos-saldo-favor" style="color: #22d3ee;">$0</p>
+                    <div id="stat-saldo-favor-persona" class="saldo-favor-badge-user" style="display: none;" title="">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span id="txtNombreSaldoFavor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;"></span>
+                    </div>
                 </div>
             </section>
 
@@ -710,9 +717,9 @@
     </div>
 </div>
 
-<script src="./src/js/components/Toast.js?v=8"></script>
-<script src="./src/js/store/appState.js?v=8"></script>
-<script src="./src/js/services/api.js?v=8"></script>
-<script src="./src/js/main.js?v=8"></script>
+<script src="./src/js/components/Toast.js?v=9"></script>
+<script src="./src/js/store/appState.js?v=9"></script>
+<script src="./src/js/services/api.js?v=9"></script>
+<script src="./src/js/main.js?v=9"></script>
 </body>
 </html>

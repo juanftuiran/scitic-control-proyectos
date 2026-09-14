@@ -1272,6 +1272,10 @@ function inicializarDatosGlobalesGastos() {
         if (g.proyecto) proyectos.add(g.proyecto.trim());
     });
 
+    (window.usuariosGlobal || []).forEach(u => {
+        if (u.nombre) trabajadores.add(u.nombre.trim());
+    });
+
     let fMes = document.getElementById("fMesGasto");
     if (fMes) {
         const mesActual = getFechaColombiaString().substring(0, 7);
@@ -1733,8 +1737,7 @@ function mostrarGastos(lista) {
     animarNumero('stat-gastos-pagado', totalPagado, "$", true);
     animarNumero('stat-gastos-pendiente', totalPendiente, "$", true);
 
-    const totalSaldoFavorGlobal = (window.usuariosGlobal || []).reduce((acc, u) => acc + (Number(u.saldo_favor) || 0), 0);
-    animarNumero('stat-gastos-saldo-favor', totalSaldoFavorGlobal, "$", true);
+    actualizarTarjetaSaldoFavor();
 
     const countPendientes = gastosDatos.filter(g => g.estado === 'PENDIENTE').length;
     const badgeP = document.getElementById('badgeGastosPendientes');
@@ -1749,6 +1752,80 @@ function mostrarGastos(lista) {
 
     actualizarBarraSeleccion();
     aplicarPermisos();
+}
+
+function actualizarTarjetaSaldoFavor() {
+    const cardSaldoFavor = document.getElementById('cardSaldoFavorGastos');
+    if (!cardSaldoFavor) return;
+
+    const statSaldoFavorTitulo = document.getElementById('stat-saldo-favor-titulo');
+    const statSaldoFavorPersona = document.getElementById('stat-saldo-favor-persona');
+    const txtNombreSaldoFavor = document.getElementById('txtNombreSaldoFavor');
+
+    // Determinar si hay un trabajador específico filtrado o si el usuario conectado es colaborador
+    let trabajadorFiltro = '';
+    if (usuarioActual && usuarioActual.role === 'colaborador') {
+        trabajadorFiltro = (usuarioActual.name || '').trim();
+    } else {
+        const fTrabEl = document.getElementById('fTrabajadorGasto');
+        if (fTrabEl && fTrabEl.value.trim()) {
+            trabajadorFiltro = fTrabEl.value.trim();
+        }
+    }
+
+    let montoSaldoFavor = 0;
+    let mostrarTarjeta = false;
+    let nombreTrabajadorMostrar = '';
+    let esTrabajadorUnico = false;
+    let tooltipDetalle = '';
+
+    if (trabajadorFiltro) {
+        // Vista filtrada por un trabajador específico
+        const perfil = (window.usuariosGlobal || []).find(u => 
+            (u.nombre || '').trim().toLowerCase() === trabajadorFiltro.toLowerCase()
+        );
+        const sf = perfil ? Number(perfil.saldo_favor || 0) : 0;
+        if (sf > 0) {
+            montoSaldoFavor = sf;
+            mostrarTarjeta = true;
+            nombreTrabajadorMostrar = perfil ? perfil.nombre : trabajadorFiltro;
+            esTrabajadorUnico = true;
+            tooltipDetalle = `Saldo a favor exclusivo de ${nombreTrabajadorMostrar}`;
+        }
+    } else {
+        // Vista general / global (para admin o moderador sin filtro de trabajador específico)
+        const conSaldo = (window.usuariosGlobal || []).filter(u => Number(u.saldo_favor) > 0);
+        if (conSaldo.length === 1) {
+            // Solo UN trabajador en todo el sistema tiene saldo a favor: mostramos su nombre directamente
+            montoSaldoFavor = Number(conSaldo[0].saldo_favor);
+            mostrarTarjeta = true;
+            nombreTrabajadorMostrar = conSaldo[0].nombre;
+            esTrabajadorUnico = true;
+            tooltipDetalle = `Saldo a favor de ${conSaldo[0].nombre}`;
+        } else if (conSaldo.length > 1) {
+            // Múltiples trabajadores con saldo
+            montoSaldoFavor = conSaldo.reduce((acc, u) => acc + (Number(u.saldo_favor) || 0), 0);
+            mostrarTarjeta = true;
+            nombreTrabajadorMostrar = `${conSaldo.length} colaboradores con saldo`;
+            esTrabajadorUnico = false;
+            tooltipDetalle = conSaldo.map(t => `${t.nombre}: $${Number(t.saldo_favor).toLocaleString('es-CO')}`).join('\n');
+        }
+    }
+
+    if (mostrarTarjeta && montoSaldoFavor > 0) {
+        cardSaldoFavor.style.display = 'block';
+        if (statSaldoFavorTitulo) {
+            statSaldoFavorTitulo.innerText = esTrabajadorUnico ? 'Saldo a Favor' : 'Saldos a Favor Disp.';
+        }
+        if (statSaldoFavorPersona && txtNombreSaldoFavor) {
+            txtNombreSaldoFavor.innerText = nombreTrabajadorMostrar;
+            statSaldoFavorPersona.style.display = 'inline-flex';
+            statSaldoFavorPersona.title = tooltipDetalle;
+        }
+        animarNumero('stat-gastos-saldo-favor', montoSaldoFavor, "$", true);
+    } else {
+        cardSaldoFavor.style.display = 'none';
+    }
 }
 
 function verObservacionesGasto(obsEncoded) {
