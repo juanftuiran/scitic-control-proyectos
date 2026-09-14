@@ -526,9 +526,12 @@
                 <h1>📡 Calculadora de Pérdidas de Señal TDT</h1>
                 <p>Gestión de cálculos de atenuación y niveles de señal según normativa RITEL.</p>
             </div>
-            <div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
+                </button>
+                <button type="button" class="btn-hub-new" onclick="document.getElementById('input-cargar-json').click()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); box-shadow: none;">
+                    📂 Cargar Archivo Local (.json)
                 </button>
             </div>
         </div>
@@ -2375,6 +2378,7 @@
                 proyectoActivoId = null;
                 proyectoActivoNombre = '';
                 actualizarIndicadorProyecto();
+                mostrarEditor();
                 notificarToast('Proyecto cargado exitosamente desde archivo JSON.', 'success');
             } catch (err) {
                 console.error(err);

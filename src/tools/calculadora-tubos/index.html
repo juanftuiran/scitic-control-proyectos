@@ -631,10 +631,14 @@
                 <h1>📐 Calculadora de Tuberías RITEL 2025</h1>
                 <p>Gestión y dimensionamiento de canalizaciones para torres y parcelaciones.</p>
             </div>
-            <div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
+                <button type="button" class="btn-hub-new" onclick="document.getElementById('hub-input-import-json').click()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); box-shadow: none;">
+                    📂 Cargar Archivo Local (.json)
+                </button>
+                <input type="file" id="hub-input-import-json" accept=".json,application/json" onchange="cargarBackupJSON(event)" style="display: none;">
             </div>
         </div>
 
@@ -1732,6 +1736,7 @@
                     let data = JSON.parse(e.target.result);
                     restaurarDatosDesdeObjeto(data);
                     desvincularProyectoActivo();
+                    mostrarEditor();
                     notificarToast("Copia local cargada correctamente.", "success");
                 } catch (err) {
                     console.error("Error al importar JSON:", err);

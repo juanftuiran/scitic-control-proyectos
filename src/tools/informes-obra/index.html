@@ -529,10 +529,14 @@
                 <h1>🏗️ Registro de Instalación TDT en Obra</h1>
                 <p>Control de avance, equipos, cableado e informes de instalación según normativa RITEL.</p>
             </div>
-            <div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
+                <button type="button" class="btn-hub-new" onclick="document.getElementById('hub-input-cargar-json').click()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-solid); box-shadow: none;">
+                    📂 Cargar Archivo Local (.json / .html)
+                </button>
+                <input type="file" id="hub-input-cargar-json" accept=".json,.html" style="display: none;" onchange="cargarProyecto(event)">
             </div>
         </div>
 
@@ -1077,35 +1081,47 @@
         function getBadgeClass(estado) { return statusColors[estado] || 'badge-gray'; }
 
         // --- TABS LOGIC ---
+        function cambiarTab(targetId) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if (b.getAttribute('data-target') === targetId) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.tab-content').forEach(c => {
+                c.style.display = (c.id === targetId) ? 'block' : 'none';
+            });
+            if (targetId === 'tab-informe') renderInforme();
+        }
+
         function setupTabs() {
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-                    e.target.classList.add('active');
-                    const target = e.target.getAttribute('data-target');
-                    document.getElementById(target).style.display = 'block';
-                    
-                    if (target === 'tab-informe') renderInforme();
+                    const target = e.currentTarget.getAttribute('data-target');
+                    cambiarTab(target);
                 });
             });
         }
 
         // --- CONFIGURACIÓN ---
         function renderConfigTab() {
-            const c = state.config;
-            document.getElementById('cfg-nombre').value = c.nombre;
-            document.getElementById('cfg-cliente').value = c.cliente;
-            document.getElementById('cfg-torre').value = c.torre;
-            document.getElementById('cfg-piso-ini').value = c.pisoInicial;
-            document.getElementById('cfg-piso-fin').value = c.pisoFinal;
-            document.getElementById('cfg-sufijos').value = c.sufijosText;
+            const c = state.config || {};
+            document.getElementById('cfg-nombre').value = c.nombre || '';
+            document.getElementById('cfg-cliente').value = c.cliente || '';
+            document.getElementById('cfg-torre').value = c.torre || '';
+            document.getElementById('cfg-piso-ini').value = c.pisoInicial !== undefined ? c.pisoInicial : 1;
+            document.getElementById('cfg-piso-fin').value = c.pisoFinal !== undefined ? c.pisoFinal : 10;
+            document.getElementById('cfg-sufijos').value = c.sufijosText || '';
             renderEspaciosList();
 
             if (c.generado) {
                 document.getElementById('config-summary').style.display = 'block';
+                const cantPisos = (c.pisoFinal !== undefined && c.pisoInicial !== undefined) ? (Math.abs(c.pisoFinal - c.pisoInicial) + 1) : 0;
+                const cantSuf = Array.isArray(c.sufijos) ? c.sufijos.length : 0;
+                const cantEsp = Array.isArray(c.espacios) ? c.espacios.length : 0;
                 document.getElementById('cfg-resumen-text').innerText = 
-                    `${Math.abs(c.pisoFinal - c.pisoInicial) + 1} Pisos | ${c.sufijos.length} Aptos por piso | ${c.espacios.length} Espacios definidos`;
+                    `${cantPisos} Pisos | ${cantSuf} Aptos por piso | ${cantEsp} Espacios definidos`;
             } else {
                 document.getElementById('config-summary').style.display = 'none';
             }
@@ -1114,6 +1130,8 @@
         function renderEspaciosList() {
             const list = document.getElementById('espacios-list');
             list.innerHTML = '';
+            if (!state.config) state.config = {};
+            if (!Array.isArray(state.config.espacios)) state.config.espacios = [];
             state.config.espacios.forEach((esp, idx) => {
                 list.innerHTML += `
                     <div class="space-item">
@@ -2007,25 +2025,39 @@
         }
 
         function cargarProyecto(e) {
-            const file = e.target.files[0];
-            if(!file) return;
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 try {
                     const contents = evt.target.result;
                     let parsedState = null;
-                    if (file.name.endsWith('.json')) {
+                    const fileName = (file.name || '').toLowerCase();
+                    if (fileName.endsWith('.json') || (!fileName.endsWith('.html') && contents.trim().startsWith('{'))) {
                         parsedState = JSON.parse(contents);
-                    } else if (file.name.endsWith('.html')) {
+                    } else if (fileName.endsWith('.html') || contents.includes('scitic-backup-state')) {
                         const match = contents.match(/<script id="scitic-backup-state" type="application\/json">(.*?)<\/script>/s);
-                        if (match && match[1]) parsedState = JSON.parse(match[1]);
+                        if (match && match[1]) {
+                            parsedState = JSON.parse(match[1]);
+                        } else {
+                            throw new Error("No se encontró el estado del proyecto en el archivo HTML.");
+                        }
                     }
                     if (parsedState && parsedState.config) {
-                        localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(parsedState));
-                        location.reload(); // Reload to render properly with new state
+                        restaurarDatosObra(parsedState);
+                        proyectoActivoId = null;
+                        proyectoActivoNombre = '';
+                        actualizarIndicadorProyecto();
+                        mostrarEditor();
+                        notificarToast('Proyecto cargado exitosamente desde archivo.', 'success');
+                    } else {
+                        throw new Error('El archivo no contiene un formato de proyecto válido.');
                     }
                 } catch(err) {
-                    showToast('Error leyendo backup', 'danger');
+                    console.error('Error al cargar proyecto:', err);
+                    alert('Error al leer el archivo de backup: ' + err.message);
+                } finally {
+                    e.target.value = '';
                 }
             };
             reader.readAsText(file);
@@ -2068,7 +2100,7 @@
         function generarResumenObra(datos) {
             if (!datos || !datos.config) return { tipo: 'Registro TDT', detalle: 'Sin datos', icono: '🏗️' };
             const torre = datos.config.torre ? `Torre ${datos.config.torre}` : 'Torre';
-            const pisos = datos.config.pisoFinal ? (datos.config.pisoFinal - (datos.config.pisoInicial || 1) + 1) : 0;
+            const pisos = datos.config.pisoFinal !== undefined ? (Math.abs(datos.config.pisoFinal - (datos.config.pisoInicial || 0)) + 1) : 0;
             const cantAptos = (pisos * (datos.config.sufijos?.length || 0));
             const cliente = datos.config.cliente || datos.config.nombre || 'Obra';
             return {
@@ -2083,13 +2115,21 @@
                 throw new Error('Datos del proyecto no válidos.');
             }
             state = JSON.parse(JSON.stringify(datos));
+            if (!state.config) state.config = {};
+            if (!state.sets) state.sets = {};
+            if (!Array.isArray(state.vertical)) state.vertical = [];
+            if (!state.dispersion) state.dispersion = {};
+            if (!state.interior) state.interior = {};
+
             localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(state));
             renderConfigTab();
             if (state.config && state.config.generado) {
                 renderAllTabs();
                 document.getElementById('export-bar').style.display = 'flex';
+                cambiarTab('tab-vertical');
             } else {
                 document.getElementById('export-bar').style.display = 'none';
+                cambiarTab('tab-config');
             }
         }
 
