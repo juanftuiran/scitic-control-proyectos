@@ -244,7 +244,11 @@ async function iniciarApp() {
 
     showLoader("Cargando entorno de trabajo...");
     document.getElementById('loginView').style.display = 'none';
-    document.getElementById('appView').style.display = 'block';
+    const appView = document.getElementById('appView');
+    appView.style.display = 'block';
+    appView.classList.remove('ios-view-enter');
+    void appView.offsetWidth;
+    appView.classList.add('ios-view-enter');
     if (usuarioActual) {
         document.getElementById('displayUserName').innerText = usuarioActual.name;
         document.getElementById('displayUserRole').innerText = usuarioActual.role;
@@ -1462,6 +1466,29 @@ function switchModule(moduleName) {
 }
 
 let toolTransitionTimeout = null;
+let loaderSafetyTimeout = null;
+
+function ocultarLoaderHerramienta() {
+    clearTimeout(loaderSafetyTimeout);
+    const loader = document.getElementById('iframeLoader');
+    const iframe = document.getElementById('iframeHerramienta');
+    if (loader) {
+        loader.classList.add('hidden');
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        loader.style.pointerEvents = 'none';
+        setTimeout(() => {
+            if (loader.classList.contains('hidden')) {
+                loader.style.display = 'none';
+            }
+        }, 350);
+    }
+    if (iframe) {
+        iframe.classList.add('loaded');
+        iframe.style.opacity = '1';
+        iframe.style.transform = 'scale(1)';
+    }
+}
 
 function abrirHerramienta(url, nombre) {
     const catalogo = document.getElementById('herramientasCatalogo');
@@ -1474,14 +1501,18 @@ function abrirHerramienta(url, nombre) {
     if (lblTitulo) lblTitulo.textContent = nombre || 'Herramienta de Ingeniería';
     if (loaderText) loaderText.textContent = `Iniciando ${nombre || 'aplicación'}...`;
 
-    // 1. Mostrar loader frosted glass y resetear iframe
+    // 1. Mostrar loader frosted glass y preparar iframe
     if (loader) {
+        loader.style.display = 'flex';
         loader.classList.remove('hidden');
         loader.style.opacity = '1';
         loader.style.visibility = 'visible';
+        loader.style.pointerEvents = 'auto';
     }
     if (iframe) {
         iframe.classList.remove('loaded');
+        iframe.style.opacity = '0';
+        iframe.style.transform = 'scale(0.992)';
     }
 
     // 2. Transición suave del catálogo hacia el visor estilo Apple
@@ -1491,6 +1522,8 @@ function abrirHerramienta(url, nombre) {
     }
 
     clearTimeout(toolTransitionTimeout);
+    clearTimeout(loaderSafetyTimeout);
+
     toolTransitionTimeout = setTimeout(() => {
         if (catalogo) {
             catalogo.style.display = 'none';
@@ -1503,22 +1536,22 @@ function abrirHerramienta(url, nombre) {
             visor.classList.add('ios-view-enter');
         }
 
-        // 3. Cargar la URL y esperar evento load para desvanecer el cargador suavemente
+        // 3. Cargar la URL en el iframe con listeners y safety timeout
         if (iframe) {
             iframe.onload = () => {
-                setTimeout(() => {
-                    if (loader) {
-                        loader.classList.add('hidden');
-                    }
-                    iframe.classList.add('loaded');
-                }, 120);
+                setTimeout(ocultarLoaderHerramienta, 80);
             };
             iframe.src = url;
+
+            // Safety timeout: si el evento load se retrasa o el archivo está en caché, abrir automáticamente
+            loaderSafetyTimeout = setTimeout(ocultarLoaderHerramienta, 700);
         }
-    }, 160);
+    }, 140);
 }
 
 function cerrarHerramienta() {
+    clearTimeout(toolTransitionTimeout);
+    clearTimeout(loaderSafetyTimeout);
     const catalogo = document.getElementById('herramientasCatalogo');
     const visor = document.getElementById('herramientasVisor');
     const iframe = document.getElementById('iframeHerramienta');
@@ -1529,7 +1562,6 @@ function cerrarHerramienta() {
         visor.classList.add('ios-view-leave');
     }
 
-    clearTimeout(toolTransitionTimeout);
     toolTransitionTimeout = setTimeout(() => {
         if (visor) {
             visor.style.display = 'none';
@@ -1544,9 +1576,12 @@ function cerrarHerramienta() {
             iframe.onload = null;
             iframe.src = '';
             iframe.classList.remove('loaded');
+            iframe.style.opacity = '0';
         }
         if (loader) {
-            loader.classList.remove('hidden');
+            loader.classList.add('hidden');
+            loader.style.display = 'none';
+            loader.style.opacity = '0';
         }
     }, 180);
 }
