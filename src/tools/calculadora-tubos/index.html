@@ -9,6 +9,10 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Integración con la API Central de SCITIC -->
+    <script src="../../js/services/api.js"></script>
 
     <!-- Cargar fórmulas de la norma RITEL -->
     <script src="ritel-formulas.js"></script>
@@ -198,6 +202,117 @@
         .btn-excel:hover { background-color: #059669; }
         .btn-pdf { background-color: var(--danger); }
         .btn-pdf:hover { background-color: #dc2626; }
+        .btn-server-save { background-color: #0284c7; }
+        .btn-server-save:hover { background-color: #0369a1; }
+        .btn-server-load { background-color: #7c3aed; }
+        .btn-server-load:hover { background-color: #6d28d9; }
+
+        /* MODALES Y PERSISTENCIA */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 15px;
+        }
+        .modal-content-calc {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header-calc {
+            padding: 16px 22px;
+            background: rgba(30, 41, 59, 0.75);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header-calc h3 {
+            margin: 0;
+            font-size: 16.5px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 6px;
+            line-height: 1;
+        }
+        .modal-close-btn:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+        .modal-body-calc {
+            padding: 20px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .modal-footer-calc {
+            padding: 14px 22px;
+            background: rgba(30, 41, 59, 0.5);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .badge-autor {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-modo {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .toast-calc {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            z-index: 10000;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            animation: modalFadeIn 0.25s ease;
+        }
         
         .btn-icon {
             padding: 5px 8px;
@@ -371,6 +486,16 @@
         Normativa RITEL 2025 (CRC) — Dimensionamiento de Canalización y Redes de Distribución
     </div>
 
+    <!-- BADGE DE PROYECTO VINCULADO AL SERVIDOR -->
+    <div id="badge-proyecto-activo" style="display: none; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 12px;">
+        <span style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.4); color: #38bdf8; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            ☁️ Proyecto en Servidor: <strong id="lbl-proyecto-activo" style="color: #f8fafc;">-</strong>
+        </span>
+        <button type="button" onclick="desvincularProyectoActivo()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer;">
+            ✕ Desvincular (Guardar como Nuevo)
+        </button>
+    </div>
+
     <!-- ======================================================== -->
     <!-- SECCIÓN 1: CALCULADORA DE TORRES / EDIFICIOS (VERTICAL) -->
     <!-- ======================================================== -->
@@ -431,6 +556,8 @@
 
             <div style="flex-grow: 1;"></div>
 
+            <button class="btn-server-save" onclick="abrirModalGuardar()" title="Guardar o actualizar este proyecto en el servidor de la empresa">☁️ Guardar en Servidor</button>
+            <button class="btn-server-load" onclick="abrirModalProyectos()" title="Consultar y cargar proyectos guardados en el servidor">📂 Proyectos Servidor</button>
             <button class="btn-toggle" onclick="toggleVistaTorres()">🔄 Vista (Tubería/Bandeja)</button>
             <button class="btn-backup" onclick="descargarBackupJSON()" title="Descargar copia de seguridad con todos los datos en archivo JSON">💾 Guardar (.json)</button>
             <button class="btn-import" onclick="document.getElementById('input-import-json').click()" title="Cargar copia de seguridad desde un archivo JSON">📂 Cargar (.json)</button>
@@ -519,6 +646,8 @@
 
             <div style="flex-grow: 1;"></div>
 
+            <button class="btn-server-save" onclick="abrirModalGuardar()" title="Guardar o actualizar este proyecto en el servidor de la empresa">☁️ Guardar en Servidor</button>
+            <button class="btn-server-load" onclick="abrirModalProyectos()" title="Consultar y cargar proyectos guardados en el servidor">📂 Proyectos Servidor</button>
             <button class="btn-backup" onclick="descargarBackupJSON()" title="Descargar copia de seguridad con todos los datos en archivo JSON">💾 Guardar (.json)</button>
             <button class="btn-import" onclick="document.getElementById('input-import-json').click()" title="Cargar copia de seguridad desde un archivo JSON">📂 Cargar (.json)</button>
             <button class="btn-excel" onclick="exportarExcelParcelacion()">📊 Excel</button>
@@ -1177,9 +1306,78 @@
         }
 
         // ==========================================
-        // EXPORTAR E IMPORTAR COPIA DE SEGURIDAD (.JSON)
+        // PERSISTENCIA EN SERVIDOR Y BACKUP (.JSON)
         // ==========================================
-        function descargarBackupJSON() {
+        let proyectoActivoId = null;
+        let proyectoActivoNombre = '';
+        let listaProyectosCache = [];
+
+        function getAPIService() {
+            if (window.parent && window.parent.API) return window.parent.API;
+            if (window.API) return window.API;
+            return null;
+        }
+
+        function getUsuarioPerfil() {
+            try {
+                const cached = localStorage.getItem('scitic_user_profile');
+                if (cached) return JSON.parse(cached);
+            } catch (e) {
+                console.error("Error leyendo perfil:", e);
+            }
+            return null;
+        }
+
+        function notificarToast(mensaje, tipo = 'info') {
+            // Intentar usar Toast de la app padre si existe
+            if (window.parent && window.parent.Toast) {
+                if (tipo === 'success') window.parent.Toast.success(mensaje);
+                else if (tipo === 'error') window.parent.Toast.error(mensaje);
+                else window.parent.Toast.info(mensaje);
+                return;
+            }
+
+            // Fallback: Toast inline en la herramienta
+            const toast = document.getElementById('toast-calc');
+            if (!toast) {
+                alert(mensaje);
+                return;
+            }
+
+            toast.textContent = (tipo === 'success' ? '✅ ' : tipo === 'error' ? '❌ ' : 'ℹ️ ') + mensaje;
+            toast.style.background = tipo === 'success' ? '#10b981' : tipo === 'error' ? '#ef4444' : '#0284c7';
+            toast.style.display = 'flex';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3500);
+        }
+
+        function actualizarIndicadorProyecto() {
+            const badge = document.getElementById('badge-proyecto-activo');
+            const lbl = document.getElementById('lbl-proyecto-activo');
+            if (!badge || !lbl) return;
+
+            if (proyectoActivoId) {
+                lbl.textContent = proyectoActivoNombre || 'Proyecto Guardado';
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+                lbl.textContent = '-';
+            }
+        }
+
+        function desvincularProyectoActivo() {
+            proyectoActivoId = null;
+            proyectoActivoNombre = '';
+            actualizarIndicadorProyecto();
+            notificarToast("Proyecto desvinculado. Ahora se guardará como un proyecto nuevo.", "info");
+        }
+
+        /**
+         * Extrae el estado completo de Torres y Parcelaciones en un objeto JSON estándar
+         */
+        function obtenerDatosProyecto() {
             let nombreProyecto = document.getElementById('in-proyecto').value.trim() || 'Proyecto_Calculo_RITEL';
             
             // 1. Datos Torres
@@ -1226,7 +1424,7 @@
                 });
             });
 
-            let backup = {
+            return {
                 version: "2.1",
                 formato: "SCITIC_RITEL_CALC_BACKUP",
                 norma: "RITEL 2025",
@@ -1236,7 +1434,88 @@
                 torres: torresData,
                 parcelaciones: parcelacionesData
             };
+        }
 
+        /**
+         * Restaura el estado de la aplicación a partir de un objeto JSON estructurado
+         */
+        function restaurarDatosDesdeObjeto(data) {
+            if (!data || (!data.torres && !data.parcelaciones && !data.tramos && !data.filas)) {
+                throw new Error("El archivo no tiene el formato válido de copia de seguridad RITEL.");
+            }
+
+            if (data.proyecto) {
+                document.getElementById('in-proyecto').value = data.proyecto;
+            }
+
+            // Restaurar Torres
+            if (data.torres) {
+                if (data.torres.tipoTorre) {
+                    let selTipo = document.getElementById('sel-tipo-torre');
+                    if (selTipo) {
+                        selTipo.value = data.torres.tipoTorre;
+                        cambiarTipoTorre();
+                    }
+                }
+                if (data.torres.pisos !== undefined) document.getElementById('in-pisos').value = data.torres.pisos;
+                if (data.torres.pisoBase !== undefined) document.getElementById('in-piso-base').value = data.torres.pisoBase;
+                if (data.torres.aptosDefault !== undefined) document.getElementById('in-aptos').value = data.torres.aptosDefault;
+                if (data.torres.pisosAtipicos !== undefined && document.getElementById('in-pisos-atipicos')) document.getElementById('in-pisos-atipicos').value = data.torres.pisosAtipicos;
+                if (data.torres.pisoSetiAtipico !== undefined && document.getElementById('in-piso-seti-atipico')) document.getElementById('in-piso-seti-atipico').value = data.torres.pisoSetiAtipico;
+                if (data.torres.aptosAtipico !== undefined && document.getElementById('in-aptos-atipico')) document.getElementById('in-aptos-atipico').value = data.torres.aptosAtipico;
+                if (data.torres.mostrarLineaExtra !== undefined) document.getElementById('chk-linea-extra').checked = !!data.torres.mostrarLineaExtra;
+                if (data.torres.altoBandeja !== undefined) document.getElementById('in-alto-bandeja').value = data.torres.altoBandeja;
+
+                if (Array.isArray(data.torres.filas) && data.torres.filas.length > 0) {
+                    const tbodyTubos = document.getElementById('tabla-body-torres');
+                    const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+                    tbodyTubos.innerHTML = '';
+                    tbodyBandeja.innerHTML = '';
+
+                    data.torres.filas.forEach(f => {
+                        crearFilaTorresDOM(
+                            f.piso || f.nivel || '1',
+                            f.tramo || `Tramo ${f.piso || f.nivel}`,
+                            f.pau !== undefined ? f.pau : 0,
+                            !!f.directoSeti,
+                            f.curvas !== undefined ? f.curvas : 0,
+                            !!f.isSeti
+                        );
+                        let tr = tbodyTubos.lastElementChild;
+                        if (tr) {
+                            if (f.material) tr.querySelector('.sel-mat').value = f.material;
+                            if (f.diametro) tr.querySelector('.sel-dia').value = f.diametro;
+                        }
+                    });
+                    recalcularTorres();
+                } else {
+                    generarTablaTorres();
+                }
+            }
+
+            // Restaurar Parcelaciones
+            if (data.parcelaciones?.pauDefault !== undefined) {
+                document.getElementById('in-pau-default-parc').value = data.parcelaciones.pauDefault;
+            }
+
+            let tramosParc = data.parcelaciones?.tramos || data.tramos;
+            if (Array.isArray(tramosParc) && tramosParc.length > 0) {
+                const tbody = document.getElementById('tabla-body-parcelaciones');
+                tbody.innerHTML = '';
+                tramosParc.forEach(t => {
+                    agregarFilaParcelacion(t.desde, t.hasta, t.pau, t.material, t.diametro, t.curvas);
+                });
+            }
+
+            if (data.modoActivo) {
+                cambiarModoApp(data.modoActivo);
+            }
+        }
+
+        // Descarga de backup local en archivo .json
+        function descargarBackupJSON() {
+            let backup = obtenerDatosProyecto();
+            let nombreProyecto = backup.proyecto;
             let jsonStr = JSON.stringify(backup, null, 2);
             let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
             let url = URL.createObjectURL(blob);
@@ -1250,6 +1529,7 @@
             URL.revokeObjectURL(url);
         }
 
+        // Carga de backup desde archivo .json de disco
         function cargarBackupJSON(event) {
             let file = event.target.files[0];
             if (!file) return;
@@ -1258,88 +1538,237 @@
             reader.onload = function(e) {
                 try {
                     let data = JSON.parse(e.target.result);
-                    
-                    if (!data.torres && !data.parcelaciones && !data.tramos && !data.filas) {
-                        alert("El archivo seleccionado no tiene el formato válido de copia de seguridad RITEL.");
-                        return;
-                    }
-
-                    if (data.proyecto) {
-                        document.getElementById('in-proyecto').value = data.proyecto;
-                    }
-
-                    // Restaurar Torres
-                    if (data.torres) {
-                        if (data.torres.tipoTorre) {
-                            let selTipo = document.getElementById('sel-tipo-torre');
-                            if (selTipo) {
-                                selTipo.value = data.torres.tipoTorre;
-                                cambiarTipoTorre();
-                            }
-                        }
-                        if (data.torres.pisos !== undefined) document.getElementById('in-pisos').value = data.torres.pisos;
-                        if (data.torres.pisoBase !== undefined) document.getElementById('in-piso-base').value = data.torres.pisoBase;
-                        if (data.torres.aptosDefault !== undefined) document.getElementById('in-aptos').value = data.torres.aptosDefault;
-                        if (data.torres.pisosAtipicos !== undefined && document.getElementById('in-pisos-atipicos')) document.getElementById('in-pisos-atipicos').value = data.torres.pisosAtipicos;
-                        if (data.torres.pisoSetiAtipico !== undefined && document.getElementById('in-piso-seti-atipico')) document.getElementById('in-piso-seti-atipico').value = data.torres.pisoSetiAtipico;
-                        if (data.torres.aptosAtipico !== undefined && document.getElementById('in-aptos-atipico')) document.getElementById('in-aptos-atipico').value = data.torres.aptosAtipico;
-                        if (data.torres.mostrarLineaExtra !== undefined) document.getElementById('chk-linea-extra').checked = !!data.torres.mostrarLineaExtra;
-                        if (data.torres.altoBandeja !== undefined) document.getElementById('in-alto-bandeja').value = data.torres.altoBandeja;
-
-                        if (Array.isArray(data.torres.filas) && data.torres.filas.length > 0) {
-                            const tbodyTubos = document.getElementById('tabla-body-torres');
-                            const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
-                            tbodyTubos.innerHTML = '';
-                            tbodyBandeja.innerHTML = '';
-
-                            data.torres.filas.forEach(f => {
-                                crearFilaTorresDOM(
-                                    f.piso || f.nivel || '1',
-                                    f.tramo || `Tramo ${f.piso || f.nivel}`,
-                                    f.pau !== undefined ? f.pau : 0,
-                                    !!f.directoSeti,
-                                    f.curvas !== undefined ? f.curvas : 0,
-                                    !!f.isSeti
-                                );
-                                let tr = tbodyTubos.lastElementChild;
-                                if (tr) {
-                                    if (f.material) tr.querySelector('.sel-mat').value = f.material;
-                                    if (f.diametro) tr.querySelector('.sel-dia').value = f.diametro;
-                                }
-                            });
-                            recalcularTorres();
-                        } else {
-                            generarTablaTorres();
-                        }
-                    }
-
-                    // Restaurar Parcelaciones
-                    if (data.parcelaciones?.pauDefault !== undefined) {
-                        document.getElementById('in-pau-default-parc').value = data.parcelaciones.pauDefault;
-                    }
-
-                    let tramosParc = data.parcelaciones?.tramos || data.tramos;
-                    if (Array.isArray(tramosParc) && tramosParc.length > 0) {
-                        const tbody = document.getElementById('tabla-body-parcelaciones');
-                        tbody.innerHTML = '';
-                        tramosParc.forEach(t => {
-                            agregarFilaParcelacion(t.desde, t.hasta, t.pau, t.material, t.diametro, t.curvas);
-                        });
-                    }
-
-                    if (data.modoActivo) {
-                        cambiarModoApp(data.modoActivo);
-                    }
-
-                    alert("✅ Copia de seguridad cargada exitosamente.");
+                    restaurarDatosDesdeObjeto(data);
+                    desvincularProyectoActivo();
+                    notificarToast("Copia local cargada correctamente.", "success");
                 } catch (err) {
                     console.error("Error al importar JSON:", err);
-                    alert("❌ Ocurrió un error al leer el archivo JSON: " + err.message);
+                    alert("❌ Error al leer el archivo JSON: " + err.message);
                 } finally {
                     event.target.value = '';
                 }
             };
             reader.readAsText(file);
+        }
+
+        // ==========================================
+        // GESTIÓN DE PROYECTOS EN SERVIDOR (SUPABASE)
+        // ==========================================
+
+        function abrirModalGuardar() {
+            const api = getAPIService();
+            if (!api) {
+                alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+                return;
+            }
+
+            const inNombre = document.getElementById('modal-in-nombre-proyecto');
+            const boxExistente = document.getElementById('box-proyecto-existente');
+            const lblExistente = document.getElementById('lbl-nombre-existente-modal');
+            const footerAcciones = document.getElementById('footer-acciones-guardar');
+
+            // Prellenar nombre con el título actual
+            const nombreActual = document.getElementById('in-proyecto').value.trim() || 'Proyecto RITEL 2025';
+            inNombre.value = proyectoActivoNombre || nombreActual;
+
+            if (proyectoActivoId) {
+                boxExistente.style.display = 'block';
+                lblExistente.textContent = proyectoActivoNombre;
+                footerAcciones.innerHTML = `
+                    <button type="button" class="btn-clear" onclick="cerrarModalGuardar()">Cancelar</button>
+                    <button type="button" class="btn-import" onclick="ejecutarGuardadoServidor(true)" style="background: #6366f1;">➕ Guardar como Copia Nueva</button>
+                    <button type="button" class="btn-server-save" onclick="ejecutarGuardadoServidor(false)" style="background: #0284c7;">🔄 Sobrescribir Cambios</button>
+                `;
+            } else {
+                boxExistente.style.display = 'none';
+                footerAcciones.innerHTML = `
+                    <button type="button" class="btn-clear" onclick="cerrarModalGuardar()">Cancelar</button>
+                    <button type="button" class="btn-server-save" onclick="ejecutarGuardadoServidor(true)">💾 Guardar en Servidor</button>
+                `;
+            }
+
+            document.getElementById('modal-guardar-servidor').style.display = 'flex';
+            setTimeout(() => inNombre.focus(), 100);
+        }
+
+        function cerrarModalGuardar() {
+            document.getElementById('modal-guardar-servidor').style.display = 'none';
+        }
+
+        async function ejecutarGuardadoServidor(esCopiaNueva) {
+            const api = getAPIService();
+            if (!api) return;
+
+            const nombreInput = document.getElementById('modal-in-nombre-proyecto').value.trim();
+            if (!nombreInput) {
+                alert("Por favor ingresa un nombre para el proyecto.");
+                return;
+            }
+
+            // Actualizar input del título en pantalla
+            document.getElementById('in-proyecto').value = nombreInput;
+
+            const idAGuardar = esCopiaNueva ? null : proyectoActivoId;
+            const backupPayload = obtenerDatosProyecto();
+            backupPayload.proyecto = nombreInput;
+
+            notificarToast("Guardando en el servidor...", "info");
+
+            const resultado = await api.guardarProyectoCalculadora({
+                id: idAGuardar,
+                herramienta: 'calculadora-tubos',
+                nombreProyecto: nombreInput,
+                modo: modoActivo,
+                datosJson: backupPayload
+            });
+
+            if (resultado && resultado.exito) {
+                proyectoActivoId = resultado.data.id;
+                proyectoActivoNombre = resultado.data.nombre_proyecto;
+                actualizarIndicadorProyecto();
+                cerrarModalGuardar();
+                notificarToast(esCopiaNueva ? "Nuevo proyecto guardado exitosamente." : "Cambios actualizados en el servidor.", "success");
+            }
+        }
+
+        async function abrirModalProyectos() {
+            const api = getAPIService();
+            if (!api) {
+                alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+                return;
+            }
+
+            const modal = document.getElementById('modal-proyectos-servidor');
+            const tbody = document.getElementById('body-proyectos-servidor');
+            const thAutor = document.getElementById('th-autor-servidor');
+            const perfil = getUsuarioPerfil();
+            const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+
+            if (thAutor) {
+                thAutor.style.display = esAdminOMod ? '' : 'none';
+            }
+
+            tbody.innerHTML = `<tr><td colspan="${esAdminOMod ? 5 : 4}" style="padding: 30px; text-align: center; color: var(--text-muted);">Cargando proyectos desde el servidor...</td></tr>`;
+            modal.style.display = 'flex';
+
+            listaProyectosCache = await api.getProyectosCalculadora('calculadora-tubos');
+            renderizarListaProyectos(listaProyectosCache);
+        }
+
+        function cerrarModalProyectos() {
+            document.getElementById('modal-proyectos-servidor').style.display = 'none';
+        }
+
+        function renderizarListaProyectos(proyectos) {
+            const tbody = document.getElementById('body-proyectos-servidor');
+            const contador = document.getElementById('contador-proyectos-servidor');
+            const perfil = getUsuarioPerfil();
+            const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+            const colSpan = esAdminOMod ? 5 : 4;
+
+            contador.textContent = `${proyectos.length} proyecto(s)`;
+
+            if (!proyectos || proyectos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" style="padding: 35px; text-align: center; color: var(--text-muted);">No se encontraron proyectos guardados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = proyectos.map(p => {
+                const fecha = p.updated_at ? new Date(p.updated_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const modoLabel = p.modo === 'parcelaciones' ? 'Parcelación' : 'Torres';
+                const esActivo = p.id === proyectoActivoId;
+
+                const colAutor = esAdminOMod ? `<td><span class="badge-autor">${escapeHTML(p.usuario_nombre || p.usuario_email)}</span></td>` : '';
+
+                return `
+                    <tr style="${esActivo ? 'background: rgba(14, 165, 233, 0.12);' : ''}">
+                        <td style="text-align: left; padding-left: 14px; font-weight: 600;">
+                            ${escapeHTML(p.nombre_proyecto)}
+                            ${esActivo ? '<span style="color: #38bdf8; font-size: 11px; margin-left: 6px;">(En uso)</span>' : ''}
+                        </td>
+                        <td><span class="badge-modo">${modoLabel}</span></td>
+                        <td style="color: var(--text-muted); font-size: 11.5px;">${fecha}</td>
+                        ${colAutor}
+                        <td>
+                            <div style="display: flex; gap: 6px; justify-content: center;">
+                                <button type="button" class="btn-server-load" style="padding: 5px 10px; font-size: 11.5px;" onclick="cargarProyectoDesdeServidor('${p.id}')" title="Cargar este proyecto en las tablas">📥 Cargar</button>
+                                <button type="button" class="btn-delete" style="padding: 5px 8px; font-size: 11.5px;" onclick="eliminarProyectoDesdeServidor('${p.id}', '${escapeHTML(p.nombre_proyecto)}')" title="Eliminar proyecto">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filtrarProyectosGuardados() {
+            const query = (document.getElementById('filtro-proyectos-servidor')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderizarListaProyectos(listaProyectosCache);
+                return;
+            }
+
+            const filtrados = listaProyectosCache.filter(p => {
+                const nombre = (p.nombre_proyecto || '').toLowerCase();
+                const autor = (p.usuario_nombre || p.usuario_email || '').toLowerCase();
+                const modo = (p.modo || '').toLowerCase();
+                return nombre.includes(query) || autor.includes(query) || modo.includes(query);
+            });
+
+            renderizarListaProyectos(filtrados);
+        }
+
+        async function cargarProyectoDesdeServidor(id) {
+            const api = getAPIService();
+            if (!api) return;
+
+            notificarToast("Cargando proyecto desde la base de datos...", "info");
+
+            const proyecto = await api.getProyectoPorId(id);
+            if (!proyecto || !proyecto.datos_json) {
+                notificarToast("No se pudo cargar el proyecto seleccionado.", "error");
+                return;
+            }
+
+            try {
+                restaurarDatosDesdeObjeto(proyecto.datos_json);
+                proyectoActivoId = proyecto.id;
+                proyectoActivoNombre = proyecto.nombre_proyecto;
+                document.getElementById('in-proyecto').value = proyecto.nombre_proyecto;
+                actualizarIndicadorProyecto();
+                cerrarModalProyectos();
+                notificarToast(`Proyecto "${proyecto.nombre_proyecto}" cargado en pantalla.`, "success");
+            } catch (err) {
+                console.error("Error restaurando proyecto:", err);
+                alert("Error al procesar los datos del proyecto: " + err.message);
+            }
+        }
+
+        async function eliminarProyectoDesdeServidor(id, nombre) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente el proyecto "${nombre}"? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            const api = getAPIService();
+            if (!api) return;
+
+            const ok = await api.eliminarProyectoCalculadora(id);
+            if (ok) {
+                if (proyectoActivoId === id) {
+                    desvincularProyectoActivo();
+                }
+                listaProyectosCache = listaProyectosCache.filter(p => p.id !== id);
+                filtrarProyectosGuardados();
+            }
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         // ==========================================
@@ -1673,5 +2102,70 @@
             cambiarModoApp(modoActivo);
         };
     </script>
+
+    <!-- MODAL 1: GUARDAR O ACTUALIZAR PROYECTO EN SERVIDOR -->
+    <div id="modal-guardar-servidor" class="modal-overlay">
+        <div class="modal-content-calc" style="max-width: 490px;">
+            <div class="modal-header-calc">
+                <h3>☁️ Guardar en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalGuardar()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--primary-blue); margin-bottom: 6px;">Nombre del Proyecto:</label>
+                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13.5px; font-weight: 600;" placeholder="Ej: Edificio Torre Real">
+                </div>
+
+                <div id="box-proyecto-existente" style="display: none; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <p style="margin: 0 0 5px; font-size: 12px; color: #38bdf8; font-weight: 600;">ℹ️ Este cálculo está vinculado a un proyecto guardado:</p>
+                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: #fff; font-size: 13px;">-</div>
+                </div>
+            </div>
+            <div class="modal-footer-calc" id="footer-acciones-guardar">
+                <!-- Se inyectan botones según proyectoActivoId -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CATÁLOGO DE PROYECTOS GUARDADOS -->
+    <div id="modal-proyectos-servidor" class="modal-overlay">
+        <div class="modal-content-calc">
+            <div class="modal-header-calc">
+                <h3>📂 Proyectos Guardados en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalProyectos()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o modo..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13px;">
+                    <div id="contador-proyectos-servidor" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">0 proyecto(s)</div>
+                </div>
+
+                <div class="table-container" style="max-height: 48vh; margin-bottom: 0;">
+                    <table id="tabla-proyectos-servidor">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-left: 14px;">Nombre del Proyecto</th>
+                                <th>Modo</th>
+                                <th>Última Modificación</th>
+                                <th id="th-autor-servidor" style="display: none;">Autor</th>
+                                <th style="width: 145px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-proyectos-servidor">
+                            <tr>
+                                <td colspan="5" style="padding: 30px; color: var(--text-muted);">Cargando proyectos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer-calc">
+                <button type="button" class="btn-clear" onclick="cerrarModalProyectos()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST FLOTANTE INLINE -->
+    <div id="toast-calc" class="toast-calc"></div>
 </body>
 </html>

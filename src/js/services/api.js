@@ -251,6 +251,112 @@ class APIService {
             return false;
         }
     }
+
+    // ==========================================
+    // PROYECTOS DE CALCULADORAS Y HERRAMIENTAS
+    // ==========================================
+
+    async getProyectosCalculadora(herramienta) {
+        try {
+            const { data, error } = await this.db
+                .from('proyectos_calculadoras')
+                .select('id, nombre_proyecto, modo, usuario_nombre, usuario_email, user_id, updated_at, created_at')
+                .eq('herramienta', herramienta)
+                .order('updated_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error("Error al obtener proyectos de calculadora:", error);
+            if (typeof Toast !== 'undefined') Toast.error("Error cargando proyectos guardados.");
+            return [];
+        }
+    }
+
+    async getProyectoPorId(id) {
+        try {
+            const { data, error } = await this.db
+                .from('proyectos_calculadoras')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("Error al cargar detalle del proyecto:", error);
+            if (typeof Toast !== 'undefined') Toast.error("No se pudo cargar el proyecto seleccionado.");
+            return null;
+        }
+    }
+
+    async guardarProyectoCalculadora({ id = null, herramienta, nombreProyecto, modo = '', datosJson }) {
+        try {
+            const session = await this.getSession();
+            if (!session) {
+                if (typeof Toast !== 'undefined') Toast.error("Debes iniciar sesión para guardar proyectos.");
+                return { exito: false, mensaje: "Sin sesión activa" };
+            }
+
+            if (id) {
+                // Actualizar proyecto existente (Sobrescribir)
+                const { data, error } = await this.db
+                    .from('proyectos_calculadoras')
+                    .update({
+                        nombre_proyecto: nombreProyecto,
+                        modo: modo,
+                        datos_json: datosJson,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', id)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                if (typeof Toast !== 'undefined') Toast.success("Proyecto actualizado correctamente.");
+                return { exito: true, data };
+            } else {
+                // Insertar nuevo proyecto
+                const { data, error } = await this.db
+                    .from('proyectos_calculadoras')
+                    .insert([{
+                        usuario_nombre: session.name || session.usuario || 'Usuario',
+                        usuario_email: session.usuario,
+                        herramienta: herramienta,
+                        nombre_proyecto: nombreProyecto,
+                        modo: modo,
+                        datos_json: datosJson
+                    }])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                if (typeof Toast !== 'undefined') Toast.success("Proyecto guardado en el servidor.");
+                return { exito: true, data };
+            }
+        } catch (error) {
+            console.error("Error al guardar proyecto:", error);
+            if (typeof Toast !== 'undefined') Toast.error("Error al guardar: " + error.message);
+            return { exito: false, mensaje: error.message };
+        }
+    }
+
+    async eliminarProyectoCalculadora(id) {
+        try {
+            const { error } = await this.db
+                .from('proyectos_calculadoras')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            if (typeof Toast !== 'undefined') Toast.success("Proyecto eliminado.");
+            return true;
+        } catch (error) {
+            console.error("Error al eliminar proyecto:", error);
+            if (typeof Toast !== 'undefined') Toast.error("No se pudo eliminar el proyecto.");
+            return false;
+        }
+    }
 }
 
 window.API = new APIService();
