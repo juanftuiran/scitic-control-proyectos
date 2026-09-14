@@ -260,12 +260,15 @@ class APIService {
         try {
             const { data, error } = await this.db
                 .from('proyectos_calculadoras')
-                .select('id, nombre_proyecto, modo, usuario_nombre, usuario_email, user_id, updated_at, created_at')
+                .select('id, nombre_proyecto, modo, usuario_nombre, usuario_email, user_id, updated_at, created_at, resumen, datos_json')
                 .eq('herramienta', herramienta)
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;
-            return data || [];
+            return (data || []).map(p => ({
+                ...p,
+                resumen: p.resumen || (p.datos_json && p.datos_json.resumen) || {}
+            }));
         } catch (error) {
             console.error("Error al obtener proyectos de calculadora:", error);
             if (typeof Toast !== 'undefined') Toast.error("Error cargando proyectos guardados.");
@@ -290,7 +293,11 @@ class APIService {
         }
     }
 
-    async guardarProyectoCalculadora({ id = null, herramienta, nombreProyecto, modo = '', datosJson }) {
+    async getProyectoCalculadoraPorId(id) {
+        return await this.getProyectoPorId(id);
+    }
+
+    async guardarProyectoCalculadora({ id = null, herramienta, nombreProyecto, modo = '', datosJson, resumen = {} }) {
         try {
             const session = await this.getSession();
             if (!session) {
@@ -298,41 +305,73 @@ class APIService {
                 return { exito: false, mensaje: "Sin sesión activa" };
             }
 
+            // Asegurar que el resumen también esté dentro de datosJson como respaldo
+            if (datosJson && typeof datosJson === 'object') {
+                datosJson.resumen = resumen;
+            }
+
             if (id) {
                 // Actualizar proyecto existente (Sobrescribir)
-                const { data, error } = await this.db
+                let updatePayload = {
+                    nombre_proyecto: nombreProyecto,
+                    modo: modo,
+                    datos_json: datosJson,
+                    resumen: resumen,
+                    updated_at: new Date().toISOString()
+                };
+
+                let resUpdate = await this.db
                     .from('proyectos_calculadoras')
-                    .update({
-                        nombre_proyecto: nombreProyecto,
-                        modo: modo,
-                        datos_json: datosJson,
-                        updated_at: new Date().toISOString()
-                    })
+                    .update(updatePayload)
                     .eq('id', id)
                     .select()
                     .single();
 
-                if (error) throw error;
+                if (resUpdate.error && resUpdate.error.message && resUpdate.error.message.includes('resumen')) {
+                    delete updatePayload.resumen;
+                    resUpdate = await this.db
+                        .from('proyectos_calculadoras')
+                        .update(updatePayload)
+                        .eq('id', id)
+                        .select()
+                        .single();
+                }
+
+                if (resUpdate.error) throw resUpdate.error;
                 if (typeof Toast !== 'undefined') Toast.success("Proyecto actualizado correctamente.");
-                return { exito: true, data };
+                const saved = resUpdate.data || {};
+                return { exito: true, data: saved, ...saved };
             } else {
                 // Insertar nuevo proyecto
-                const { data, error } = await this.db
+                let insertPayload = {
+                    usuario_nombre: session.name || session.usuario || 'Usuario',
+                    usuario_email: session.usuario,
+                    herramienta: herramienta,
+                    nombre_proyecto: nombreProyecto,
+                    modo: modo,
+                    datos_json: datosJson,
+                    resumen: resumen
+                };
+
+                let resInsert = await this.db
                     .from('proyectos_calculadoras')
-                    .insert([{
-                        usuario_nombre: session.name || session.usuario || 'Usuario',
-                        usuario_email: session.usuario,
-                        herramienta: herramienta,
-                        nombre_proyecto: nombreProyecto,
-                        modo: modo,
-                        datos_json: datosJson
-                    }])
+                    .insert([insertPayload])
                     .select()
                     .single();
 
-                if (error) throw error;
+                if (resInsert.error && resInsert.error.message && resInsert.error.message.includes('resumen')) {
+                    delete insertPayload.resumen;
+                    resInsert = await this.db
+                        .from('proyectos_calculadoras')
+                        .insert([insertPayload])
+                        .select()
+                        .single();
+                }
+
+                if (resInsert.error) throw resInsert.error;
                 if (typeof Toast !== 'undefined') Toast.success("Proyecto guardado en el servidor.");
-                return { exito: true, data };
+                const saved = resInsert.data || {};
+                return { exito: true, data: saved, ...saved };
             }
         } catch (error) {
             console.error("Error al guardar proyecto:", error);

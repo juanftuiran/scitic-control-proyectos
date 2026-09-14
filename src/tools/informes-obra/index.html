@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Integración con Base de Datos SCITIC -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../js/services/api.js"></script>
     <style>
         :root {
             --brand-orange: #ea580c;
@@ -294,9 +297,281 @@
             .badge { border: 1px solid #ccc; color: black; background: transparent; }
             input, select { border: none; background: transparent; color: black; -webkit-appearance: none; }
         }
+
+        /* ── HUB INICIAL DE PROYECTOS ── */
+        .hub-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 35px 20px 60px 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .hub-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-solid);
+            padding-bottom: 24px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .hub-title-group h1 {
+            font-size: 26px;
+            color: #f8fafc;
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hub-title-group p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .btn-hub-new {
+            background: linear-gradient(135deg, var(--brand-orange), var(--brand-orange-hover));
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-hub-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+        }
+        .hub-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .hub-search-input {
+            flex: 1;
+            min-width: 260px;
+            padding: 11px 16px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-solid);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+        }
+        .hub-search-input:focus {
+            outline: none;
+            border-color: var(--brand-orange);
+            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+        }
+        .hub-counter {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .hub-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .hub-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-solid);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .hub-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateX(4px);
+            background: rgba(30, 41, 59, 0.9);
+        }
+        .hub-card-info h4 {
+            margin: 0 0 6px 0;
+            font-size: 16px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hub-card-metrics {
+            font-size: 12.5px;
+            color: #38bdf8;
+            font-weight: 600;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 5px;
+        }
+        .hub-card-meta {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .hub-card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-hub-back {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-solid);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s ease;
+        }
+        .btn-hub-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .badge-autor {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-modo {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* ── MODALES Y TOAST ── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 15px;
+        }
+        .modal-content-calc {
+            background: #0f172a;
+            border: 1px solid var(--border-solid);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-header-calc {
+            padding: 16px 20px;
+            background: rgba(30, 41, 59, 0.75);
+            border-bottom: 1px solid var(--border-solid);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header-calc h3 {
+            margin: 0; font-size: 16px; color: #f8fafc;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 4px; line-height: 1;
+        }
+        .modal-close-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .modal-body-calc { padding: 20px; overflow-y: auto; flex: 1; }
+        .modal-footer-calc {
+            padding: 14px 20px; background: rgba(30, 41, 59, 0.5);
+            border-top: 1px solid var(--border-solid); display: flex; justify-content: flex-end; gap: 10px;
+        }
+        .toast-calc {
+            position: fixed; bottom: 25px; right: 25px; padding: 12px 20px;
+            border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff;
+            z-index: 10000; box-shadow: 0 8px 25px rgba(0,0,0,0.5); display: none;
+            align-items: center; gap: 8px; animation: fadeIn 0.25s ease;
+        }
     </style>
 </head>
 <body>
+
+    <!-- PANTALLA INICIAL: CATÁLOGO DE PROYECTOS Y PLANTILLAS -->
+    <div id="vista-proyectos-hub" class="hub-wrapper">
+        <div class="hub-header">
+            <div class="hub-title-group">
+                <h1>🏗️ Registro de Instalación TDT en Obra</h1>
+                <p>Control de avance, equipos, cableado e informes de instalación según normativa RITEL.</p>
+            </div>
+            <div>
+                <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
+                    ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
+                </button>
+            </div>
+        </div>
+
+        <div class="hub-toolbar">
+            <input type="text" id="hub-search-input" class="hub-search-input" onkeyup="filtrarHubProyectos()" placeholder="🔍 Buscar proyecto por torre, cliente o autor...">
+            <div id="hub-counter" class="hub-counter">Cargando proyectos...</div>
+        </div>
+
+        <div id="hub-proyectos-lista" class="hub-list">
+            <!-- Dinámico -->
+        </div>
+    </div>
+
+    <!-- VISTA DEL EDITOR (Se muestra al elegir proyecto o plantilla en blanco) -->
+    <div id="vista-editor" style="display: none;">
+
+        <!-- BARRA SUPERIOR DE NAVEGACIÓN HACIA EL HUB -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 2rem; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border-solid);">
+            <button type="button" class="btn-hub-back" onclick="volverAlHubProyectos()">
+                ← Volver al Listado de Proyectos
+            </button>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-primary" onclick="abrirModalGuardar()" style="padding: 7px 14px; font-size: 12px; background: #0284c7; border-color: #0284c7;">☁️ Guardar</button>
+                <button type="button" class="btn btn-secondary" onclick="mostrarHubProyectos()" style="padding: 7px 14px; font-size: 12px; background: #7c3aed; color: #fff; border-color: #7c3aed;">📂 Proyectos</button>
+            </div>
+        </div>
+
+        <!-- BADGE DE PROYECTO VINCULADO AL SERVIDOR -->
+        <div id="badge-proyecto-activo" style="display: none; align-items: center; justify-content: space-between; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 8px 14px; margin: 10px 2rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">☁️</span>
+                <span style="font-size: 12.5px; font-weight: 600; color: #7dd3fc;">Proyecto vinculado al servidor:</span>
+                <strong id="lbl-nombre-proyecto-activo" style="color: #fff; font-size: 13px;">-</strong>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="guardarProyectoEnServidor(false)" style="padding: 4px 10px; font-size: 11px;">Actualizar (Sobrescribir)</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="desvincularProyectoActivo()" style="padding: 4px 8px; font-size: 11px;">Desvincular</button>
+            </div>
+        </div>
 
     <header class="app-header">
         <div class="brand">
@@ -684,6 +959,12 @@
     <!-- EXPORT BAR -->
     <div class="export-bar" id="export-bar" style="display: none;">
         <div class="flex items-center gap-4">
+            <button class="btn btn-primary" onclick="abrirModalGuardar()" style="background: #0284c7; border-color: #0284c7;">
+                ☁️ Guardar Servidor
+            </button>
+            <button class="btn btn-secondary" onclick="mostrarHubProyectos()" style="background: #7c3aed; color: #fff; border-color: #7c3aed;">
+                📂 Proyectos
+            </button>
             <button class="btn btn-secondary" onclick="document.getElementById('file-upload').click()">
                 📂 Cargar Backup
             </button>
@@ -705,6 +986,7 @@
             </button>
         </div>
     </div>
+    </div> <!-- /#vista-editor -->
 
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
@@ -1749,6 +2031,489 @@
             reader.readAsText(file);
         }
 
+        // ==========================================
+        // GESTIÓN DE PROYECTOS (LOCAL Y SERVIDOR)
+        // ==========================================
+        let proyectoActivoId = null;
+        let proyectoActivoNombre = '';
+        let hubProyectosCache = [];
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag));
+        }
+
+        function getAPIService() {
+            if (window.parent && window.parent.API) return window.parent.API;
+            if (window.API) return window.API;
+            return null;
+        }
+
+        function getUsuarioPerfil() {
+            try {
+                const raw = localStorage.getItem('scitic_user_profile');
+                if (raw) return JSON.parse(raw);
+            } catch (e) {
+                console.error('Error al leer scitic_user_profile:', e);
+            }
+            return null;
+        }
+
+        function generarResumenObra(datos) {
+            if (!datos || !datos.config) return { tipo: 'Registro TDT', detalle: 'Sin datos', icono: '🏗️' };
+            const torre = datos.config.torre ? `Torre ${datos.config.torre}` : 'Torre';
+            const pisos = datos.config.pisoFinal ? (datos.config.pisoFinal - (datos.config.pisoInicial || 1) + 1) : 0;
+            const cantAptos = (pisos * (datos.config.sufijos?.length || 0));
+            const cliente = datos.config.cliente || datos.config.nombre || 'Obra';
+            return {
+                tipo: 'Registro TDT',
+                detalle: `🏗️ ${torre} • ${pisos} Pisos • ${cantAptos} Aptos • ${cliente}`,
+                icono: '🏗️'
+            };
+        }
+
+        function restaurarDatosObra(datos) {
+            if (!datos || typeof datos !== 'object') {
+                throw new Error('Datos del proyecto no válidos.');
+            }
+            state = JSON.parse(JSON.stringify(datos));
+            localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(state));
+            renderConfigTab();
+            if (state.config && state.config.generado) {
+                renderAllTabs();
+                document.getElementById('export-bar').style.display = 'flex';
+            } else {
+                document.getElementById('export-bar').style.display = 'none';
+            }
+        }
+
+        function actualizarIndicadorProyecto() {
+            const badge = document.getElementById('badge-proyecto-activo');
+            const lbl = document.getElementById('lbl-nombre-proyecto-activo');
+            if (!badge) return;
+
+            if (proyectoActivoId) {
+                badge.style.display = 'flex';
+                if (lbl) lbl.textContent = proyectoActivoNombre || 'Proyecto Guardado';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function desvincularProyectoActivo() {
+            proyectoActivoId = null;
+            proyectoActivoNombre = '';
+            actualizarIndicadorProyecto();
+            notificarToast('Proyecto desvinculado del servidor. Al guardar, se registrará como uno nuevo.', 'info');
+        }
+
+        function notificarToast(mensaje, tipo = 'info') {
+            const toast = document.getElementById('toast-calc');
+            if (!toast) return;
+
+            toast.textContent = mensaje;
+            toast.style.display = 'flex';
+
+            if (tipo === 'success') {
+                toast.style.background = '#10b981';
+            } else if (tipo === 'error') {
+                toast.style.background = '#ef4444';
+            } else {
+                toast.style.background = '#0284c7';
+            }
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3500);
+        }
+
+        function abrirModalGuardar() {
+            const modal = document.getElementById('modal-guardar-servidor');
+            const inNombre = document.getElementById('modal-in-nombre-proyecto');
+            const boxExistente = document.getElementById('box-proyecto-existente');
+            const lblExistente = document.getElementById('lbl-nombre-existente-modal');
+            const footerAcciones = document.getElementById('footer-acciones-guardar');
+            if (!modal) return;
+
+            const currentTitle = state.config.nombre || `Torre ${state.config.torre || '1'} TDT`;
+            inNombre.value = proyectoActivoNombre || currentTitle;
+
+            if (proyectoActivoId) {
+                boxExistente.style.display = 'block';
+                lblExistente.textContent = `${proyectoActivoNombre} (ID: ${proyectoActivoId.substring(0, 8)}...)`;
+
+                footerAcciones.innerHTML = `
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalGuardar()" style="padding: 8px 14px; border-radius: 6px;">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="guardarProyectoEnServidor(true)" style="background: #64748b; color: #fff; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer;">Guardar como Nuevo</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarProyectoEnServidor(false)" style="background: #0284c7; color: #fff; padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Actualizar (Sobrescribir)</button>
+                `;
+            } else {
+                boxExistente.style.display = 'none';
+                footerAcciones.innerHTML = `
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalGuardar()" style="padding: 8px 14px; border-radius: 6px;">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarProyectoEnServidor(true)" style="background: #0284c7; color: #fff; padding: 8px 18px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Guardar en Servidor</button>
+                `;
+            }
+
+            modal.style.display = 'flex';
+            inNombre.focus();
+        }
+
+        function cerrarModalGuardar() {
+            const modal = document.getElementById('modal-guardar-servidor');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function guardarProyectoEnServidor(esNuevo = false) {
+            const api = getAPIService();
+            if (!api) {
+                alert('El servicio de conexión con la base de datos no está disponible.');
+                return;
+            }
+
+            const inNombre = document.getElementById('modal-in-nombre-proyecto');
+            const nombreProyecto = inNombre ? inNombre.value.trim() : '';
+
+            if (!nombreProyecto) {
+                alert('Por favor escribe un nombre para el proyecto.');
+                inNombre?.focus();
+                return;
+            }
+
+            const idDestino = esNuevo ? null : proyectoActivoId;
+            state.config.nombre = nombreProyecto;
+            const datos = JSON.parse(JSON.stringify(state));
+            const resumen = generarResumenObra(datos);
+            datos.resumen = resumen;
+
+            try {
+                notificarToast("Guardando proyecto en servidor...", "info");
+                const res = await api.guardarProyectoCalculadora({
+                    id: idDestino,
+                    herramienta: 'informes-obra',
+                    nombreProyecto: nombreProyecto,
+                    modo: 'torres',
+                    datosJson: datos,
+                    resumen: resumen
+                });
+
+                if (res && res.id) {
+                    proyectoActivoId = res.id;
+                    proyectoActivoNombre = res.nombre_proyecto || nombreProyecto;
+                    actualizarIndicadorProyecto();
+                    cerrarModalGuardar();
+                    notificarToast("¡Proyecto guardado exitosamente en el servidor!", "success");
+                } else {
+                    throw new Error("Respuesta de guardado incompleta.");
+                }
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                alert("No se pudo guardar el proyecto en el servidor: " + (error.message || error));
+            }
+        }
+
+        async function mostrarHubProyectos() {
+            document.getElementById('vista-editor').style.display = 'none';
+            const hub = document.getElementById('vista-proyectos-hub');
+            if (hub) hub.style.display = 'block';
+
+            const api = getAPIService();
+            const listaEl = document.getElementById('hub-proyectos-lista');
+            const counterEl = document.getElementById('hub-counter');
+
+            if (!api) {
+                if (listaEl) listaEl.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">Servicio de API no conectado.</div>';
+                return;
+            }
+
+            if (listaEl) listaEl.innerHTML = '<div style="padding: 35px; text-align: center; color: var(--text-muted);">Cargando tus proyectos guardados...</div>';
+
+            try {
+                const proyectos = await api.getProyectosCalculadora('informes-obra');
+                hubProyectosCache = Array.isArray(proyectos) ? proyectos : [];
+
+                if (counterEl) {
+                    counterEl.textContent = `${hubProyectosCache.length} proyecto(s) encontrado(s)`;
+                }
+
+                renderizarHubProyectos(hubProyectosCache);
+            } catch (error) {
+                console.error("Error al listar proyectos:", error);
+                if (listaEl) listaEl.innerHTML = `<div style="padding: 30px; text-align: center; color: #f87171;">Error al consultar proyectos: ${escapeHTML(error.message || error)}</div>`;
+            }
+        }
+
+        function renderizarHubProyectos(proyectos) {
+            const listaEl = document.getElementById('hub-proyectos-lista');
+            if (!listaEl) return;
+
+            const perfil = getUsuarioPerfil();
+            const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+
+            if (!proyectos || proyectos.length === 0) {
+                listaEl.innerHTML = `
+                    <div style="padding: 40px; text-align: center; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-solid);">
+                        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 15px;">No hay proyectos guardados en la nube para esta herramienta.</p>
+                        <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">➕ Iniciar Nuevo Proyecto en Blanco</button>
+                    </div>
+                `;
+                return;
+            }
+
+            listaEl.innerHTML = proyectos.map(p => {
+                const fecha = p.updated_at ? new Date(p.updated_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const res = p.resumen || (p.datos_json && p.datos_json.resumen) || generarResumenObra(p.datos_json);
+                const modoLabel = res.tipo || 'Registro TDT';
+                const detalleMetrics = res.detalle || 'Control de instalación en obra';
+                const icono = res.icono || '🏗️';
+                const autorBadge = esAdminOMod ? `<span class="badge-autor">👤 ${escapeHTML(p.usuario_nombre || p.usuario_email)}</span>` : '';
+
+                return `
+                    <div class="hub-card">
+                        <div class="hub-card-info">
+                            <h4>
+                                <span>${icono} ${escapeHTML(p.nombre_proyecto)}</span>
+                                <span class="badge-modo">${modoLabel}</span>
+                                ${autorBadge}
+                            </h4>
+                            <div class="hub-card-metrics">
+                                <span>📊 ${escapeHTML(detalleMetrics)}</span>
+                            </div>
+                            <div class="hub-card-meta">
+                                <span>📅 Editado: ${fecha}</span>
+                                ${!esAdminOMod && p.usuario_nombre ? `<span>Por: ${escapeHTML(p.usuario_nombre)}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="hub-card-actions">
+                            <button type="button" class="btn-hub-new" style="padding: 9px 18px; font-size: 13px;" onclick="abrirProyectoHub('${p.id}')">
+                                📂 Abrir
+                            </button>
+                            <button type="button" class="btn btn-secondary" style="padding: 9px 12px; font-size: 13px; background: #dc2626; color: #fff; border: none; border-radius: 6px; cursor: pointer;" onclick="eliminarProyectoDesdeHub('${p.id}', '${escapeHTML(p.nombre_proyecto)}')">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filtrarHubProyectos() {
+            const query = (document.getElementById('hub-search-input')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderizarHubProyectos(hubProyectosCache);
+                return;
+            }
+
+            const filtrados = hubProyectosCache.filter(p => {
+                const nombre = (p.nombre_proyecto || '').toLowerCase();
+                const autor = (p.usuario_nombre || p.usuario_email || '').toLowerCase();
+                const detalle = (p.resumen?.detalle || '').toLowerCase();
+                return nombre.includes(query) || autor.includes(query) || detalle.includes(query);
+            });
+
+            renderizarHubProyectos(filtrados);
+        }
+
+        function mostrarEditor() {
+            document.getElementById('vista-proyectos-hub').style.display = 'none';
+            document.getElementById('vista-editor').style.display = 'block';
+        }
+
+        function volverAlHubProyectos() {
+            mostrarHubProyectos();
+        }
+
+        function crearNuevaPlantilla() {
+            proyectoActivoId = null;
+            proyectoActivoNombre = '';
+            state = {
+                config: {
+                    nombre: 'Nuevo Registro TDT', cliente: '', torre: '1',
+                    pisoInicial: 1, pisoFinal: 10,
+                    sufijosText: '01, 02, 03, 04',
+                    sufijos: ['01', '02', '03', '04'],
+                    espacios: ['SALA', 'ALC. 1', 'ALC. 2', 'ALC. PPAL'],
+                    generado: false
+                },
+                sets: {
+                    antena: { equipo: 'Antena UHF', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                    mastil: { equipo: 'Mástil y Herrajes', ref: '', cableTipo: 'Ninguno', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                    amplificador: { equipo: 'Central Prog. / Amp.', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
+                    dps: { equipo: 'DPS', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' }
+                },
+                vertical: [],
+                dispersion: {},
+                interior: {}
+            };
+            renderConfigTab();
+            document.getElementById('vertical-empty').style.display = 'flex';
+            document.getElementById('vertical-content').style.display = 'none';
+            document.getElementById('dispersion-empty').style.display = 'flex';
+            document.getElementById('dispersion-content').style.display = 'none';
+            document.getElementById('interior-empty').style.display = 'flex';
+            document.getElementById('interior-content').style.display = 'none';
+            document.getElementById('informe-empty').style.display = 'flex';
+            document.getElementById('informe-content').style.display = 'none';
+            document.getElementById('export-bar').style.display = 'none';
+            
+            // Cambiar a tab de configuración
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.tab-btn[data-target="tab-config"]')?.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-config')?.classList.add('active');
+
+            actualizarIndicadorProyecto();
+            mostrarEditor();
+            notificarToast("Nueva plantilla en blanco cargada.", "info");
+        }
+
+        async function abrirProyectoHub(id) {
+            await cargarProyectoDesdeServidor(id);
+            mostrarEditor();
+        }
+
+        async function eliminarProyectoDesdeHub(id, nombre) {
+            await eliminarProyectoDesdeServidor(id, nombre);
+            mostrarHubProyectos();
+        }
+
+        async function cargarProyectoDesdeServidor(id) {
+            const api = getAPIService();
+            if (!api) {
+                alert('Servicio API no disponible.');
+                return;
+            }
+
+            try {
+                notificarToast("Cargando proyecto desde servidor...", "info");
+                const proy = await api.getProyectoCalculadoraPorId(id);
+                if (!proy || !proy.datos_json) {
+                    throw new Error("Los datos del proyecto están vacíos.");
+                }
+
+                restaurarDatosObra(proy.datos_json);
+                proyectoActivoId = proy.id;
+                proyectoActivoNombre = proy.nombre_proyecto;
+                actualizarIndicadorProyecto();
+                notificarToast(`Proyecto "${proyectoActivoNombre}" cargado con éxito.`, "success");
+            } catch (error) {
+                console.error("Error al cargar proyecto:", error);
+                alert("Error al cargar el proyecto desde el servidor: " + (error.message || error));
+            }
+        }
+
+        async function eliminarProyectoDesdeServidor(id, nombre) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar definitivamente el proyecto "${nombre}" del servidor?`)) {
+                return;
+            }
+
+            const api = getAPIService();
+            if (!api) return;
+
+            try {
+                await api.eliminarProyectoCalculadora(id);
+                if (proyectoActivoId === id) {
+                    proyectoActivoId = null;
+                    proyectoActivoNombre = '';
+                    actualizarIndicadorProyecto();
+                }
+                notificarToast("Proyecto eliminado correctamente.", "success");
+            } catch (error) {
+                console.error("Error al eliminar:", error);
+                alert("No se pudo eliminar el proyecto: " + (error.message || error));
+            }
+        }
+
+        async function abrirModalProyectos() {
+            const api = getAPIService();
+            if (!api) {
+                alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+                return;
+            }
+
+            const modal = document.getElementById('modal-proyectos-servidor');
+            const tbody = document.getElementById('body-proyectos-servidor');
+            const thAutor = document.getElementById('th-autor-servidor');
+            const perfil = getUsuarioPerfil();
+            const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+
+            if (thAutor) {
+                thAutor.style.display = esAdminOMod ? '' : 'none';
+            }
+
+            tbody.innerHTML = `<tr><td colspan="${esAdminOMod ? 5 : 4}" style="padding: 30px; text-align: center; color: var(--text-muted);">Cargando proyectos desde el servidor...</td></tr>`;
+            modal.style.display = 'flex';
+
+            hubProyectosCache = await api.getProyectosCalculadora('informes-obra');
+            renderizarListaProyectos(hubProyectosCache);
+        }
+
+        function cerrarModalProyectos() {
+            const m = document.getElementById('modal-proyectos-servidor');
+            if (m) m.style.display = 'none';
+        }
+
+        function renderizarListaProyectos(proyectos) {
+            const tbody = document.getElementById('body-proyectos-servidor');
+            const contador = document.getElementById('contador-proyectos-servidor');
+            const perfil = getUsuarioPerfil();
+            const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+            const colSpan = esAdminOMod ? 5 : 4;
+
+            if (contador) contador.textContent = `${proyectos.length} proyecto(s)`;
+
+            if (!proyectos || proyectos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" style="padding: 35px; text-align: center; color: var(--text-muted);">No se encontraron proyectos guardados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = proyectos.map(p => {
+                const fecha = p.updated_at ? new Date(p.updated_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const esActivo = p.id === proyectoActivoId;
+                const colAutor = esAdminOMod ? `<td><span class="badge-autor">${escapeHTML(p.usuario_nombre || p.usuario_email)}</span></td>` : '';
+
+                return `
+                    <tr style="${esActivo ? 'background: rgba(14, 165, 233, 0.12);' : ''}">
+                        <td style="text-align: left; padding-left: 14px; font-weight: 600;">
+                            ${escapeHTML(p.nombre_proyecto)}
+                            ${esActivo ? '<span style="color: #38bdf8; font-size: 11px; margin-left: 6px;">(En uso)</span>' : ''}
+                        </td>
+                        <td><span class="badge-modo">Registro TDT</span></td>
+                        <td style="color: var(--text-muted); font-size: 11.5px;">${fecha}</td>
+                        ${colAutor}
+                        <td>
+                            <div style="display: flex; gap: 6px; justify-content: center;">
+                                <button type="button" class="btn btn-primary btn-sm" style="padding: 5px 10px; font-size: 11.5px; background: #7c3aed; color:#fff; border:none; border-radius:4px; cursor:pointer;" onclick="cargarProyectoDesdeServidor('${p.id}'); cerrarModalProyectos(); mostrarEditor();" title="Cargar este proyecto">📥 Cargar</button>
+                                <button type="button" class="btn btn-secondary btn-sm" style="padding: 5px 8px; font-size: 11.5px; background: #dc2626; color:#fff; border:none; border-radius:4px; cursor:pointer;" onclick="eliminarProyectoDesdeServidor('${p.id}', '${escapeHTML(p.nombre_proyecto)}').then(() => abrirModalProyectos())" title="Eliminar proyecto">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filtrarProyectosGuardados() {
+            const query = (document.getElementById('filtro-proyectos-servidor')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderizarListaProyectos(hubProyectosCache);
+                return;
+            }
+
+            const filtrados = hubProyectosCache.filter(p => {
+                const nombre = (p.nombre_proyecto || '').toLowerCase();
+                const autor = (p.usuario_nombre || p.usuario_email || '').toLowerCase();
+                return nombre.includes(query) || autor.includes(query);
+            });
+
+            renderizarListaProyectos(filtrados);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const backupScript = document.getElementById('scitic-backup-state');
             if (backupScript) {
@@ -1758,7 +2523,73 @@
                 } catch(e) {}
             }
             init();
+            mostrarHubProyectos();
         });
     </script>
+
+    <!-- MODAL 1: GUARDAR O ACTUALIZAR PROYECTO EN SERVIDOR -->
+    <div id="modal-guardar-servidor" class="modal-overlay">
+        <div class="modal-content-calc" style="max-width: 490px;">
+            <div class="modal-header-calc">
+                <h3>☁️ Guardar en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalGuardar()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 6px;">Nombre del Proyecto / Obra:</label>
+                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: #0f172a; border: 1px solid var(--border-solid); border-radius: 6px; color: #fff; font-size: 13.5px; font-weight: 600;" placeholder="Ej: Torre 1 - Residencial Mirador">
+                </div>
+
+                <div id="box-proyecto-existente" style="display: none; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <p style="margin: 0 0 5px; font-size: 12px; color: #38bdf8; font-weight: 600;">ℹ️ Este informe está vinculado a un proyecto guardado:</p>
+                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: #fff; font-size: 13px;">-</div>
+                </div>
+            </div>
+            <div class="modal-footer-calc" id="footer-acciones-guardar">
+                <!-- Se inyectan botones según proyectoActivoId -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CATÁLOGO DE PROYECTOS GUARDADOS -->
+    <div id="modal-proyectos-servidor" class="modal-overlay">
+        <div class="modal-content-calc">
+            <div class="modal-header-calc">
+                <h3>📂 Proyectos Guardados en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalProyectos()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o cliente..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: #0f172a; border: 1px solid var(--border-solid); border-radius: 6px; color: #fff; font-size: 13px;">
+                    <div id="contador-proyectos-servidor" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">0 proyecto(s)</div>
+                </div>
+
+                <div class="table-responsive" style="max-height: 48vh; margin-bottom: 0;">
+                    <table id="tabla-proyectos-servidor">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-left: 14px;">Nombre del Proyecto</th>
+                                <th>Tipo</th>
+                                <th>Última Modificación</th>
+                                <th id="th-autor-servidor" style="display: none;">Autor</th>
+                                <th style="width: 145px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-proyectos-servidor">
+                            <tr>
+                                <td colspan="5" style="padding: 30px; color: var(--text-muted);">Cargando proyectos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer-calc">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalProyectos()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST FLOTANTE INLINE -->
+    <div id="toast-calc" class="toast-calc"></div>
 </body>
 </html>

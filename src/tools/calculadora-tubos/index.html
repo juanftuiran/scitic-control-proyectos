@@ -467,18 +467,209 @@
             color: var(--text-muted);
             font-size: 14px;
         }
+
+        /* HUB DE PROYECTOS INICIAL */
+        .hub-wrapper {
+            max-width: 1100px;
+            margin: 20px auto 40px;
+            padding: 0 15px;
+            animation: modalFadeIn 0.25s ease;
+        }
+        .hub-header {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            margin-bottom: 24px;
+        }
+        .hub-title-group h1 {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 6px 0;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hub-title-group p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .btn-hub-new {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-hub-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+        }
+        .hub-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .hub-search-input {
+            flex: 1;
+            min-width: 260px;
+            padding: 11px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13.5px;
+        }
+        .hub-search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+        }
+        .hub-counter {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .hub-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .hub-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .hub-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateX(4px);
+            background: rgba(30, 41, 59, 0.9);
+        }
+        .hub-card-info h4 {
+            margin: 0 0 6px 0;
+            font-size: 16.5px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hub-card-metrics {
+            font-size: 13px;
+            color: var(--primary-blue);
+            font-weight: 600;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 5px;
+        }
+        .hub-card-meta {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .hub-card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-hub-back {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s ease;
+        }
+        .btn-hub-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
 
-    <!-- INPUT OCULTO PARA IMPORTAR COPIA DE SEGURIDAD JSON -->
-    <input type="file" id="input-import-json" accept=".json,application/json" onchange="cargarBackupJSON(event)" style="display: none;">
+    <!-- PANTALLA INICIAL: CATÁLOGO DE PROYECTOS Y PLANTILLAS -->
+    <div id="vista-proyectos-hub" class="hub-wrapper">
+        <div class="hub-header">
+            <div class="hub-title-group">
+                <h1>📐 Calculadora de Tuberías RITEL 2025</h1>
+                <p>Gestión y dimensionamiento de canalizaciones para torres y parcelaciones.</p>
+            </div>
+            <div>
+                <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
+                    ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
+                </button>
+            </div>
+        </div>
 
-    <!-- SELECTOR DE MODO / HERRAMIENTA -->
-    <div class="nav-app-bar">
-        <button class="nav-tab-btn active" id="tab-btn-torres" onclick="cambiarModoApp('torres')">🏢 Edificios / Torres (SETI-SETS)</button>
-        <button class="nav-tab-btn" id="tab-btn-parcelaciones" onclick="cambiarModoApp('parcelaciones')">🏘️ Parcelaciones / Casas (SETU)</button>
+        <div class="hub-toolbar">
+            <input type="text" id="hub-search-input" class="hub-search-input" onkeyup="filtrarHubProyectos()" placeholder="🔍 Buscar proyecto por nombre, autor o detalle...">
+            <div id="hub-counter" class="hub-counter">Cargando proyectos...</div>
+        </div>
+
+        <div id="hub-proyectos-lista" class="hub-list">
+            <!-- Dinámico -->
+        </div>
     </div>
+
+    <!-- VISTA DEL EDITOR (Se muestra al elegir proyecto o plantilla en blanco) -->
+    <div id="vista-editor" style="display: none;">
+
+        <!-- BARRA SUPERIOR DE NAVEGACIÓN HACIA EL HUB -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+            <button type="button" class="btn-hub-back" onclick="volverAlHubProyectos()">
+                ← Volver al Listado de Proyectos
+            </button>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-server-save" onclick="abrirModalGuardar()" style="padding: 7px 14px; font-size: 12px;">☁️ Guardar</button>
+                <button type="button" class="btn-server-load" onclick="mostrarHubProyectos()" style="padding: 7px 14px; font-size: 12px;">📂 Proyectos</button>
+            </div>
+        </div>
+
+        <!-- INPUT OCULTO PARA IMPORTAR COPIA DE SEGURIDAD JSON -->
+        <input type="file" id="input-import-json" accept=".json,application/json" onchange="cargarBackupJSON(event)" style="display: none;">
+
+        <!-- SELECTOR DE MODO / HERRAMIENTA -->
+        <div class="nav-app-bar">
+            <button class="nav-tab-btn active" id="tab-btn-torres" onclick="cambiarModoApp('torres')">🏢 Edificios / Torres (SETI-SETS)</button>
+            <button class="nav-tab-btn" id="tab-btn-parcelaciones" onclick="cambiarModoApp('parcelaciones')">🏘️ Parcelaciones / Casas (SETU)</button>
+        </div>
 
     <!-- TÍTULO DINÁMICO DEL PROYECTO -->
     <input type="text" id="in-proyecto" class="project-title" placeholder="Escribe el Nombre del Proyecto Aquí">
@@ -709,6 +900,7 @@
             </div>
         </div>
     </div>
+    </div> <!-- /#vista-editor -->
 
     <!-- ======================================================== -->
     <!-- MOTOR JAVASCRIPT: INTEGRACIÓN DE AMBOS APLICATIVOS       -->
@@ -1614,12 +1806,15 @@
 
             notificarToast("Guardando en el servidor...", "info");
 
+            const resumen = generarResumenTubos(backupPayload);
+
             const resultado = await api.guardarProyectoCalculadora({
                 id: idAGuardar,
                 herramienta: 'calculadora-tubos',
                 nombreProyecto: nombreInput,
                 modo: modoActivo,
-                datosJson: backupPayload
+                datosJson: backupPayload,
+                resumen: resumen
             });
 
             if (resultado && resultado.exito) {
@@ -2088,10 +2283,162 @@
         }
 
         // ==========================================
+        // CONTROLADOR DEL HUB INICIAL DE PROYECTOS
+        // ==========================================
+        let hubProyectosCache = [];
+
+        function generarResumenTubos(datos) {
+            if (!datos) return { tipo: 'Torres', detalle: 'Sin datos', icono: '🏢' };
+            if (datos.modoActivo === 'parcelaciones' || (datos.parcelaciones && datos.parcelaciones.tramos && datos.parcelaciones.tramos.length > 0)) {
+                const cantTramos = (datos.parcelaciones?.tramos || []).length;
+                const pauDef = datos.parcelaciones?.pauDefault || 10;
+                return {
+                    tipo: 'Parcelación',
+                    detalle: `${cantTramos} Tramos • PAU Base: ${pauDef}`,
+                    icono: '🏘️'
+                };
+            } else {
+                const pisos = datos.torres?.pisos || 0;
+                const aptos = datos.torres?.aptosDefault || 0;
+                const cantFilas = (datos.torres?.filas || []).length;
+                const seti = datos.torres?.pisoBase || 1;
+                return {
+                    tipo: 'Torres',
+                    detalle: `${pisos} Pisos • ${aptos} Aptos/Piso • ${cantFilas} Tramos • SETI Piso ${seti}`,
+                    icono: '🏢'
+                };
+            }
+        }
+
+        async function mostrarHubProyectos() {
+            document.getElementById('vista-editor').style.display = 'none';
+            const hub = document.getElementById('vista-proyectos-hub');
+            hub.style.display = 'block';
+
+            const listaEl = document.getElementById('hub-proyectos-lista');
+            const counterEl = document.getElementById('hub-counter');
+            listaEl.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">Cargando proyectos desde el servidor...</div>';
+            counterEl.textContent = 'Cargando...';
+
+            const api = getAPIService();
+            if (!api) {
+                listaEl.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">Conexión no disponible. Abre la herramienta desde SCITIC App.</div>';
+                return;
+            }
+
+            hubProyectosCache = await api.getProyectosCalculadora('calculadora-tubos');
+            renderizarHubProyectos(hubProyectosCache);
+        }
+
+        function renderizarHubProyectos(proyectos) {
+            const listaEl = document.getElementById('hub-proyectos-lista');
+            const counterEl = document.getElementById('hub-counter');
+            const perfil = getUsuarioPerfil();
+            const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+
+            counterEl.textContent = `${proyectos.length} proyecto(s) guardado(s)`;
+
+            if (!proyectos || proyectos.length === 0) {
+                listaEl.innerHTML = `
+                    <div style="background: var(--card-bg); border: 1px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center;">
+                        <p style="font-size: 16px; color: #f8fafc; font-weight: 600; margin-bottom: 8px;">No hay proyectos guardados todavía</p>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Comienza creando un nuevo proyecto con una plantilla en blanco.</p>
+                        <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
+                            ➕ Crear Nueva Plantilla en Blanco
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            listaEl.innerHTML = proyectos.map(p => {
+                const fecha = p.updated_at ? new Date(p.updated_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const res = p.resumen || (p.datos_json && p.datos_json.resumen) || generarResumenTubos(p.datos_json);
+                const modoLabel = res.tipo || (p.modo === 'parcelaciones' ? 'Parcelación' : 'Torres');
+                const detalleMetrics = res.detalle || 'Cálculo de dimensionamiento';
+                const icono = res.icono || (p.modo === 'parcelaciones' ? '🏘️' : '🏢');
+                const autorBadge = esAdminOMod ? `<span class="badge-autor">👤 ${escapeHTML(p.usuario_nombre || p.usuario_email)}</span>` : '';
+
+                return `
+                    <div class="hub-card">
+                        <div class="hub-card-info">
+                            <h4>
+                                <span>${icono} ${escapeHTML(p.nombre_proyecto)}</span>
+                                <span class="badge-modo">${modoLabel}</span>
+                                ${autorBadge}
+                            </h4>
+                            <div class="hub-card-metrics">
+                                <span>📊 ${escapeHTML(detalleMetrics)}</span>
+                            </div>
+                            <div class="hub-card-meta">
+                                <span>📅 Editado: ${fecha}</span>
+                                ${!esAdminOMod && p.usuario_nombre ? `<span>Por: ${escapeHTML(p.usuario_nombre)}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="hub-card-actions">
+                            <button type="button" class="btn-hub-new" style="padding: 9px 18px; font-size: 13px;" onclick="abrirProyectoHub('${p.id}')">
+                                📂 Abrir
+                            </button>
+                            <button type="button" class="btn-delete" style="padding: 9px 12px; font-size: 13px;" onclick="eliminarProyectoDesdeHub('${p.id}', '${escapeHTML(p.nombre_proyecto)}')">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filtrarHubProyectos() {
+            const query = (document.getElementById('hub-search-input')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderizarHubProyectos(hubProyectosCache);
+                return;
+            }
+
+            const filtrados = hubProyectosCache.filter(p => {
+                const nombre = (p.nombre_proyecto || '').toLowerCase();
+                const autor = (p.usuario_nombre || p.usuario_email || '').toLowerCase();
+                const modo = (p.modo || '').toLowerCase();
+                const detalle = (p.resumen?.detalle || '').toLowerCase();
+                return nombre.includes(query) || autor.includes(query) || modo.includes(query) || detalle.includes(query);
+            });
+
+            renderizarHubProyectos(filtrados);
+        }
+
+        function mostrarEditor() {
+            document.getElementById('vista-proyectos-hub').style.display = 'none';
+            document.getElementById('vista-editor').style.display = 'block';
+        }
+
+        function volverAlHubProyectos() {
+            mostrarHubProyectos();
+        }
+
+        function crearNuevaPlantilla() {
+            proyectoActivoId = null;
+            proyectoActivoNombre = '';
+            document.getElementById('in-proyecto').value = 'Nuevo Proyecto RITEL';
+            actualizarIndicadorProyecto();
+            mostrarEditor();
+            notificarToast("Nueva plantilla en blanco cargada.", "info");
+        }
+
+        async function abrirProyectoHub(id) {
+            await cargarProyectoDesdeServidor(id);
+            mostrarEditor();
+        }
+
+        async function eliminarProyectoDesdeHub(id, nombre) {
+            await eliminarProyectoDesdeServidor(id, nombre);
+            mostrarHubProyectos();
+        }
+
+        // ==========================================
         // INICIALIZACIÓN AL CARGAR LA PÁGINA
         // ==========================================
         window.onload = function() {
-            // Inicializar Torres
+            // Inicializar estructuras de fondo
             if(document.querySelectorAll('#tabla-body-torres tr').length === 0) {
                 generarTablaTorres();
             } else {
@@ -2100,6 +2447,9 @@
 
             // Inicializar modo según memoria
             cambiarModoApp(modoActivo);
+
+            // Al abrir, lo primero que se muestra es el Hub de proyectos guardados
+            mostrarHubProyectos();
         };
     </script>
 

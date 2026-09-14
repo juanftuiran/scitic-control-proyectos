@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Calculadora de Pérdidas de Señal TDT para torres residenciales — SCITIC">
     <title>Calculadora de Pérdidas TDT — SCITIC</title>
+
+    <!-- Integración con Base de Datos SCITIC -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../js/services/api.js"></script>
+
     <style>
         :root {
             --primary: #ea580c;
@@ -287,10 +292,285 @@
             .table-container { box-shadow: none; }
             body { margin: 0; padding: 0; }
         }
+
+        /* ── HUB DE PROYECTOS INICIAL ── */
+        .hub-wrapper {
+            max-width: 1100px;
+            margin: 20px auto 40px;
+            padding: 0 15px;
+            animation: fadeIn 0.25s ease;
+        }
+        .hub-header {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            margin-bottom: 22px;
+        }
+        .hub-title-group h1 {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 6px 0;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hub-title-group p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .btn-hub-new {
+            background: linear-gradient(135deg, var(--primary), #f97316);
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-hub-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+        }
+        .hub-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .hub-search-input {
+            flex: 1;
+            min-width: 260px;
+            padding: 11px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+        }
+        .hub-search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+        }
+        .hub-counter {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .hub-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .hub-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .hub-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateX(4px);
+            background: rgba(30, 41, 59, 0.9);
+        }
+        .hub-card-info h4 {
+            margin: 0 0 6px 0;
+            font-size: 16px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hub-card-metrics {
+            font-size: 12.5px;
+            color: var(--primary-blue);
+            font-weight: 600;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 5px;
+        }
+        .hub-card-meta {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .btn-hub-back {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s ease;
+        }
+        .btn-hub-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .btn-server-save { background-color: #0284c7; color: #fff; }
+        .btn-server-save:hover { background-color: #0369a1; }
+        .btn-server-load { background-color: #7c3aed; color: #fff; }
+        .btn-server-load:hover { background-color: #6d28d9; }
+        .badge-autor {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-modo {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* ── MODALES Y TOAST ── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 15px;
+        }
+        .modal-content-calc {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-header-calc {
+            padding: 16px 20px;
+            background: rgba(30, 41, 59, 0.75);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header-calc h3 {
+            margin: 0; font-size: 16px; color: #f8fafc;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 4px; line-height: 1;
+        }
+        .modal-close-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .modal-body-calc { padding: 20px; overflow-y: auto; flex: 1; }
+        .modal-footer-calc {
+            padding: 14px 20px; background: rgba(30, 41, 59, 0.5);
+            border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;
+        }
+        .toast-calc {
+            position: fixed; bottom: 25px; right: 25px; padding: 12px 20px;
+            border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff;
+            z-index: 10000; box-shadow: 0 8px 25px rgba(0,0,0,0.5); display: none;
+            align-items: center; gap: 8px; animation: fadeIn 0.25s ease;
+        }
     </style>
 </head>
 <body>
-    <input type="text" class="project-title" id="project-title" value="Nuevo Proyecto TDT" spellcheck="false">
+    <!-- PANTALLA INICIAL: CATÁLOGO DE PROYECTOS Y PLANTILLAS -->
+    <div id="vista-proyectos-hub" class="hub-wrapper">
+        <div class="hub-header">
+            <div class="hub-title-group">
+                <h1>📡 Calculadora de Pérdidas de Señal TDT</h1>
+                <p>Gestión de cálculos de atenuación y niveles de señal según normativa RITEL.</p>
+            </div>
+            <div>
+                <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
+                    ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
+                </button>
+            </div>
+        </div>
+
+        <div class="hub-toolbar">
+            <input type="text" id="hub-search-input" class="hub-search-input" onkeyup="filtrarHubProyectos()" placeholder="🔍 Buscar proyecto por nombre, autor o detalle...">
+            <div id="hub-counter" class="hub-counter">Cargando proyectos...</div>
+        </div>
+
+        <div id="hub-proyectos-lista" class="hub-list">
+            <!-- Dinámico -->
+        </div>
+    </div>
+
+    <!-- VISTA DEL EDITOR (Se muestra al elegir proyecto o plantilla en blanco) -->
+    <div id="vista-editor" style="display: none;">
+
+        <!-- BARRA SUPERIOR DE NAVEGACIÓN HACIA EL HUB -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+            <button type="button" class="btn-hub-back" onclick="volverAlHubProyectos()">
+                ← Volver al Listado de Proyectos
+            </button>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-server-save" onclick="abrirModalGuardar()" style="padding: 7px 14px; font-size: 12px;">☁️ Guardar</button>
+                <button type="button" class="btn-server-load" onclick="mostrarHubProyectos()" style="padding: 7px 14px; font-size: 12px;">📂 Proyectos</button>
+            </div>
+        </div>
+
+        <!-- BADGE DE PROYECTO VINCULADO AL SERVIDOR -->
+        <div id="badge-proyecto-activo" style="display: none; align-items: center; justify-content: space-between; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 8px 14px; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">☁️</span>
+                <span style="font-size: 12.5px; font-weight: 600; color: #7dd3fc;">Proyecto vinculado al servidor:</span>
+                <strong id="lbl-nombre-proyecto-activo" style="color: #fff; font-size: 13px;">-</strong>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-server-save" onclick="guardarProyectoEnServidor(false)" style="padding: 4px 10px; font-size: 11px;">Actualizar (Sobrescribir)</button>
+                <button type="button" class="btn-clear" onclick="desvincularProyectoActivo()" style="padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; cursor: pointer;">Desvincular</button>
+            </div>
+        </div>
+
+        <input type="text" class="project-title" id="project-title" value="Nuevo Proyecto TDT" spellcheck="false">
 
     <!-- ═══════════════ PANEL DE SISTEMA ═══════════════ -->
     <div class="header-panel">
@@ -390,6 +670,8 @@
         <div class="spacer" style="width:100%; margin-top:6px;"></div>
         <button class="btn-config" onclick="toggleConfigPisos()">🔧 Config. Pisos</button>
         <button class="btn-calc" onclick="generarTabla()">⚡ Generar Tabla</button>
+        <button class="btn-server-save" onclick="abrirModalGuardar()" style="background-color: #0284c7;">☁️ Guardar en Servidor</button>
+        <button class="btn-server-load" onclick="mostrarHubProyectos()" style="background-color: #7c3aed;">📂 Proyectos</button>
         <button class="btn-json-save" onclick="guardarJSON()">💾 Guardar JSON</button>
         <button class="btn-json-load" onclick="document.getElementById('input-cargar-json').click()">📂 Cargar JSON</button>
         <input type="file" id="input-cargar-json" accept=".json" style="display:none" onchange="cargarJSON(event)">
@@ -498,6 +780,7 @@
             </table>
         </div>
     </div>
+    </div> <!-- /#vista-editor -->
 
     <!-- ═══════════════ LIBRERÍAS ═══════════════ -->
     <script src="lib/jspdf.umd.min.js"></script>
@@ -528,6 +811,7 @@
         actualizarMatrizCableadoUI();
         generarConfigPisos();
         generarTabla(); // Cargue automático por defecto de la tabla llena con estos valores!
+        mostrarHubProyectos();
     }
 
     function populateSelect(id, obj, defaultKey) {
@@ -1617,9 +1901,53 @@
     }
 
     // ════════════════════════════════════════
-    // GUARDAR Y CARGAR JSON (BACKUP COMPLETO)
+    // GESTIÓN DE PROYECTOS (LOCAL Y SERVIDOR)
     // ════════════════════════════════════════
-    function guardarJSON() {
+    let proyectoActivoId = null;
+    let proyectoActivoNombre = '';
+    let hubProyectosCache = [];
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag));
+    }
+
+    function getAPIService() {
+        if (window.parent && window.parent.API) return window.parent.API;
+        if (window.API) return window.API;
+        return null;
+    }
+
+    function getUsuarioPerfil() {
+        try {
+            const raw = localStorage.getItem('scitic_user_profile');
+            if (raw) return JSON.parse(raw);
+        } catch (e) {
+            console.error('Error al leer scitic_user_profile:', e);
+        }
+        return null;
+    }
+
+    function generarResumenLossGen(data) {
+        if (!data) return { tipo: 'Torre TDT', detalle: 'Cálculo TDT', icono: '📡' };
+        const numPisos = data.torre?.numPisos || 0;
+        const aptosPiso = data.torre?.aptosPiso || 0;
+        const tomasApto = data.torre?.tomasApto || 0;
+        const nivelSalida = data.sistema?.nivelSalida || 110;
+        return {
+            tipo: 'Torre TDT',
+            detalle: `📶 ${numPisos} Pisos • ${aptosPiso} Aptos/Piso • ${tomasApto} Tomas/Apto • Salida: ${nivelSalida} dBµV`,
+            icono: '📡'
+        };
+    }
+
+    function obtenerDatosProyectoLossGen() {
         const projectName = document.getElementById('project-title').value.trim() || 'Nuevo Proyecto TDT';
         
         // 1. Configuración del Sistema
@@ -1778,14 +2106,261 @@
             filasResultados: filasResultados
         };
 
+        dataExport.resumen = generarResumenLossGen(dataExport);
+        return dataExport;
+    }
+
+    function restaurarDatosLossGen(data) {
+        if (!data || typeof data !== 'object') {
+            throw new Error('El objeto de datos no es válido.');
+        }
+
+        // 1. Restaurar Título
+        if (data.proyecto) {
+            document.getElementById('project-title').value = data.proyecto;
+        }
+
+        // 2. Restaurar Sistema
+        if (data.sistema) {
+            document.getElementById('use-rg11').checked = !!data.sistema.useRG11;
+            if (data.sistema.nivelSalida !== undefined) {
+                document.getElementById('nivel-salida').value = data.sistema.nivelSalida;
+            }
+            if (data.sistema.cableTroncal) {
+                document.getElementById('cable-troncal').value = data.sistema.cableTroncal;
+            }
+            if (data.sistema.cableDistribucion) {
+                document.getElementById('cable-distribucion').value = data.sistema.cableDistribucion;
+            }
+            if (data.sistema.tipoConector) {
+                document.getElementById('tipo-conector').value = data.sistema.tipoConector;
+            }
+            if (data.sistema.tipoToma) {
+                document.getElementById('tipo-toma').value = data.sistema.tipoToma;
+            }
+            toggleRG11Config();
+        }
+
+        // 3. Restaurar Parámetros de la Torre
+        if (data.torre) {
+            if (data.torre.numTorres !== undefined) document.getElementById('num-torres').value = data.torre.numTorres;
+            if (data.torre.numPisos !== undefined) document.getElementById('num-pisos').value = data.torre.numPisos;
+            if (data.torre.aptosPiso !== undefined) document.getElementById('aptos-piso').value = data.torre.aptosPiso;
+            if (data.torre.tomasApto !== undefined) document.getElementById('tomas-apto').value = data.torre.tomasApto;
+            if (data.torre.pisosCadena !== undefined) document.getElementById('pisos-cadena').value = data.torre.pisosCadena;
+            if (data.torre.useAmplificador !== undefined) {
+                document.getElementById('use-amplificador').checked = !!data.torre.useAmplificador;
+                toggleAmplificadorConfig();
+            }
+            if (data.torre.ampPisoDesde !== undefined) document.getElementById('amp-piso-desde').value = data.torre.ampPisoDesde;
+            if (data.torre.ampPisoHasta !== undefined) document.getElementById('amp-piso-hasta').value = data.torre.ampPisoHasta;
+            if (data.torre.ampValor !== undefined) document.getElementById('amp-valor').value = data.torre.ampValor;
+            if (data.torre.useBifurcacion !== undefined) {
+                document.getElementById('use-bifurcacion').checked = !!data.torre.useBifurcacion;
+                toggleBifurcacionColumna();
+            }
+            if (data.torre.distRG11Default !== undefined) document.getElementById('dist-rg11-default').value = data.torre.distRG11Default;
+            if (data.torre.distBaseDistr !== undefined) document.getElementById('dist-base-distr').value = data.torre.distBaseDistr;
+            if (data.torre.distIncPiso !== undefined) document.getElementById('dist-inc-piso').value = data.torre.distIncPiso;
+            if (data.torre.conectoresBase !== undefined) document.getElementById('conectores-base').value = data.torre.conectoresBase;
+        }
+
+        // 4. Restaurar Plantilla de Cadena
+        actualizarPlantillaCadena();
+        if (Array.isArray(data.plantillaCadena) && data.plantillaCadena.length > 0) {
+            const items = document.querySelectorAll('#chain-template-container .template-item');
+            data.plantillaCadena.forEach((tpl, idx) => {
+                if (items[idx]) {
+                    const inDeriv = items[idx].querySelector('.tpl-deriv');
+                    const inPaso = items[idx].querySelector('.tpl-paso');
+                    if (inDeriv && tpl.derivacion !== undefined) inDeriv.value = tpl.derivacion;
+                    if (inPaso && tpl.paso !== undefined) inPaso.value = tpl.paso;
+                }
+            });
+        }
+
+        // 5. Restaurar Matriz de Apartamentos
+        if (Array.isArray(data.matrizAptos) && data.matrizAptos.length > 0) {
+            const container = document.getElementById('aptos-matrix-container');
+            container.innerHTML = '';
+            data.matrizAptos.forEach((apto, a) => {
+                const card = document.createElement('div');
+                card.className = 'apto-card';
+                card.dataset.apto = a;
+                const numTomas = (apto.tomasDist && apto.tomasDist.length > 0) ? apto.tomasDist.length : (apto.numTomas || 1);
+                
+                card.innerHTML = `
+                    <div class="apto-card-header">
+                        <input type="text" class="apto-name-input" value="${apto.name || ('APTO-' + String(a+1).padStart(2,'0'))}" title="Nombre del apartamento">
+                    </div>
+                    <div class="apto-card-row">
+                        <label title="Distancia de dispersión en metros">Disp. (m):</label>
+                        <input type="number" class="apto-disp-input" value="${apto.disp !== undefined ? apto.disp : ((a+1)*3)}" step="0.5">
+                    </div>
+                    <div class="apto-card-row">
+                        <label>Cant. Tomas:</label>
+                        <input type="number" class="apto-num-tomas" value="${numTomas}" min="1" max="12" onchange="actualizarTomasGrid(this.closest('.apto-card'))">
+                    </div>
+                    <div class="tomas-grid"></div>
+                `;
+                container.appendChild(card);
+
+                const tomasGrid = card.querySelector('.tomas-grid');
+                for (let t = 0; t < numTomas; t++) {
+                    const distVal = (apto.tomasDist && apto.tomasDist[t] !== undefined) ? apto.tomasDist[t] : ((t + 1) * 1.5);
+                    tomasGrid.innerHTML += `
+                        <div class="toma-input-wrapper">
+                            <label>T${t+1} (m)</label>
+                            <input type="number" class="toma-dist-input" value="${distVal}" step="0.5">
+                        </div>
+                    `;
+                }
+            });
+        } else {
+            actualizarMatrizCableadoUI();
+        }
+
+        // 6. Generar y Restaurar Configuración de Pisos
+        generarConfigPisos();
+
+        const floorConfigBody = document.getElementById('floor-config-body');
+
+        // Restaurar Cadenas Config
+        if (Array.isArray(data.cadenasConfig)) {
+            data.cadenasConfig.forEach(chain => {
+                const sel = floorConfigBody.querySelector(`.chain-direction-sel[data-chain="${chain.cadenaIndex}"]`);
+                if (sel) {
+                    sel.value = chain.direccion || 'descendente';
+                    const parentTd = sel.closest('td');
+                    if (parentTd) {
+                        const baseIn = parentTd.querySelector('.chain-base-dist-input');
+                        const extraIn = parentTd.querySelector('.chain-extra-dist-input');
+                        if (baseIn && chain.distBase !== undefined) baseIn.value = chain.distBase;
+                        if (extraIn && chain.distExtra !== undefined) extraIn.value = chain.distExtra;
+                        const cableIn = parentTd.querySelector('.chain-cable-extra-input');
+                        if (cableIn && chain.cableExtra !== undefined) cableIn.value = chain.cableExtra;
+                        const bifurcDerIn = parentTd.querySelector('.chain-bifurc-deriv-input');
+                        if (bifurcDerIn && chain.bifurcDeriv !== undefined) bifurcDerIn.value = chain.bifurcDeriv;
+                    }
+                }
+            });
+        }
+
+        // Restaurar Pisos Config
+        if (Array.isArray(data.pisosConfig)) {
+            data.pisosConfig.forEach(pConf => {
+                for (const row of floorConfigBody.children) {
+                    const pisoCell = row.querySelector('.piso-cfg-cell') || Array.from(row.cells).find(c => c.textContent.includes('PISO'));
+                    if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
+                    const match = pisoCell.textContent.match(/\d+/);
+                    if (match && parseInt(match[0]) === pConf.piso) {
+                        if (pConf.aptos !== undefined) {
+                            const el = row.querySelector('[data-field="aptos"]');
+                            if (el) el.value = pConf.aptos;
+                        }
+                        if (pConf.tomas !== undefined) {
+                            const el = row.querySelector('[data-field="tomas"]');
+                            if (el) el.value = pConf.tomas;
+                        }
+                        if (pConf.derivacion !== undefined) {
+                            const el = row.querySelector('[data-field="derivacion"]');
+                            if (el) el.value = pConf.derivacion;
+                        }
+                        if (pConf.paso !== undefined) {
+                            const el = row.querySelector('[data-field="paso"]');
+                            if (el) el.value = pConf.paso;
+                        }
+                        if (pConf.splitterTorre !== undefined) {
+                            const el = row.querySelector('[data-field="splitter-torre"]');
+                            if (el) el.value = pConf.splitterTorre;
+                        }
+                        if (pConf.splitterApto !== undefined) {
+                            const el = row.querySelector('[data-field="splitter-apto"]');
+                            if (el) el.value = pConf.splitterApto;
+                        }
+                        if (pConf.distRG11 !== undefined) {
+                            const el = row.querySelector('[data-field="dist-rg11"]');
+                            if (el) el.value = pConf.distRG11;
+                        }
+                        if (pConf.distRG6Distr !== undefined) {
+                            const el = row.querySelector('[data-field="dist-rg6-distr"]');
+                            if (el) {
+                                el.value = pConf.distRG6Distr;
+                                if (pConf.distRG6DistrFormula) el.dataset.formula = pConf.distRG6DistrFormula;
+                            }
+                        }
+                        if (pConf.conectores !== undefined) {
+                            const el = row.querySelector('[data-field="conectores"]');
+                            if (el) el.value = pConf.conectores;
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        configGenerada = true;
+
+        // 7. Generar y Llenar Tabla de Resultados
+        generarTabla();
+
+        // Restaurar celdas personalizadas en la tabla de resultados si existen
+        if (Array.isArray(data.filasResultados) && data.filasResultados.length > 0) {
+            const trs = document.querySelectorAll('#results-body tr');
+            data.filasResultados.forEach((fData, idx) => {
+                if (trs[idx]) {
+                    const tr = trs[idx];
+                    if (fData.distRG11 !== undefined) {
+                        const inp = tr.querySelector('[data-col="dist-rg11"]');
+                        if (inp) inp.value = fData.distRG11;
+                    }
+                    if (fData.distRG6 !== undefined) {
+                        const inp = tr.querySelector('[data-col="dist-rg6"]');
+                        if (inp) inp.value = fData.distRG6;
+                    }
+                    if (fData.numConect !== undefined) {
+                        const inp = tr.querySelector('[data-col="num-conect"]');
+                        if (inp) inp.value = fData.numConect;
+                    }
+                    if (fData.derivadorDB !== undefined) {
+                        const inp = tr.querySelector('[data-col="derivador-db"]');
+                        if (inp) inp.value = fData.derivadorDB;
+                    }
+                    if (fData.repartidorDB !== undefined) {
+                        const inp = tr.querySelector('[data-col="repartidor-db"]');
+                        if (inp) inp.value = fData.repartidorDB;
+                    }
+                    if (fData.tomaDB !== undefined) {
+                        const inp = tr.querySelector('[data-col="toma-db"]');
+                        if (inp) inp.value = fData.tomaDB;
+                    }
+                    if (fData.ampDB !== undefined) {
+                        const inp = tr.querySelector('[data-col="amp-db"]');
+                        if (inp) inp.value = fData.ampDB;
+                    }
+                    if (fData.distr !== undefined) tr.dataset.distr = fData.distr;
+                    if (fData.distrFormula) tr.dataset.distrFormula = fData.distrFormula;
+                    if (fData.disp !== undefined) tr.dataset.disp = fData.disp;
+                    if (fData.tomaDist !== undefined) tr.dataset.tomaDist = fData.tomaDist;
+                    if (fData.derivFormula) tr.dataset.derivFormula = fData.derivFormula;
+                    if (fData.repartFormula) tr.dataset.repartFormula = fData.repartFormula;
+                }
+            });
+            recalcularTodo();
+        }
+    }
+
+    function guardarJSON() {
+        const dataExport = obtenerDatosProyectoLossGen();
         const jsonString = JSON.stringify(dataExport, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        const safeName = projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ _-]/g, '_') || 'proyecto-tdt';
+        const safeName = (dataExport.proyecto || 'proyecto-tdt').replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ _-]/g, '_');
         a.download = safeName + '.json';
         a.click();
         URL.revokeObjectURL(a.href);
+        notificarToast("Archivo JSON guardado con éxito.", "success");
     }
 
     function cargarJSON(event) {
@@ -1796,235 +2371,11 @@
         reader.onload = function(e) {
             try {
                 const data = JSON.parse(e.target.result);
-                if (!data || typeof data !== 'object') {
-                    alert('El archivo no contiene un formato JSON válido.');
-                    return;
-                }
-
-                // 1. Restaurar Título
-                if (data.proyecto) {
-                    document.getElementById('project-title').value = data.proyecto;
-                }
-
-                // 2. Restaurar Sistema
-                if (data.sistema) {
-                    document.getElementById('use-rg11').checked = !!data.sistema.useRG11;
-                    if (data.sistema.nivelSalida !== undefined) {
-                        document.getElementById('nivel-salida').value = data.sistema.nivelSalida;
-                    }
-                    if (data.sistema.cableTroncal) {
-                        document.getElementById('cable-troncal').value = data.sistema.cableTroncal;
-                    }
-                    if (data.sistema.cableDistribucion) {
-                        document.getElementById('cable-distribucion').value = data.sistema.cableDistribucion;
-                    }
-                    if (data.sistema.tipoConector) {
-                        document.getElementById('tipo-conector').value = data.sistema.tipoConector;
-                    }
-                    if (data.sistema.tipoToma) {
-                        document.getElementById('tipo-toma').value = data.sistema.tipoToma;
-                    }
-                    toggleRG11Config();
-                }
-
-                // 3. Restaurar Parámetros de la Torre
-                if (data.torre) {
-                    if (data.torre.numTorres !== undefined) document.getElementById('num-torres').value = data.torre.numTorres;
-                    if (data.torre.numPisos !== undefined) document.getElementById('num-pisos').value = data.torre.numPisos;
-                    if (data.torre.aptosPiso !== undefined) document.getElementById('aptos-piso').value = data.torre.aptosPiso;
-                    if (data.torre.tomasApto !== undefined) document.getElementById('tomas-apto').value = data.torre.tomasApto;
-                    if (data.torre.pisosCadena !== undefined) document.getElementById('pisos-cadena').value = data.torre.pisosCadena;
-                    if (data.torre.distRG11Default !== undefined) document.getElementById('dist-rg11-default').value = data.torre.distRG11Default;
-                    if (data.torre.distBaseDistr !== undefined) document.getElementById('dist-base-distr').value = data.torre.distBaseDistr;
-                    if (data.torre.distIncPiso !== undefined) document.getElementById('dist-inc-piso').value = data.torre.distIncPiso;
-                    if (data.torre.conectoresBase !== undefined) document.getElementById('conectores-base').value = data.torre.conectoresBase;
-                }
-
-                // 4. Restaurar Plantilla de Cadena
-                actualizarPlantillaCadena();
-                if (Array.isArray(data.plantillaCadena) && data.plantillaCadena.length > 0) {
-                    const items = document.querySelectorAll('#chain-template-container .template-item');
-                    data.plantillaCadena.forEach((tpl, idx) => {
-                        if (items[idx]) {
-                            const inDeriv = items[idx].querySelector('.tpl-deriv');
-                            const inPaso = items[idx].querySelector('.tpl-paso');
-                            if (inDeriv && tpl.derivacion !== undefined) inDeriv.value = tpl.derivacion;
-                            if (inPaso && tpl.paso !== undefined) inPaso.value = tpl.paso;
-                        }
-                    });
-                }
-
-                // 5. Restaurar Matriz de Apartamentos
-                if (Array.isArray(data.matrizAptos) && data.matrizAptos.length > 0) {
-                    const container = document.getElementById('aptos-matrix-container');
-                    container.innerHTML = '';
-                    data.matrizAptos.forEach((apto, a) => {
-                        const card = document.createElement('div');
-                        card.className = 'apto-card';
-                        card.dataset.apto = a;
-                        const numTomas = (apto.tomasDist && apto.tomasDist.length > 0) ? apto.tomasDist.length : (apto.numTomas || 1);
-                        
-                        card.innerHTML = `
-                            <div class="apto-card-header">
-                                <input type="text" class="apto-name-input" value="${apto.name || ('APTO-' + String(a+1).padStart(2,'0'))}" title="Nombre del apartamento">
-                            </div>
-                            <div class="apto-card-row">
-                                <label title="Distancia de dispersión en metros">Disp. (m):</label>
-                                <input type="number" class="apto-disp-input" value="${apto.disp !== undefined ? apto.disp : ((a+1)*3)}" step="0.5">
-                            </div>
-                            <div class="apto-card-row">
-                                <label>Cant. Tomas:</label>
-                                <input type="number" class="apto-num-tomas" value="${numTomas}" min="1" max="12" onchange="actualizarTomasGrid(this.closest('.apto-card'))">
-                            </div>
-                            <div class="tomas-grid"></div>
-                        `;
-                        container.appendChild(card);
-
-                        const tomasGrid = card.querySelector('.tomas-grid');
-                        for (let t = 0; t < numTomas; t++) {
-                            const distVal = (apto.tomasDist && apto.tomasDist[t] !== undefined) ? apto.tomasDist[t] : ((t + 1) * 1.5);
-                            tomasGrid.innerHTML += `
-                                <div class="toma-input-wrapper">
-                                    <label>T${t+1} (m)</label>
-                                    <input type="number" class="toma-dist-input" value="${distVal}" step="0.5">
-                                </div>
-                            `;
-                        }
-                    });
-                } else {
-                    actualizarMatrizCableadoUI();
-                }
-
-                // 6. Generar y Restaurar Configuración de Pisos
-                generarConfigPisos();
-
-                const floorConfigBody = document.getElementById('floor-config-body');
-
-                // Restaurar Cadenas Config
-                if (Array.isArray(data.cadenasConfig)) {
-                    data.cadenasConfig.forEach(chain => {
-                        const sel = floorConfigBody.querySelector(`.chain-direction-sel[data-chain="${chain.cadenaIndex}"]`);
-                        if (sel) {
-                            sel.value = chain.direccion || 'descendente';
-                            const parentTd = sel.closest('td');
-                            if (parentTd) {
-                                const baseIn = parentTd.querySelector('.chain-base-dist-input');
-                                const extraIn = parentTd.querySelector('.chain-extra-dist-input');
-                                if (baseIn && chain.distBase !== undefined) baseIn.value = chain.distBase;
-                                if (extraIn && chain.distExtra !== undefined) extraIn.value = chain.distExtra;
-                                const cableIn = parentTd.querySelector('.chain-cable-extra-input');
-                                if (cableIn && chain.cableExtra !== undefined) cableIn.value = chain.cableExtra;
-                                const bifurcDerIn = parentTd.querySelector('.chain-bifurc-deriv-input');
-                                if (bifurcDerIn && chain.bifurcDeriv !== undefined) bifurcDerIn.value = chain.bifurcDeriv;
-                            }
-                        }
-                    });
-                }
-
-                // Restaurar Pisos Config
-                if (Array.isArray(data.pisosConfig)) {
-                    data.pisosConfig.forEach(pConf => {
-                        for (const row of floorConfigBody.children) {
-                            const pisoCell = row.querySelector('.piso-cfg-cell') || Array.from(row.cells).find(c => c.textContent.includes('PISO'));
-                            if (!pisoCell || !pisoCell.textContent.includes('PISO')) continue;
-                            const match = pisoCell.textContent.match(/\d+/);
-                            if (match && parseInt(match[0]) === pConf.piso) {
-                                if (pConf.aptos !== undefined) {
-                                    const el = row.querySelector('[data-field="aptos"]');
-                                    if (el) el.value = pConf.aptos;
-                                }
-                                if (pConf.tomas !== undefined) {
-                                    const el = row.querySelector('[data-field="tomas"]');
-                                    if (el) el.value = pConf.tomas;
-                                }
-                                if (pConf.derivacion !== undefined) {
-                                    const el = row.querySelector('[data-field="derivacion"]');
-                                    if (el) el.value = pConf.derivacion;
-                                }
-                                if (pConf.paso !== undefined) {
-                                    const el = row.querySelector('[data-field="paso"]');
-                                    if (el) el.value = pConf.paso;
-                                }
-                                if (pConf.splitterTorre !== undefined) {
-                                    const el = row.querySelector('[data-field="splitter-torre"]');
-                                    if (el) el.value = pConf.splitterTorre;
-                                }
-                                if (pConf.splitterApto !== undefined) {
-                                    const el = row.querySelector('[data-field="splitter-apto"]');
-                                    if (el) el.value = pConf.splitterApto;
-                                }
-                                if (pConf.distRG11 !== undefined) {
-                                    const el = row.querySelector('[data-field="dist-rg11"]');
-                                    if (el) el.value = pConf.distRG11;
-                                }
-                                if (pConf.distRG6Distr !== undefined) {
-                                    const el = row.querySelector('[data-field="dist-rg6-distr"]');
-                                    if (el) {
-                                        el.value = pConf.distRG6Distr;
-                                        if (pConf.distRG6DistrFormula) el.dataset.formula = pConf.distRG6DistrFormula;
-                                    }
-                                }
-                                if (pConf.conectores !== undefined) {
-                                    const el = row.querySelector('[data-field="conectores"]');
-                                    if (el) el.value = pConf.conectores;
-                                }
-                                break;
-                            }
-                        }
-                    });
-                }
-
-                configGenerada = true;
-
-                // 7. Generar y Llenar Tabla de Resultados
-                generarTabla();
-
-                // Restaurar celdas personalizadas en la tabla de resultados si existen
-                if (Array.isArray(data.filasResultados) && data.filasResultados.length > 0) {
-                    const trs = document.querySelectorAll('#results-body tr');
-                    data.filasResultados.forEach((fData, idx) => {
-                        if (trs[idx]) {
-                            const tr = trs[idx];
-                            if (fData.distRG11 !== undefined) {
-                                const inp = tr.querySelector('[data-col="dist-rg11"]');
-                                if (inp) inp.value = fData.distRG11;
-                            }
-                            if (fData.distRG6 !== undefined) {
-                                const inp = tr.querySelector('[data-col="dist-rg6"]');
-                                if (inp) inp.value = fData.distRG6;
-                            }
-                            if (fData.numConect !== undefined) {
-                                const inp = tr.querySelector('[data-col="num-conect"]');
-                                if (inp) inp.value = fData.numConect;
-                            }
-                            if (fData.derivadorDB !== undefined) {
-                                const inp = tr.querySelector('[data-col="derivador-db"]');
-                                if (inp) inp.value = fData.derivadorDB;
-                            }
-                            if (fData.repartidorDB !== undefined) {
-                                const inp = tr.querySelector('[data-col="repartidor-db"]');
-                                if (inp) inp.value = fData.repartidorDB;
-                            }
-                            if (fData.tomaDB !== undefined) {
-                                const inp = tr.querySelector('[data-col="toma-db"]');
-                                if (inp) inp.value = fData.tomaDB;
-                            }
-                            if (fData.ampDB !== undefined) {
-                                const inp = tr.querySelector('[data-col="amp-db"]');
-                                if (inp) inp.value = fData.ampDB;
-                            }
-                            if (fData.distr !== undefined) tr.dataset.distr = fData.distr;
-                            if (fData.distrFormula) tr.dataset.distrFormula = fData.distrFormula;
-                            if (fData.disp !== undefined) tr.dataset.disp = fData.disp;
-                            if (fData.tomaDist !== undefined) tr.dataset.tomaDist = fData.tomaDist;
-                            if (fData.derivFormula) tr.dataset.derivFormula = fData.derivFormula;
-                            if (fData.repartFormula) tr.dataset.repartFormula = fData.repartFormula;
-                        }
-                    });
-                    recalcularTodo();
-                }
-
-                alert('¡Proyecto y tabla cargados exitosamente desde archivo JSON!');
+                restaurarDatosLossGen(data);
+                proyectoActivoId = null;
+                proyectoActivoNombre = '';
+                actualizarIndicadorProyecto();
+                notificarToast('Proyecto cargado exitosamente desde archivo JSON.', 'success');
             } catch (err) {
                 console.error(err);
                 alert('Error al leer o procesar el archivo JSON: ' + err.message);
@@ -2034,6 +2385,394 @@
         };
         reader.readAsText(file);
     }
+
+    function actualizarIndicadorProyecto() {
+        const badge = document.getElementById('badge-proyecto-activo');
+        const lbl = document.getElementById('lbl-nombre-proyecto-activo');
+        if (!badge) return;
+
+        if (proyectoActivoId) {
+            badge.style.display = 'flex';
+            if (lbl) lbl.textContent = proyectoActivoNombre || 'Proyecto Guardado';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function desvincularProyectoActivo() {
+        proyectoActivoId = null;
+        proyectoActivoNombre = '';
+        actualizarIndicadorProyecto();
+        notificarToast('Proyecto desvinculado del servidor. Al guardar, se registrará como uno nuevo.', 'info');
+    }
+
+    function notificarToast(mensaje, tipo = 'info') {
+        const toast = document.getElementById('toast-calc');
+        if (!toast) return;
+
+        toast.textContent = mensaje;
+        toast.style.display = 'flex';
+
+        if (tipo === 'success') {
+            toast.style.background = '#10b981';
+        } else if (tipo === 'error') {
+            toast.style.background = '#ef4444';
+        } else {
+            toast.style.background = '#0284c7';
+        }
+
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3500);
+    }
+
+    function abrirModalGuardar() {
+        const modal = document.getElementById('modal-guardar-servidor');
+        const inNombre = document.getElementById('modal-in-nombre-proyecto');
+        const boxExistente = document.getElementById('box-proyecto-existente');
+        const lblExistente = document.getElementById('lbl-nombre-existente-modal');
+        const footerAcciones = document.getElementById('footer-acciones-guardar');
+        if (!modal) return;
+
+        const currentTitle = document.getElementById('project-title').value.trim() || 'Nuevo Proyecto TDT';
+        inNombre.value = proyectoActivoNombre || currentTitle;
+
+        if (proyectoActivoId) {
+            boxExistente.style.display = 'block';
+            lblExistente.textContent = `${proyectoActivoNombre} (ID: ${proyectoActivoId.substring(0, 8)}...)`;
+
+            footerAcciones.innerHTML = `
+                <button type="button" class="btn-clear" onclick="cerrarModalGuardar()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                <button type="button" class="btn-secondary" onclick="guardarProyectoEnServidor(true)" style="background: #64748b; color: #fff; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer;">Guardar como Nuevo</button>
+                <button type="button" class="btn-server-save" onclick="guardarProyectoEnServidor(false)" style="background: #0284c7; color: #fff; padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Actualizar (Sobrescribir)</button>
+            `;
+        } else {
+            boxExistente.style.display = 'none';
+            footerAcciones.innerHTML = `
+                <button type="button" class="btn-clear" onclick="cerrarModalGuardar()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                <button type="button" class="btn-server-save" onclick="guardarProyectoEnServidor(true)" style="background: #0284c7; color: #fff; padding: 8px 18px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Guardar en Servidor</button>
+            `;
+        }
+
+        modal.style.display = 'flex';
+        inNombre.focus();
+    }
+
+    function cerrarModalGuardar() {
+        const modal = document.getElementById('modal-guardar-servidor');
+        if (modal) modal.style.display = 'none';
+    }
+
+    async function guardarProyectoEnServidor(esNuevo = false) {
+        const api = getAPIService();
+        if (!api) {
+            alert('El servicio de conexión con la base de datos no está disponible.');
+            return;
+        }
+
+        const inNombre = document.getElementById('modal-in-nombre-proyecto');
+        const nombreProyecto = inNombre ? inNombre.value.trim() : '';
+
+        if (!nombreProyecto) {
+            alert('Por favor escribe un nombre para el proyecto.');
+            inNombre?.focus();
+            return;
+        }
+
+        const idDestino = esNuevo ? null : proyectoActivoId;
+        const datos = obtenerDatosProyectoLossGen();
+        const resumen = generarResumenLossGen(datos);
+
+        try {
+            notificarToast("Guardando cálculo en servidor...", "info");
+            const res = await api.guardarProyectoCalculadora({
+                id: idDestino,
+                herramienta: 'loss-gen-app',
+                nombreProyecto: nombreProyecto,
+                modo: 'torres',
+                datosJson: datos,
+                resumen: resumen
+            });
+
+            if (res && res.id) {
+                proyectoActivoId = res.id;
+                proyectoActivoNombre = res.nombre_proyecto || nombreProyecto;
+                document.getElementById('project-title').value = proyectoActivoNombre;
+                actualizarIndicadorProyecto();
+                cerrarModalGuardar();
+                notificarToast("¡Proyecto guardado exitosamente en el servidor!", "success");
+            } else {
+                throw new Error("Respuesta de guardado incompleta.");
+            }
+        } catch (error) {
+            console.error("Error al guardar:", error);
+            alert("No se pudo guardar el proyecto en el servidor: " + (error.message || error));
+        }
+    }
+
+    async function mostrarHubProyectos() {
+        document.getElementById('vista-editor').style.display = 'none';
+        const hub = document.getElementById('vista-proyectos-hub');
+        if (hub) hub.style.display = 'block';
+
+        const api = getAPIService();
+        const listaEl = document.getElementById('hub-proyectos-lista');
+        const counterEl = document.getElementById('hub-counter');
+
+        if (!api) {
+            if (listaEl) listaEl.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">Servicio de API no conectado.</div>';
+            return;
+        }
+
+        if (listaEl) listaEl.innerHTML = '<div style="padding: 35px; text-align: center; color: var(--text-muted);">Cargando tus proyectos guardados...</div>';
+
+        try {
+            const proyectos = await api.getProyectosCalculadora('loss-gen-app');
+            hubProyectosCache = Array.isArray(proyectos) ? proyectos : [];
+
+            if (counterEl) {
+                counterEl.textContent = `${hubProyectosCache.length} proyecto(s) encontrado(s)`;
+            }
+
+            renderizarHubProyectos(hubProyectosCache);
+        } catch (error) {
+            console.error("Error al listar proyectos:", error);
+            if (listaEl) listaEl.innerHTML = `<div style="padding: 30px; text-align: center; color: #f87171;">Error al consultar proyectos: ${escapeHTML(error.message || error)}</div>`;
+        }
+    }
+
+    function renderizarHubProyectos(proyectos) {
+        const listaEl = document.getElementById('hub-proyectos-lista');
+        if (!listaEl) return;
+
+        const perfil = getUsuarioPerfil();
+        const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+
+        if (!proyectos || proyectos.length === 0) {
+            listaEl.innerHTML = `
+                <div style="padding: 40px; text-align: center; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border);">
+                    <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 15px;">No hay proyectos guardados en la nube para esta herramienta.</p>
+                    <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">➕ Iniciar Nuevo Proyecto en Blanco</button>
+                </div>
+            `;
+            return;
+        }
+
+        listaEl.innerHTML = proyectos.map(p => {
+            const fecha = p.updated_at ? new Date(p.updated_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+            const res = p.resumen || (p.datos_json && p.datos_json.resumen) || generarResumenLossGen(p.datos_json);
+            const modoLabel = res.tipo || 'Torre TDT';
+            const detalleMetrics = res.detalle || 'Cálculo de pérdidas y niveles TDT';
+            const icono = res.icono || '📡';
+            const autorBadge = esAdminOMod ? `<span class="badge-autor">👤 ${escapeHTML(p.usuario_nombre || p.usuario_email)}</span>` : '';
+
+            return `
+                <div class="hub-card">
+                    <div class="hub-card-info">
+                        <h4>
+                            <span>${icono} ${escapeHTML(p.nombre_proyecto)}</span>
+                            <span class="badge-modo">${modoLabel}</span>
+                            ${autorBadge}
+                        </h4>
+                        <div class="hub-card-metrics">
+                            <span>📊 ${escapeHTML(detalleMetrics)}</span>
+                        </div>
+                        <div class="hub-card-meta">
+                            <span>📅 Editado: ${fecha}</span>
+                            ${!esAdminOMod && p.usuario_nombre ? `<span>Por: ${escapeHTML(p.usuario_nombre)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="hub-card-actions">
+                        <button type="button" class="btn-hub-new" style="padding: 9px 18px; font-size: 13px;" onclick="abrirProyectoHub('${p.id}')">
+                            📂 Abrir
+                        </button>
+                        <button type="button" class="btn-pdf" style="padding: 9px 12px; font-size: 13px;" onclick="eliminarProyectoDesdeHub('${p.id}', '${escapeHTML(p.nombre_proyecto)}')">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function filtrarHubProyectos() {
+        const query = (document.getElementById('hub-search-input')?.value || '').toLowerCase().trim();
+        if (!query) {
+            renderizarHubProyectos(hubProyectosCache);
+            return;
+        }
+
+        const filtrados = hubProyectosCache.filter(p => {
+            const nombre = (p.nombre_proyecto || '').toLowerCase();
+            const autor = (p.usuario_nombre || p.usuario_email || '').toLowerCase();
+            const detalle = (p.resumen?.detalle || '').toLowerCase();
+            return nombre.includes(query) || autor.includes(query) || detalle.includes(query);
+        });
+
+        renderizarHubProyectos(filtrados);
+    }
+
+    function mostrarEditor() {
+        document.getElementById('vista-proyectos-hub').style.display = 'none';
+        document.getElementById('vista-editor').style.display = 'block';
+    }
+
+    function volverAlHubProyectos() {
+        mostrarHubProyectos();
+    }
+
+    function crearNuevaPlantilla() {
+        proyectoActivoId = null;
+        proyectoActivoNombre = '';
+        document.getElementById('project-title').value = 'Nuevo Proyecto TDT';
+        actualizarIndicadorProyecto();
+        mostrarEditor();
+        notificarToast("Nueva plantilla en blanco cargada.", "info");
+    }
+
+    async function abrirProyectoHub(id) {
+        await cargarProyectoDesdeServidor(id);
+        mostrarEditor();
+    }
+
+    async function eliminarProyectoDesdeHub(id, nombre) {
+        await eliminarProyectoDesdeServidor(id, nombre);
+        mostrarHubProyectos();
+    }
+
+    async function cargarProyectoDesdeServidor(id) {
+        const api = getAPIService();
+        if (!api) {
+            alert('Servicio API no disponible.');
+            return;
+        }
+
+        try {
+            notificarToast("Cargando proyecto desde servidor...", "info");
+            const proy = await api.getProyectoCalculadoraPorId(id);
+            if (!proy || !proy.datos_json) {
+                throw new Error("Los datos del proyecto están vacíos.");
+            }
+
+            restaurarDatosLossGen(proy.datos_json);
+            proyectoActivoId = proy.id;
+            proyectoActivoNombre = proy.nombre_proyecto;
+            document.getElementById('project-title').value = proyectoActivoNombre;
+            actualizarIndicadorProyecto();
+            notificarToast(`Proyecto "${proyectoActivoNombre}" cargado con éxito.`, "success");
+        } catch (error) {
+            console.error("Error al cargar proyecto:", error);
+            alert("Error al cargar el proyecto desde el servidor: " + (error.message || error));
+        }
+    }
+
+    async function eliminarProyectoDesdeServidor(id, nombre) {
+        if (!confirm(`¿Estás seguro de que deseas eliminar definitivamente el proyecto "${nombre}" del servidor?`)) {
+            return;
+        }
+
+        const api = getAPIService();
+        if (!api) return;
+
+        try {
+            await api.eliminarProyectoCalculadora(id);
+            if (proyectoActivoId === id) {
+                proyectoActivoId = null;
+                proyectoActivoNombre = '';
+                actualizarIndicadorProyecto();
+            }
+            notificarToast("Proyecto eliminado correctamente.", "success");
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+            alert("No se pudo eliminar el proyecto: " + (error.message || error));
+        }
+    }
+
+    async function abrirModalProyectos() {
+        const api = getAPIService();
+        if (!api) {
+            alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+            return;
+        }
+
+        const modal = document.getElementById('modal-proyectos-servidor');
+        const tbody = document.getElementById('body-proyectos-servidor');
+        const thAutor = document.getElementById('th-autor-servidor');
+        const perfil = getUsuarioPerfil();
+        const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+
+        if (thAutor) {
+            thAutor.style.display = esAdminOMod ? '' : 'none';
+        }
+
+        tbody.innerHTML = `<tr><td colspan="${esAdminOMod ? 5 : 4}" style="padding: 30px; text-align: center; color: var(--text-muted);">Cargando proyectos desde el servidor...</td></tr>`;
+        modal.style.display = 'flex';
+
+        hubProyectosCache = await api.getProyectosCalculadora('loss-gen-app');
+        renderizarListaProyectos(hubProyectosCache);
+    }
+
+    function cerrarModalProyectos() {
+        const m = document.getElementById('modal-proyectos-servidor');
+        if (m) m.style.display = 'none';
+    }
+
+    function renderizarListaProyectos(proyectos) {
+        const tbody = document.getElementById('body-proyectos-servidor');
+        const contador = document.getElementById('contador-proyectos-servidor');
+        const perfil = getUsuarioPerfil();
+        const esAdminOMod = perfil && (perfil.role === 'admin' || perfil.role === 'moderador');
+        const colSpan = esAdminOMod ? 5 : 4;
+
+        if (contador) contador.textContent = `${proyectos.length} proyecto(s)`;
+
+        if (!proyectos || proyectos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" style="padding: 35px; text-align: center; color: var(--text-muted);">No se encontraron proyectos guardados.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = proyectos.map(p => {
+            const fecha = p.updated_at ? new Date(p.updated_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+            const esActivo = p.id === proyectoActivoId;
+            const colAutor = esAdminOMod ? `<td><span class="badge-autor">${escapeHTML(p.usuario_nombre || p.usuario_email)}</span></td>` : '';
+
+            return `
+                <tr style="${esActivo ? 'background: rgba(14, 165, 233, 0.12);' : ''}">
+                    <td style="text-align: left; padding-left: 14px; font-weight: 600;">
+                        ${escapeHTML(p.nombre_proyecto)}
+                        ${esActivo ? '<span style="color: #38bdf8; font-size: 11px; margin-left: 6px;">(En uso)</span>' : ''}
+                    </td>
+                    <td><span class="badge-modo">Torre TDT</span></td>
+                    <td style="color: var(--text-muted); font-size: 11.5px;">${fecha}</td>
+                    ${colAutor}
+                    <td>
+                        <div style="display: flex; gap: 6px; justify-content: center;">
+                            <button type="button" class="btn-server-load" style="padding: 5px 10px; font-size: 11.5px; background: #7c3aed; color:#fff; border:none; border-radius:4px; cursor:pointer;" onclick="cargarProyectoDesdeServidor('${p.id}'); cerrarModalProyectos(); mostrarEditor();" title="Cargar este proyecto">📥 Cargar</button>
+                            <button type="button" class="btn-pdf" style="padding: 5px 8px; font-size: 11.5px;" onclick="eliminarProyectoDesdeServidor('${p.id}', '${escapeHTML(p.nombre_proyecto)}').then(() => abrirModalProyectos())" title="Eliminar proyecto">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function filtrarProyectosGuardados() {
+        const query = (document.getElementById('filtro-proyectos-servidor')?.value || '').toLowerCase().trim();
+        if (!query) {
+            renderizarListaProyectos(hubProyectosCache);
+            return;
+        }
+
+        const filtrados = hubProyectosCache.filter(p => {
+            const nombre = (p.nombre_proyecto || '').toLowerCase();
+            const autor = (p.usuario_nombre || p.usuario_email || '').toLowerCase();
+            return nombre.includes(query) || autor.includes(query);
+        });
+
+        renderizarListaProyectos(filtrados);
+    }
+
+
 
     function guardarHTML() {
         document.querySelectorAll('input, select').forEach(el => {
@@ -2065,5 +2804,70 @@
 
     document.addEventListener('DOMContentLoaded', init);
     </script>
+
+    <!-- MODAL 1: GUARDAR O ACTUALIZAR PROYECTO EN SERVIDOR -->
+    <div id="modal-guardar-servidor" class="modal-overlay">
+        <div class="modal-content-calc" style="max-width: 490px;">
+            <div class="modal-header-calc">
+                <h3>☁️ Guardar en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalGuardar()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--primary-blue); margin-bottom: 6px;">Nombre del Proyecto:</label>
+                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13.5px; font-weight: 600;" placeholder="Ej: Torre Los Rosales TDT">
+                </div>
+
+                <div id="box-proyecto-existente" style="display: none; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <p style="margin: 0 0 5px; font-size: 12px; color: #38bdf8; font-weight: 600;">ℹ️ Este cálculo está vinculado a un proyecto guardado:</p>
+                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: #fff; font-size: 13px;">-</div>
+                </div>
+            </div>
+            <div class="modal-footer-calc" id="footer-acciones-guardar">
+                <!-- Se inyectan botones según proyectoActivoId -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CATÁLOGO DE PROYECTOS GUARDADOS -->
+    <div id="modal-proyectos-servidor" class="modal-overlay">
+        <div class="modal-content-calc">
+            <div class="modal-header-calc">
+                <h3>📂 Proyectos Guardados en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalProyectos()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o modo..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13px;">
+                    <div id="contador-proyectos-servidor" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">0 proyecto(s)</div>
+                </div>
+
+                <div class="table-container" style="max-height: 48vh; margin-bottom: 0;">
+                    <table id="tabla-proyectos-servidor">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-left: 14px;">Nombre del Proyecto</th>
+                                <th>Tipo</th>
+                                <th>Última Modificación</th>
+                                <th id="th-autor-servidor" style="display: none;">Autor</th>
+                                <th style="width: 145px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-proyectos-servidor">
+                            <tr>
+                                <td colspan="5" style="padding: 30px; color: var(--text-muted);">Cargando proyectos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer-calc">
+                <button type="button" onclick="cerrarModalProyectos()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST FLOTANTE INLINE -->
+    <div id="toast-calc" class="toast-calc"></div>
 </body>
 </html>
