@@ -340,6 +340,112 @@ function recalcularProgresos() {
 // ==========================================
 // 4. EVENTOS Y UTILIDADES DE FORMULARIO
 // ==========================================
+
+function getBadgeClassActividad(actividad) {
+    switch ((actividad || '').trim().toUpperCase()) {
+        case 'DISEÑO': return 'badge badge-diseno';
+        case 'RRHH': return 'badge badge-rrhh';
+        case 'OBRAS': return 'badge badge-obras';
+        case 'PERMISO REMUNERADO': return 'badge badge-permiso';
+        case 'PERMISO NO REMUNERADO': return 'badge badge-nolaboral';
+        case 'INCAPACIDAD MÉDICA': return 'badge badge-incapacidad';
+        case 'VACACIONES': return 'badge badge-vacaciones';
+        case 'FESTIVO / NO LABORAL': return 'badge badge-nolaboral';
+        default: return 'badge bg-blue';
+    }
+}
+
+let modoRegistroHoras = 'laboral'; // 'laboral' | 'novedad'
+let duracionNovedadModo = 'completo'; // 'completo' | 'parcial' | 'rango'
+
+function cambiarModoRegistro(modo) {
+    modoRegistroHoras = modo;
+    const btnLab = document.getElementById('btnModoLaboral');
+    const btnNov = document.getElementById('btnModoNovedad');
+    const secNov = document.getElementById('seccionNovedad');
+    const grpAct = document.getElementById('grupoActividad');
+
+    if (!btnLab || !btnNov) return;
+
+    if (modo === 'novedad') {
+        btnLab.classList.remove('active');
+        btnNov.classList.add('active', 'novedad');
+        if (secNov) secNov.style.display = 'block';
+        if (grpAct) grpAct.style.display = 'none';
+
+        const proyInput = document.getElementById('proyecto');
+        const clienteInput = document.getElementById('cliente');
+        if (proyInput && (!proyInput.value.trim() || proyInput.value === 'SCITIC INTERNO')) {
+            proyInput.value = 'SCITIC INTERNO';
+            if (clienteInput) clienteInput.value = 'SCITIC S.A.S';
+            document.getElementById('horasPres').value = '0';
+            document.getElementById('valor').value = '0';
+        }
+        manejarCambioTipoNovedad();
+        setDuracionNovedad(duracionNovedadModo);
+    } else {
+        btnLab.classList.add('active');
+        btnNov.classList.remove('active', 'novedad');
+        if (secNov) secNov.style.display = 'none';
+        if (grpAct) grpAct.style.display = 'block';
+
+        const proyInput = document.getElementById('proyecto');
+        if (proyInput && proyInput.value === 'SCITIC INTERNO') {
+            proyInput.value = '';
+            const clienteInput = document.getElementById('cliente');
+            if (clienteInput) clienteInput.value = '';
+        }
+        const filaSimple = document.getElementById('filaFechaHorasSimple');
+        const campoRango = document.getElementById('campoRangoFechas');
+        if (filaSimple) filaSimple.style.display = 'grid';
+        if (campoRango) campoRango.style.display = 'none';
+        document.getElementById('actividad').value = 'DISEÑO';
+    }
+}
+
+function setDuracionNovedad(dur) {
+    duracionNovedadModo = dur;
+    const bCompleto = document.getElementById('btnDurCompleto');
+    const bParcial = document.getElementById('btnDurParcial');
+    const bRango = document.getElementById('btnDurRango');
+    const filaSimple = document.getElementById('filaFechaHorasSimple');
+    const campoRango = document.getElementById('campoRangoFechas');
+
+    if (bCompleto && bParcial && bRango) {
+        bCompleto.classList.remove('btn-primary'); bCompleto.classList.add('btn-secondary');
+        bParcial.classList.remove('btn-primary'); bParcial.classList.add('btn-secondary');
+        bRango.classList.remove('btn-primary'); bRango.classList.add('btn-secondary');
+
+        if (dur === 'completo') {
+            bCompleto.classList.remove('btn-secondary'); bCompleto.classList.add('btn-primary');
+            if (filaSimple) filaSimple.style.display = 'grid';
+            if (campoRango) campoRango.style.display = 'none';
+            document.getElementById('horas').value = '8:00';
+            actualizarPreviewHoras('8:00');
+        } else if (dur === 'parcial') {
+            bParcial.classList.remove('btn-secondary'); bParcial.classList.add('btn-primary');
+            if (filaSimple) filaSimple.style.display = 'grid';
+            if (campoRango) campoRango.style.display = 'none';
+        } else if (dur === 'rango') {
+            bRango.classList.remove('btn-secondary'); bRango.classList.add('btn-primary');
+            if (filaSimple) filaSimple.style.display = 'none';
+            if (campoRango) campoRango.style.display = 'block';
+
+            if (!document.getElementById('fechaNovedadDesde').value) {
+                document.getElementById('fechaNovedadDesde').value = getFechaColombiaString();
+                document.getElementById('fechaNovedadHasta').value = getFechaColombiaString();
+            }
+        }
+    }
+}
+
+function manejarCambioTipoNovedad() {
+    const tipo = document.getElementById('tipoNovedad');
+    const act = document.getElementById('actividad');
+    if (tipo && act) {
+        act.value = tipo.value;
+    }
+}
 function manejarCambiosFormulario() {
     const inputTrab = (document.getElementById('trabajador').value || '').trim().toUpperCase();
     const inputProy = (document.getElementById('proyecto').value || '').trim().toUpperCase();
@@ -483,6 +589,62 @@ async function guardar() {
 
     if (!trabajadorVal) return Toast.warning("Debe ingresar el nombre del personal.");
     if (!proyectoVal) return Toast.warning("Debe ingresar el nombre del proyecto.");
+
+    // Caso Rango de Fechas para Novedades (Incapacidades prolongadas / vacaciones)
+    if (modoRegistroHoras === 'novedad' && duracionNovedadModo === 'rango' && editId === null) {
+        const fechaDesde = document.getElementById('fechaNovedadDesde').value;
+        const fechaHasta = document.getElementById('fechaNovedadHasta').value;
+        const chkDomingos = document.getElementById('chkOmitirDomingos');
+        const omitirDomingos = chkDomingos ? chkDomingos.checked : true;
+        const tipoNovedad = document.getElementById('tipoNovedad') ? document.getElementById('tipoNovedad').value : 'PERMISO REMUNERADO';
+
+        if (!fechaDesde || !fechaHasta) return Toast.warning("Debe ingresar fecha inicial y final del rango.");
+        if (fechaDesde > fechaHasta) return Toast.warning("La fecha inicial no puede ser posterior a la fecha final.");
+
+        showLoader("Registrando período de novedad...");
+        const dInicio = new Date(fechaDesde + 'T00:00:00');
+        const dFin = new Date(fechaHasta + 'T00:00:00');
+        let curr = new Date(dInicio);
+        const nuevosRegistros = [];
+        const valorHora = Number(document.getElementById('valor').value) || 0;
+
+        while (curr <= dFin) {
+            const dayOfWeek = curr.getDay(); // 0 = Domingo
+            if (!omitirDomingos || dayOfWeek !== 0) {
+                const fStr = curr.toISOString().split('T')[0];
+                nuevosRegistros.push({
+                    id: generarIdUnico(),
+                    cliente: clienteVal || "SCITIC S.A.S",
+                    proyecto: proyectoVal || "SCITIC INTERNO",
+                    trabajador: trabajadorVal,
+                    fecha: fStr,
+                    horas: 8,
+                    actividad: tipoNovedad,
+                    horas_pres: 0,
+                    valor: valorHora,
+                    pago: valorHora * 8
+                });
+            }
+            curr.setDate(curr.getDate() + 1);
+        }
+
+        if (nuevosRegistros.length === 0) {
+            hideLoader();
+            return Toast.warning("No hay días hábiles dentro del rango seleccionado.");
+        }
+
+        const success = await window.API.importarRegistros(nuevosRegistros);
+        if (success) {
+            datos = datos.concat(nuevosRegistros);
+            recalcularProgresos();
+            await registrarAuditoria("NOVEDAD_RANGO", `Registró ${nuevosRegistros.length} días de ${tipoNovedad} para ${trabajadorVal} (${fechaDesde} a ${fechaHasta}).`);
+            inicializarDatosGlobales();
+            limpiarFormulario();
+            Toast.success(`Se registraron ${nuevosRegistros.length} días de ${tipoNovedad} correctamente.`);
+        }
+        hideLoader();
+        return;
+    }
 
     showLoader("Guardando registro...");
 
@@ -638,7 +800,7 @@ function mostrar(lista) {
             <td><strong style="color: var(--scitic-dark);" title="${d.horas || 0} h decimal">${formatearHoras(d.horas || 0)}</strong></td>
             ${esAdmin ? `<td style="color: var(--primary); font-weight: 600;">$${Number(d.pago || 0).toLocaleString('es-CO')}</td>` : ''}
             ${esAdmin ? `<td><div class="progress-bar-container"><div class="progress-bar" style="width: ${Math.min(d.progreso || 0, 100)}%; ${Number(d.progreso || 0) > 100 ? 'background:linear-gradient(135deg, #ef4444, #dc2626);' : ''}"></div></div><small style="${Number(d.progreso || 0) > 100 ? 'color: var(--danger); font-weight:bold;' : ''}">${d.progreso || 0}%</small></td>` : ''}
-            <td><span class="badge bg-blue">${d.actividad || 'N/A'}</span></td>
+            <td><span class="${getBadgeClassActividad(d.actividad)}">${d.actividad || 'N/A'}</span></td>
             <td><div class="action-btns">
                     ${puedeEditar ? `<button onclick="editar('${d.id}')" style="color: var(--accent); font-weight: 600;">Editar</button>` : ''}
                     ${esAdmin ? `<button onclick="eliminar('${d.id}')" style="color: var(--danger); font-weight: 600;">Borrar</button>` : ''}
@@ -842,6 +1004,8 @@ function limpiarFormulario() {
     document.getElementById('fecha').value = getFechaColombiaString();
     document.getElementById('actividad').value = "DISEÑO";
 
+    cambiarModoRegistro('laboral');
+
     editId = null;
     document.getElementById('formTitle').innerText = "Nuevo Registro";
     document.getElementById('formularioRegistro').classList.remove('editing-mode');
@@ -887,7 +1051,17 @@ function editar(id) {
     document.getElementById('horas').value = d.horas ? decimalAHoraMM(d.horas) : '0:00';
     actualizarPreviewHoras(document.getElementById('horas').value);
     document.getElementById('valor').value = d.valor || 0;
-    document.getElementById('actividad').value = ["DISEÑO", "RRHH", "OBRAS"].includes(d.actividad) ? d.actividad : "DISEÑO";
+
+    const esNovedad = ['PERMISO REMUNERADO', 'PERMISO NO REMUNERADO', 'INCAPACIDAD MÉDICA', 'VACACIONES', 'FESTIVO / NO LABORAL'].includes((d.actividad || '').trim().toUpperCase());
+    if (esNovedad) {
+        cambiarModoRegistro('novedad');
+        const tipoNov = document.getElementById('tipoNovedad');
+        if (tipoNov) tipoNov.value = d.actividad;
+        setDuracionNovedad('parcial');
+    } else {
+        cambiarModoRegistro('laboral');
+    }
+    document.getElementById('actividad').value = d.actividad || "DISEÑO";
 
     editId = id;
     document.getElementById('formTitle').innerText = "Editando Actividad";
@@ -1060,17 +1234,19 @@ function generarPendientes() {
 let editIdGasto = null;
 let listaFiltradaGastos = [];
 let tipoGraficoGastos = 'proyecto';
+let gastosSeleccionadosIds = new Set();
+let modoLiquidacionActual = 'abono'; // 'seleccion' | 'abono'
 
 function cambiarGraficoGastos(tipo) {
     tipoGraficoGastos = tipo;
     
-    document.getElementById('btnChartProyecto').classList.remove('active');
-    document.getElementById('btnChartItem').classList.remove('active');
-    
-    if (tipo === 'proyecto') {
-        document.getElementById('btnChartProyecto').classList.add('active');
-    } else {
-        document.getElementById('btnChartItem').classList.add('active');
+    const btnProy = document.getElementById('btnChartProyecto');
+    const btnItem = document.getElementById('btnChartItem');
+    if (btnProy && btnItem) {
+        btnProy.classList.remove('active');
+        btnItem.classList.remove('active');
+        if (tipo === 'proyecto') btnProy.classList.add('active');
+        else btnItem.classList.add('active');
     }
     
     if (usuarioActual.role === 'admin' || usuarioActual.role === 'moderador') {
@@ -1080,7 +1256,7 @@ function cambiarGraficoGastos(tipo) {
 
 function getFechaColombiaString() {
     const d = new Date();
-    // Colombia es UTC-5. Obtenemos el tiempo UTC actual y le restamos 5 horas.
+    // Colombia es UTC-5
     const colTime = new Date(d.getTime() - (5 * 3600000));
     return colTime.toISOString().split('T')[0];
 }
@@ -1097,39 +1273,54 @@ function inicializarDatosGlobalesGastos() {
     });
 
     let fMes = document.getElementById("fMesGasto");
-    // Por defecto mes actual
-    const mesActual = getFechaColombiaString().substring(0, 7);
-    
-    let htmlMeses = '<option value="">Todos (Histórico)</option>';
-    [...meses].sort().reverse().forEach(val => {
-        const selected = val === mesActual ? 'selected' : '';
-        htmlMeses += `<option value="${val}" ${selected}>${val}</option>`;
-    });
-    // Si el mes actual no está en los datos, agregarlo
-    if(!meses.has(mesActual)) {
-        htmlMeses += `<option value="${mesActual}" selected>${mesActual}</option>`;
+    if (fMes) {
+        const mesActual = getFechaColombiaString().substring(0, 7);
+        let htmlMeses = '<option value="">Todos (Histórico)</option>';
+        [...meses].sort().reverse().forEach(val => {
+            const selected = val === mesActual ? 'selected' : '';
+            htmlMeses += `<option value="${val}" ${selected}>${val}</option>`;
+        });
+        if (!meses.has(mesActual)) {
+            htmlMeses += `<option value="${mesActual}" selected>${mesActual}</option>`;
+        }
+        fMes.innerHTML = htmlMeses;
     }
-    fMes.innerHTML = htmlMeses;
 
     llenarSelectManteniendoValor('fTrabajadorGasto', trabajadores, '');
     llenarSelectManteniendoValor('fProyectoGasto', proyectos, '');
-    llenarSelectManteniendoValor('pagoTrabajador', trabajadores, '');
 
     filtrarGastos();
 }
 
 function filtrarGastos() {
-    let fMes = document.getElementById('fMesGasto').value;
-    let fTrabajador = document.getElementById('fTrabajadorGasto').value;
-    let fProyecto = document.getElementById('fProyectoGasto').value;
+    const fMesEl = document.getElementById('fMesGasto');
+    const fTrabEl = document.getElementById('fTrabajadorGasto');
+    const fProyEl = document.getElementById('fProyectoGasto');
+    const fEstEl = document.getElementById('fEstadoGasto');
+    const fBusqEl = document.getElementById('fBusquedaGasto');
 
-    if (usuarioActual.role === 'colaborador') fTrabajador = usuarioActual.name;
+    let fMes = fMesEl ? fMesEl.value : '';
+    let fTrabajador = fTrabEl ? fTrabEl.value : '';
+    let fProyecto = fProyEl ? fProyEl.value : '';
+    let fEstado = fEstEl ? fEstEl.value : '';
+    let fBusqueda = fBusqEl ? fBusqEl.value.toLowerCase().trim() : '';
+
+    if (usuarioActual && usuarioActual.role === 'colaborador') {
+        fTrabajador = usuarioActual.name;
+    }
 
     listaFiltradaGastos = gastosDatos.filter(g => {
         const matchMes = !fMes || (g.fecha && g.fecha.substring(0, 7) === fMes);
         const matchTrabajador = !fTrabajador || (g.trabajador && g.trabajador.trim() === fTrabajador);
         const matchProyecto = !fProyecto || (g.proyecto && g.proyecto.trim() === fProyecto);
-        return matchMes && matchTrabajador && matchProyecto;
+        const matchEstado = !fEstado || g.estado === fEstado;
+
+        let matchBusqueda = true;
+        if (fBusqueda) {
+            const texto = `${g.item || ''} ${g.observaciones || ''} ${g.trabajador || ''} ${g.proyecto || ''}`.toLowerCase();
+            matchBusqueda = texto.includes(fBusqueda);
+        }
+        return matchMes && matchTrabajador && matchProyecto && matchEstado && matchBusqueda;
     });
 
     // Ordenar descendente por fecha, luego por id como fallback
@@ -1143,7 +1334,7 @@ function filtrarGastos() {
     });
 
     mostrarGastos(listaFiltradaGastos);
-    if (usuarioActual.role === 'admin' || usuarioActual.role === 'moderador') {
+    if (usuarioActual && (usuarioActual.role === 'admin' || usuarioActual.role === 'moderador')) {
         graficarGastos(listaFiltradaGastos);
         generarTablaPendientesGastos(listaFiltradaGastos);
     }
@@ -1159,13 +1350,14 @@ function generarTablaPendientesGastos(lista) {
     lista.forEach(g => {
         if (g.estado === 'PENDIENTE') {
             const p = (g.proyecto || 'N/A').trim();
-            pendientes[p] = (pendientes[p] || 0) + Number(g.total || 0);
-            totalPendienteGlobal += Number(g.total || 0);
+            const deuda = Number(g.total || 0) - Number(g.monto_pagado || 0);
+            pendientes[p] = (pendientes[p] || 0) + deuda;
+            totalPendienteGlobal += deuda;
         }
     });
 
     if (Object.keys(pendientes).length === 0) {
-        contenedor.innerHTML = `<p style="text-align: center; color: var(--success); font-size: 0.85rem; margin-top: 20px;">Todo está pagado 🎉</p>`;
+        contenedor.innerHTML = `<p style="text-align: center; color: var(--success); font-size: 0.85rem; margin-top: 20px;">Todo está pagado y al día 🎉</p>`;
         return;
     }
 
@@ -1180,18 +1372,20 @@ function generarTablaPendientesGastos(lista) {
     });
     
     html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0 0; font-size: 0.9rem; margin-top: 5px;">
-            <span style="color: var(--text-muted); font-weight: 700;">TOTAL DEUDA</span>
+            <span style="color: var(--text-muted); font-weight: 700;">TOTAL DEUDA FILTRADA</span>
             <span style="color: #ef4444; font-weight: 800;">$${totalPendienteGlobal.toLocaleString('es-CO')}</span>
         </div>`;
 
     const trabajadoresConSaldo = (window.usuariosGlobal || []).filter(u => Number(u.saldo_favor) > 0);
     if (trabajadoresConSaldo.length > 0) {
         html += `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <h5 style="color: var(--success); margin: 0 0 10px 0; font-size: 0.8rem; text-transform: uppercase;">Saldos a Favor</h5>`;
+            <h5 style="color: #22d3ee; margin: 0 0 10px 0; font-size: 0.8rem; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                <span>💳</span> Saldos a Favor Disponibles
+            </h5>`;
         trabajadoresConSaldo.forEach(t => {
             html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 0.8rem;">
                 <span style="color: var(--text-main); font-weight: 500;">👤 ${t.nombre}</span>
-                <span style="color: var(--success); font-weight: 700;">$${Number(t.saldo_favor).toLocaleString('es-CO')}</span>
+                <span style="color: #22d3ee; font-weight: 700;">$${Number(t.saldo_favor).toLocaleString('es-CO')}</span>
             </div>`;
         });
         html += `</div>`;
@@ -1202,9 +1396,17 @@ function generarTablaPendientesGastos(lista) {
 
 function limpiarFiltrosGastos() {
     const mesActual = getFechaColombiaString().substring(0, 7);
-    document.getElementById('fMesGasto').value = mesActual;
-    document.getElementById('fTrabajadorGasto').value = "";
-    document.getElementById('fProyectoGasto').value = "";
+    const fMes = document.getElementById('fMesGasto');
+    const fTrab = document.getElementById('fTrabajadorGasto');
+    const fProy = document.getElementById('fProyectoGasto');
+    const fEst = document.getElementById('fEstadoGasto');
+    const fBusq = document.getElementById('fBusquedaGasto');
+
+    if (fMes) fMes.value = mesActual;
+    if (fTrab) fTrab.value = "";
+    if (fProy) fProy.value = "";
+    if (fEst) fEst.value = "";
+    if (fBusq) fBusq.value = "";
     filtrarGastos();
 }
 
@@ -1217,40 +1419,36 @@ function switchModule(moduleName) {
     const tabGastos = document.getElementById('tabGastos');
     const tabHerramientas = document.getElementById('tabHerramientas');
 
-    horasModule.style.display = 'none';
-    gastosModule.style.display = 'none';
-    if(herramientasModule) herramientasModule.style.display = 'none';
+    if (horasModule) horasModule.style.display = 'none';
+    if (gastosModule) gastosModule.style.display = 'none';
+    if (herramientasModule) herramientasModule.style.display = 'none';
     
-    tabHoras.classList.remove('btn-primary'); tabHoras.classList.add('btn-secondary');
-    tabGastos.classList.remove('btn-primary'); tabGastos.classList.add('btn-secondary');
-    if(tabHerramientas) { tabHerramientas.classList.remove('btn-primary'); tabHerramientas.classList.add('btn-secondary'); }
+    if (tabHoras) tabHoras.classList.remove('active');
+    if (tabGastos) tabGastos.classList.remove('active');
+    if (tabHerramientas) tabHerramientas.classList.remove('active');
 
     if (moduleName === 'horas') {
-        horasModule.style.display = 'block';
-        tabHoras.classList.add('btn-primary');
-        tabHoras.classList.remove('btn-secondary');
+        if (horasModule) horasModule.style.display = 'block';
+        if (tabHoras) tabHoras.classList.add('active');
     } else if (moduleName === 'gastos') {
-        gastosModule.style.display = 'block';
-        tabGastos.classList.add('btn-primary');
-        tabGastos.classList.remove('btn-secondary');
+        if (gastosModule) gastosModule.style.display = 'block';
+        if (tabGastos) tabGastos.classList.add('active');
         
-        if (usuarioActual.role === 'colaborador') {
-            document.getElementById('gastoTrabajador').value = usuarioActual.name;
-            document.getElementById('gastoTrabajador').setAttribute('readonly', 'true');
+        if (usuarioActual && usuarioActual.role === 'colaborador') {
+            const inTrab = document.getElementById('gastoTrabajador');
+            if (inTrab) {
+                inTrab.value = usuarioActual.name;
+                inTrab.setAttribute('readonly', 'true');
+            }
         }
-        if(!document.getElementById('gastoFecha').value) {
-            document.getElementById('gastoFecha').value = getFechaColombiaString();
+        const gFecha = document.getElementById('gastoFecha');
+        if (gFecha && !gFecha.value) {
+            gFecha.value = getFechaColombiaString();
         }
-        if(document.getElementById('pagoFecha') && !document.getElementById('pagoFecha').value) {
-            document.getElementById('pagoFecha').value = getFechaColombiaString();
-        }
-        filtrarGastos(); // Aplicar filtros al entrar
+        filtrarGastos();
     } else if (moduleName === 'herramientas') {
-        if(herramientasModule) herramientasModule.style.display = 'block';
-        if(tabHerramientas) {
-            tabHerramientas.classList.add('btn-primary');
-            tabHerramientas.classList.remove('btn-secondary');
-        }
+        if (herramientasModule) herramientasModule.style.display = 'block';
+        if (tabHerramientas) tabHerramientas.classList.add('active');
     }
 }
 
@@ -1273,7 +1471,7 @@ function calcularTotalGasto() {
 }
 
 function limpiarFormularioGasto() {
-    if (usuarioActual.role !== 'colaborador') {
+    if (usuarioActual && usuarioActual.role !== 'colaborador') {
         document.getElementById('gastoTrabajador').value = '';
     }
     document.getElementById('gastoProyecto').value = '';
@@ -1293,7 +1491,7 @@ function limpiarFormularioGasto() {
 
 async function guardarGasto() {
     let trabajador = document.getElementById('gastoTrabajador').value.trim();
-    if (usuarioActual.role === 'colaborador') trabajador = usuarioActual.name;
+    if (usuarioActual && usuarioActual.role === 'colaborador') trabajador = usuarioActual.name;
     const proyecto = document.getElementById('gastoProyecto').value.trim();
     const fecha = document.getElementById('gastoFecha').value;
     const item = document.getElementById('gastoItem').value;
@@ -1322,7 +1520,7 @@ async function guardarGasto() {
     };
 
     if (editIdGasto === null) {
-        const workerProfile = (window.usuariosGlobal || []).find(u => u.nombre.trim() === trabajador);
+        const workerProfile = (window.usuariosGlobal || []).find(u => u.nombre && u.nombre.trim() === trabajador);
         if (workerProfile && workerProfile.saldo_favor > 0) {
             let sf = Number(workerProfile.saldo_favor);
             if (sf >= gasto.total) {
@@ -1331,18 +1529,17 @@ async function guardarGasto() {
                 gasto.fecha_pago = fecha;
                 workerProfile.saldo_favor = sf - gasto.total;
                 await window.API.actualizarSaldoFavor(trabajador, sf - gasto.total);
-                Toast.success("Gasto cubierto automáticamente con Saldo a Favor.");
+                Toast.success("Gasto cubierto automáticamente con Saldo a Favor disponible.");
             } else {
                 gasto.monto_pagado = sf;
                 workerProfile.saldo_favor = 0;
                 await window.API.actualizarSaldoFavor(trabajador, 0);
-                Toast.success("Se aplicó Saldo a Favor al gasto. Queda saldo pendiente.");
+                Toast.success("Se aplicó Saldo a Favor. Queda un saldo restante pendiente.");
             }
         }
     }
 
     if (editIdGasto !== null) {
-        // Edit mode
         const success = await window.API.actualizarGasto(editIdGasto, gasto);
         if (success) {
             Toast.success("Gasto actualizado exitosamente.");
@@ -1353,7 +1550,6 @@ async function guardarGasto() {
             registrarAuditoria("GASTO_EDITAR", `Se editó gasto de ${item} por $${total} para ${trabajador}.`);
         }
     } else {
-        // Create mode
         const success = await window.API.crearGasto(gasto);
         if (success) {
             Toast.success("Gasto registrado exitosamente.");
@@ -1370,7 +1566,9 @@ async function guardarGasto() {
 function editarGasto(id) {
     const g = gastosDatos.find(x => x.id === id); 
     if (!g) return;
-    if (usuarioActual.role === 'colaborador' && (g.trabajador || '').trim() !== usuarioActual.name.trim()) return Toast.error("Permiso denegado.");
+    if (usuarioActual.role === 'colaborador' && (g.trabajador || '').trim() !== usuarioActual.name.trim()) {
+        return Toast.error("Permiso denegado.");
+    }
 
     document.getElementById('gastoTrabajador').value = (g.trabajador || '').trim();
     document.getElementById('gastoProyecto').value = (g.proyecto || '').trim();
@@ -1390,56 +1588,134 @@ function editarGasto(id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ==========================================
+// 10.1. GESTIÓN DE SELECCIÓN MÚLTIPLE DE GASTOS
+// ==========================================
+
+function toggleSelectAllGastos(checked) {
+    gastosSeleccionadosIds.clear();
+    if (checked) {
+        listaFiltradaGastos.forEach(g => {
+            if (g.estado === 'PENDIENTE') {
+                gastosSeleccionadosIds.add(g.id);
+            }
+        });
+    }
+    document.querySelectorAll('.chk-gasto').forEach(chk => {
+        chk.checked = checked;
+    });
+    actualizarBarraSeleccion();
+}
+
+function toggleSeleccionGasto(id) {
+    if (gastosSeleccionadosIds.has(id)) {
+        gastosSeleccionadosIds.delete(id);
+    } else {
+        gastosSeleccionadosIds.add(id);
+    }
+    const selectAll = document.getElementById('selectAllGastos');
+    if (selectAll) {
+        const totalPendientes = listaFiltradaGastos.filter(g => g.estado === 'PENDIENTE').length;
+        selectAll.checked = totalPendientes > 0 && gastosSeleccionadosIds.size === totalPendientes;
+    }
+    actualizarBarraSeleccion();
+}
+
+function deseleccionarTodosGastos() {
+    gastosSeleccionadosIds.clear();
+    const selectAll = document.getElementById('selectAllGastos');
+    if (selectAll) selectAll.checked = false;
+    document.querySelectorAll('.chk-gasto').forEach(chk => chk.checked = false);
+    actualizarBarraSeleccion();
+}
+
+function actualizarBarraSeleccion() {
+    const barra = document.getElementById('barraSeleccionGastos');
+    const cantEl = document.getElementById('cantGastosSeleccionados');
+    const totalEl = document.getElementById('totalMontoSeleccionado');
+    if (!barra) return;
+
+    if (gastosSeleccionadosIds.size > 0) {
+        let sumaTotal = 0;
+        gastosDatos.filter(g => gastosSeleccionadosIds.has(g.id)).forEach(g => {
+            const deuda = Number(g.total || 0) - Number(g.monto_pagado || 0);
+            sumaTotal += deuda;
+        });
+
+        if (cantEl) cantEl.innerText = gastosSeleccionadosIds.size;
+        if (totalEl) totalEl.innerText = "$" + sumaTotal.toLocaleString('es-CO');
+        barra.style.display = 'flex';
+    } else {
+        barra.style.display = 'none';
+    }
+}
+
+// ==========================================
+// 10.2. RENDERIZADO DE GASTOS Y KPIS
+// ==========================================
+
 function mostrarGastos(lista) {
     let html = '';
-    const esAdmin = usuarioActual.role === 'admin' || usuarioActual.role === 'moderador';
+    const esAdmin = usuarioActual && (usuarioActual.role === 'admin' || usuarioActual.role === 'moderador');
     let totalGeneral = 0;
     let totalPagado = 0;
     let totalPendiente = 0;
 
     lista.forEach(g => {
-        totalGeneral += Number(g.total || 0);
-        let deudaReal = Number(g.total) - Number(g.monto_pagado || 0);
-        if(g.estado === 'PAGO') {
-            totalPagado += Number(g.total || 0);
+        const totalGasto = Number(g.total || 0);
+        const montoPagadoGasto = Number(g.monto_pagado || 0);
+        totalGeneral += totalGasto;
+
+        let deudaReal = totalGasto - montoPagadoGasto;
+        if (g.estado === 'PAGO') {
+            totalPagado += totalGasto;
         } else {
             totalPendiente += deudaReal;
-            totalPagado += Number(g.monto_pagado || 0);
+            totalPagado += montoPagadoGasto;
         }
 
-        const rowStyle = g.estado === 'PAGO' ? 'background: rgba(16, 185, 129, 0.05);' : '';
-        const badgeClass = g.estado === 'PAGO' ? 'bg-green' : 'bg-orange';
-        const checkboxHtml = g.estado === 'PENDIENTE' ? `<span style="color:var(--danger)">⏳</span>` : `<span style="color:var(--success)">✓</span>`;
+        const isChecked = gastosSeleccionadosIds.has(g.id);
+        let checkboxHtml = '';
+        if (g.estado === 'PENDIENTE') {
+            checkboxHtml = `<input type="checkbox" class="chk-gasto" data-id="${g.id}" ${isChecked ? 'checked' : ''} onchange="toggleSeleccionGasto('${g.id}')">`;
+        } else {
+            checkboxHtml = `<span style="color:var(--success); font-weight:bold;">✓</span>`;
+        }
+
+        let badgeHtml = '';
+        if (g.estado === 'PAGO') {
+            badgeHtml = `<span class="badge badge-pago"><span class="status-pill-dot dot-green"></span>PAGO ${g.fecha_pago ? `(${g.fecha_pago})` : ''}</span>`;
+        } else if (montoPagadoGasto > 0) {
+            badgeHtml = `<span class="badge badge-abono"><span class="status-pill-dot dot-yellow"></span>ABONO</span>`;
+        } else {
+            badgeHtml = `<span class="badge badge-pendiente"><span class="status-pill-dot dot-orange"></span>PENDIENTE</span>`;
+        }
 
         let obs = g.observaciones || '';
         let obsTrun = obs;
         let btnObs = '';
-        if(obs.length > 25) {
+        if (obs.length > 25) {
             obsTrun = obs.substring(0, 25) + '...';
-            btnObs = `<button onclick="verObservacionesGasto('${encodeURIComponent(obs)}')" style="color:var(--primary); font-size:0.75rem; padding:0; background:none; text-decoration:underline;">Ver más</button>`;
+            btnObs = `<button onclick="verObservacionesGasto('${encodeURIComponent(obs)}')" style="color:var(--primary); font-size:0.75rem; padding:0; background:none; text-decoration:underline; border:none; cursor:pointer;">Ver más</button>`;
         }
 
         const puedeEditar = esAdmin || ((g.trabajador || '').trim() === usuarioActual.name.trim());
 
         html += `
-        <tr style="${rowStyle}">
+        <tr style="${g.estado === 'PAGO' ? 'background: rgba(16, 185, 129, 0.04);' : ''}">
             <td class="perm-mod-admin" style="text-align: center;">${checkboxHtml}</td>
-            <td style="font-size: 0.85rem;">${g.fecha}</td>
-            <td style="font-weight: 500;">${g.trabajador}</td>
-            <td>${g.proyecto || 'N/A'}</td>
-            <td>${g.item}</td>
-            <td style="text-align: center;">${g.cantidad}</td>
-            <td style="text-align: right;">$${Number(g.valor_unitario).toLocaleString('es-CO')}</td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${g.fecha || ''}</td>
+            <td style="font-weight: 600; color: var(--text-main);">${g.trabajador || ''}</td>
+            <td><strong style="color: var(--scitic-dark);">${g.proyecto || 'N/A'}</strong></td>
+            <td>${g.item || ''}</td>
+            <td style="text-align: center;">${g.cantidad || 1}</td>
+            <td style="text-align: right;">$${Number(g.valor_unitario || 0).toLocaleString('es-CO')}</td>
             <td style="text-align: right; font-weight: bold; color: var(--scitic-dark);">
-                $${Number(g.total).toLocaleString('es-CO')}
-                ${g.monto_pagado > 0 && g.estado === 'PENDIENTE' ? `<br><small style="color:var(--success)">Abono: $${Number(g.monto_pagado).toLocaleString('es-CO')}</small><br><small style="color:var(--danger)">Resta: $${(Number(g.total) - Number(g.monto_pagado)).toLocaleString('es-CO')}</small>` : ''}
+                $${totalGasto.toLocaleString('es-CO')}
+                ${montoPagadoGasto > 0 && g.estado === 'PENDIENTE' ? `<br><small style="color:#10b981; font-weight:600;">Abonado: $${montoPagadoGasto.toLocaleString('es-CO')}</small><br><small style="color:#ef4444; font-weight:600;">Resta: $${deudaReal.toLocaleString('es-CO')}</small>` : ''}
             </td>
-            <td>
-                <span class="badge ${badgeClass}" style="${g.estado === 'PAGO' ? 'background: #10b981; color: white;' : 'background: #f97316; color: white;'}">
-                    ${g.estado} ${g.fecha_pago ? `(${g.fecha_pago})` : ''}
-                </span>
-            </td>
-            <td><small>${obsTrun}</small> <br> ${btnObs}</td>
+            <td>${badgeHtml}</td>
+            <td><small>${obsTrun}</small> ${btnObs}</td>
             <td style="text-align: center;">
                 <div class="action-btns" style="flex-direction: column; gap: 4px;">
                     ${puedeEditar ? `<button onclick="editarGasto('${g.id}')" style="color: var(--accent); font-weight: 600;">Editar</button>` : ''}
@@ -1450,11 +1726,28 @@ function mostrarGastos(lista) {
         `;
     });
 
-    document.getElementById('tablaGastos').innerHTML = html;
+    const tablaGastos = document.getElementById('tablaGastos');
+    if (tablaGastos) tablaGastos.innerHTML = html;
+
     animarNumero('stat-gastos-total', totalGeneral, "$", true);
     animarNumero('stat-gastos-pagado', totalPagado, "$", true);
     animarNumero('stat-gastos-pendiente', totalPendiente, "$", true);
 
+    const totalSaldoFavorGlobal = (window.usuariosGlobal || []).reduce((acc, u) => acc + (Number(u.saldo_favor) || 0), 0);
+    animarNumero('stat-gastos-saldo-favor', totalSaldoFavorGlobal, "$", true);
+
+    const countPendientes = gastosDatos.filter(g => g.estado === 'PENDIENTE').length;
+    const badgeP = document.getElementById('badgeGastosPendientes');
+    if (badgeP) {
+        if (countPendientes > 0) {
+            badgeP.innerText = countPendientes;
+            badgeP.style.display = 'inline-block';
+        } else {
+            badgeP.style.display = 'none';
+        }
+    }
+
+    actualizarBarraSeleccion();
     aplicarPermisos();
 }
 
@@ -1465,7 +1758,7 @@ function verObservacionesGasto(obsEncoded) {
 
 function graficarGastos(lista) {
     const ctx = document.getElementById("graficoGastos"); 
-    if(!ctx || ctx.offsetParent === null) return; // No graficar si está oculto
+    if(!ctx || ctx.offsetParent === null) return;
 
     const resumen = {};
     lista.forEach(g => {
@@ -1478,7 +1771,7 @@ function graficarGastos(lista) {
     if (window.chartGastos) window.chartGastos.destroy();
 
     let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, '#10b981'); gradient.addColorStop(1, '#059669'); // Verde success
+    gradient.addColorStop(0, '#10b981'); gradient.addColorStop(1, '#059669');
 
     const typeChart = tipoGraficoGastos === 'proyecto' ? 'bar' : 'doughnut';
 
@@ -1534,74 +1827,416 @@ function graficarGastos(lista) {
     window.chartGastos = new Chart(ctx, config);
 }
 
-function toggleSelectAllGastos() {
-    const selectAll = document.getElementById('selectAllGastos').checked;
-    document.querySelectorAll('.gasto-chk').forEach(chk => {
-        chk.checked = selectAll;
+// ==========================================
+// 10.3. EXPORTACIÓN DE GASTOS A EXCEL
+// ==========================================
+
+function exportarGastosExcel() {
+    if (listaFiltradaGastos.length === 0) return Toast.warning("No hay gastos filtrados para exportar.");
+
+    let totalGeneral = 0;
+    let totalPagado = 0;
+    let totalPendiente = 0;
+
+    const filas = listaFiltradaGastos.map(g => {
+        const total = Number(g.total || 0);
+        const pagado = g.estado === 'PAGO' ? total : Number(g.monto_pagado || 0);
+        const pendiente = total - pagado;
+
+        totalGeneral += total;
+        totalPagado += pagado;
+        totalPendiente += pendiente;
+
+        return {
+            "Fecha": g.fecha || "",
+            "Personal": (g.trabajador || "").trim(),
+            "Proyecto": (g.proyecto || "").trim(),
+            "Ítem / Concepto": g.item || "",
+            "Cantidad": Number(g.cantidad || 1),
+            "Valor Unitario ($)": Number(g.valor_unitario || 0),
+            "Total ($)": total,
+            "Monto Pagado ($)": pagado,
+            "Saldo Pendiente ($)": pendiente,
+            "Estado": g.estado || "PENDIENTE",
+            "Fecha Pago": g.fecha_pago || "",
+            "Observaciones": (g.observaciones || "").trim()
+        };
+    });
+
+    filas.push({
+        "Fecha": "TOTALES",
+        "Personal": "",
+        "Proyecto": "",
+        "Ítem / Concepto": "",
+        "Cantidad": "",
+        "Valor Unitario ($)": "",
+        "Total ($)": totalGeneral,
+        "Monto Pagado ($)": totalPagado,
+        "Saldo Pendiente ($)": totalPendiente,
+        "Estado": "",
+        "Fecha Pago": "",
+        "Observaciones": ""
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(filas);
+    XLSX.utils.book_append_sheet(wb, ws, "Gastos_Viaticos");
+    const nombreArchivo = `SCITIC_Gastos_${getFechaColombiaString()}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivo);
+
+    registrarAuditoria("EXPORTAR_GASTOS", `Exportó reporte de gastos con ${listaFiltradaGastos.length} registros.`);
+    Toast.success("Planilla de gastos exportada exitosamente.");
+}
+
+// ==========================================
+// 10.4. CONSOLA DE LIQUIDACIÓN Y PAGO GUIADO
+// ==========================================
+
+function abrirModalLiquidacion(modo = 'abono') {
+    if (usuarioActual && usuarioActual.role !== 'admin' && usuarioActual.role !== 'moderador') {
+        return Toast.error("Acceso restringido a administradores.");
+    }
+
+    const modal = document.getElementById('modalLiquidacion');
+    if (!modal) return;
+
+    modoLiquidacionActual = modo;
+    document.getElementById('liqFecha').value = getFechaColombiaString();
+    document.getElementById('liqComprobante').value = '';
+    document.getElementById('liqNotas').value = '';
+    document.getElementById('liqAvisoExcedente').style.display = 'none';
+
+    // Poblar trabajadores
+    const selectTrab = document.getElementById('liqTrabajador');
+    const trabajadoresConDeuda = new Set();
+    gastosDatos.filter(g => g.estado === 'PENDIENTE').forEach(g => {
+        if (g.trabajador) trabajadoresConDeuda.add(g.trabajador.trim());
+    });
+    (window.usuariosGlobal || []).forEach(u => {
+        if (u.nombre) trabajadoresConDeuda.add(u.nombre.trim());
+    });
+
+    let htmlTrab = '<option value="">Seleccione personal...</option>';
+    [...trabajadoresConDeuda].sort().forEach(t => {
+        htmlTrab += `<option value="${t}">${t}</option>`;
+    });
+    selectTrab.innerHTML = htmlTrab;
+
+    // Si abrimos desde selección y todos son del mismo trabajador
+    if (modo === 'seleccion' && gastosSeleccionadosIds.size > 0) {
+        const seleccionados = gastosDatos.filter(g => gastosSeleccionadosIds.has(g.id));
+        const trabajadoresUnicos = [...new Set(seleccionados.map(g => (g.trabajador || '').trim()))];
+        if (trabajadoresUnicos.length === 1) {
+            selectTrab.value = trabajadoresUnicos[0];
+        }
+        cambiarModoLiquidacion('seleccion');
+    } else {
+        cambiarModoLiquidacion('abono');
+    }
+
+    actualizarInfoLiquidacionTrabajador();
+    modal.classList.add('show');
+}
+
+function cambiarModoLiquidacion(modo) {
+    modoLiquidacionActual = modo;
+    const btnSel = document.getElementById('btnLiqModoSeleccion');
+    const btnAbono = document.getElementById('btnLiqModoAbono');
+    const listaSel = document.getElementById('liqListaGastosSeleccionados');
+    const badgeCont = document.getElementById('liqContadorSeleccion');
+
+    if (badgeCont) badgeCont.innerText = gastosSeleccionadosIds.size;
+
+    if (modo === 'seleccion') {
+        if (btnSel) btnSel.classList.add('active');
+        if (btnAbono) btnAbono.classList.remove('active');
+        if (listaSel) listaSel.style.display = 'block';
+
+        let suma = 0;
+        let html = '';
+        gastosDatos.filter(g => gastosSeleccionadosIds.has(g.id)).forEach(g => {
+            const deuda = Number(g.total || 0) - Number(g.monto_pagado || 0);
+            suma += deuda;
+            html += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; padding:4px 0; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,0.03);">
+                <span>📅 ${g.fecha} - <strong>${g.item}</strong> (${g.proyecto || 'S/P'}):</span>
+                <strong style="color:#10b981;">$${deuda.toLocaleString('es-CO')}</strong>
+            </div>`;
+        });
+        if (listaSel) listaSel.innerHTML = html || '<p style="color:var(--text-muted); font-size:0.8rem; margin:0;">No hay gastos seleccionados.</p>';
+        document.getElementById('liqMonto').value = suma > 0 ? suma : '';
+    } else {
+        if (btnSel) btnSel.classList.remove('active');
+        if (btnAbono) btnAbono.classList.add('active');
+        if (listaSel) listaSel.style.display = 'none';
+        
+        actualizarInfoLiquidacionTrabajador();
+    }
+    calcularExcedenteLiquidacion();
+}
+
+function actualizarInfoLiquidacionTrabajador() {
+    const trab = document.getElementById('liqTrabajador').value;
+    const deudaEl = document.getElementById('liqDeudaTrabajador');
+    const saldoFavorTag = document.getElementById('liqSaldoFavorTag');
+
+    if (!trab) {
+        if (deudaEl) deudaEl.innerText = "$0";
+        if (saldoFavorTag) saldoFavorTag.innerText = "Saldo a favor: $0";
+        return;
+    }
+
+    let deudaTotal = 0;
+    gastosDatos.filter(g => g.estado === 'PENDIENTE' && (g.trabajador || '').trim() === trab).forEach(g => {
+        deudaTotal += Number(g.total || 0) - Number(g.monto_pagado || 0);
+    });
+
+    const userProfile = (window.usuariosGlobal || []).find(u => (u.nombre || '').trim() === trab);
+    const saldoFavor = userProfile ? Number(userProfile.saldo_favor || 0) : 0;
+
+    if (deudaEl) deudaEl.innerText = "$" + deudaTotal.toLocaleString('es-CO');
+    if (saldoFavorTag) saldoFavorTag.innerText = `Saldo a favor disponible: $${saldoFavor.toLocaleString('es-CO')}`;
+
+    if (modoLiquidacionActual === 'abono') {
+        const inMonto = document.getElementById('liqMonto');
+        if (inMonto && (!inMonto.value || Number(inMonto.value) === 0)) {
+            inMonto.value = deudaTotal > 0 ? deudaTotal : '';
+        }
+    }
+    calcularExcedenteLiquidacion();
+}
+
+function calcularExcedenteLiquidacion() {
+    const trab = document.getElementById('liqTrabajador').value;
+    const monto = parseFloat(document.getElementById('liqMonto').value) || 0;
+    const aviso = document.getElementById('liqAvisoExcedente');
+    const avisoMonto = document.getElementById('liqMontoExcedente');
+
+    if (!aviso || !avisoMonto || !trab || monto <= 0) {
+        if (aviso) aviso.style.display = 'none';
+        return;
+    }
+
+    let deuda = 0;
+    if (modoLiquidacionActual === 'seleccion') {
+        gastosDatos.filter(g => gastosSeleccionadosIds.has(g.id)).forEach(g => {
+            deuda += Number(g.total || 0) - Number(g.monto_pagado || 0);
+        });
+    } else {
+        gastosDatos.filter(g => g.estado === 'PENDIENTE' && (g.trabajador || '').trim() === trab).forEach(g => {
+            deuda += Number(g.total || 0) - Number(g.monto_pagado || 0);
+        });
+    }
+
+    if (monto > deuda) {
+        const excedente = monto - deuda;
+        avisoMonto.innerText = "$" + excedente.toLocaleString('es-CO');
+        aviso.style.display = 'block';
+    } else {
+        aviso.style.display = 'none';
+    }
+}
+
+async function procesarLiquidacionPago() {
+    const trab = document.getElementById('liqTrabajador').value;
+    const fechaPago = document.getElementById('liqFecha').value;
+    const metodo = document.getElementById('liqMetodo').value;
+    const comprobante = document.getElementById('liqComprobante').value.trim();
+    const notas = document.getElementById('liqNotas').value.trim();
+    const monto = parseFloat(document.getElementById('liqMonto').value) || 0;
+
+    if (!trab) return Toast.warning("Debe seleccionar el personal beneficiario.");
+    if (!fechaPago) return Toast.warning("Debe indicar la fecha de pago.");
+    if (monto <= 0) return Toast.warning("El monto a pagar debe ser mayor a 0.");
+
+    let gastosALiquidar = [];
+    if (modoLiquidacionActual === 'seleccion' && gastosSeleccionadosIds.size > 0) {
+        gastosALiquidar = gastosDatos
+            .filter(g => gastosSeleccionadosIds.has(g.id))
+            .sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+    } else {
+        gastosALiquidar = gastosDatos
+            .filter(g => g.estado === 'PENDIENTE' && (g.trabajador || '').trim() === trab)
+            .sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
+    }
+
+    const numComprobante = comprobante || `CP-${Date.now().toString().slice(-6)}`;
+
+    if (!confirm(`¿Confirmar liquidación de $${monto.toLocaleString('es-CO')} a ${trab} vía ${metodo} (Ref: ${numComprobante})?`)) {
+        return;
+    }
+
+    showLoader("Procesando pago y liquidación...");
+
+    let saldoDisponible = monto;
+    let gastosCubiertos = [];
+    let exitoCount = 0;
+
+    for (const gastoObj of gastosALiquidar) {
+        if (saldoDisponible <= 0) break;
+        let deudaActual = Number(gastoObj.total || 0) - Number(gastoObj.monto_pagado || 0);
+
+        let obsInfo = `[Pago: ${metodo} | Ref: ${numComprobante}${notas ? ' | ' + notas : ''}]`;
+        let nuevaObs = gastoObj.observaciones ? `${gastoObj.observaciones.trim()}\n${obsInfo}` : obsInfo;
+
+        if (saldoDisponible >= deudaActual) {
+            saldoDisponible -= deudaActual;
+            const success = await window.API.actualizarGasto(gastoObj.id, {
+                estado: 'PAGO',
+                fecha_pago: fechaPago,
+                monto_pagado: gastoObj.total,
+                observaciones: nuevaObs
+            });
+            if (success) {
+                exitoCount++;
+                gastosCubiertos.push({ ...gastoObj, liquidado: deudaActual, estadoResultante: 'PAGO' });
+            }
+        } else {
+            const nuevoMonto = Number(gastoObj.monto_pagado || 0) + saldoDisponible;
+            const abonoHecho = saldoDisponible;
+            saldoDisponible = 0;
+            const success = await window.API.actualizarGasto(gastoObj.id, {
+                estado: 'PENDIENTE',
+                monto_pagado: nuevoMonto,
+                observaciones: nuevaObs
+            });
+            if (success) {
+                exitoCount++;
+                gastosCubiertos.push({ ...gastoObj, liquidado: abonoHecho, estadoResultante: 'ABONO' });
+            }
+        }
+    }
+
+    // Si sobró saldo, se acredita a saldo_favor
+    let saldoFavorNuevo = 0;
+    if (saldoDisponible > 0) {
+        const workerProfile = (window.usuariosGlobal || []).find(u => (u.nombre || '').trim() === trab);
+        let saldoActual = workerProfile ? Number(workerProfile.saldo_favor || 0) : 0;
+        saldoFavorNuevo = saldoActual + saldoDisponible;
+        if (workerProfile) workerProfile.saldo_favor = saldoFavorNuevo;
+        await window.API.actualizarSaldoFavor(trab, saldoFavorNuevo);
+    }
+
+    // Recargar datos
+    const [gastosDb, usersDb] = await Promise.all([
+        window.API.getGastos(),
+        window.API.getUsuarios()
+    ]);
+    if (gastosDb) gastosDatos = gastosDb;
+    if (usersDb) window.usuariosGlobal = usersDb;
+
+    await registrarAuditoria("LIQUIDACION_PAGO", `Liquidación de $${monto.toLocaleString('es-CO')} a ${trab} (${metodo} - ${numComprobante}) cubriendo ${exitoCount} registros.`);
+
+    deseleccionarTodosGastos();
+    cerrarModal('modalLiquidacion');
+    filtrarGastos();
+    hideLoader();
+
+    Toast.success(`¡Pago registrado exitosamente! ${exitoCount} gastos procesados.`);
+
+    // Mostrar comprobante imprimible
+    generarComprobantePago({
+        numero: numComprobante,
+        beneficiario: trab,
+        fecha: fechaPago,
+        metodo: metodo,
+        montoTotal: monto,
+        gastosCubiertos: gastosCubiertos,
+        excedenteSaldoFavor: saldoDisponible,
+        saldoFavorTotal: saldoFavorNuevo,
+        notas: notas
     });
 }
 
-async function procesarPagoAutomatico() {
-    const trabajador = document.getElementById('pagoTrabajador').value;
-    const fechaPago = document.getElementById('pagoFecha').value;
-    const monto = parseFloat(document.getElementById('pagoMonto').value);
+function generarComprobantePago(datosPago) {
+    const contenedor = document.getElementById('reciboContenido');
+    if (!contenedor) return;
 
-    if (!trabajador) return Toast.warning("Seleccione un trabajador.");
-    if (!fechaPago) return Toast.warning("Seleccione la fecha de pago.");
-    if (isNaN(monto) || monto <= 0) return Toast.warning("Ingrese un monto válido a pagar.");
-
-    // Obtener todos los gastos PENDIENTES del trabajador, ordenados desde el más antiguo
-    const gastosPendientes = gastosDatos
-        .filter(g => g.estado === 'PENDIENTE' && (g.trabajador || '').trim() === trabajador)
-        .sort((a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0));
-
-    if (gastosPendientes.length === 0) {
-        return Toast.warning(`No hay gastos pendientes para ${trabajador}.`);
+    let filasHtml = '';
+    if (datosPago.gastosCubiertos.length > 0) {
+        datosPago.gastosCubiertos.forEach((g, idx) => {
+            filasHtml += `<tr>
+                <td style="text-align:center;">${idx + 1}</td>
+                <td>${g.fecha || ''}</td>
+                <td><strong>${g.proyecto || 'N/A'}</strong></td>
+                <td>${g.item || ''}</td>
+                <td style="text-align:right;">$${Number(g.total || 0).toLocaleString('es-CO')}</td>
+                <td style="text-align:right; font-weight:bold; color:#10b981;">$${Number(g.liquidado || 0).toLocaleString('es-CO')}</td>
+            </tr>`;
+        });
+    } else {
+        filasHtml = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:15px;">Abono a cuenta sin asignación directa a ítems específicos.</td></tr>`;
     }
 
-    if (confirm(`¿Proceder con el pago automático de $${monto.toLocaleString('es-CO')} para ${trabajador} con fecha ${fechaPago}?`)) {
-        showLoader("Procesando pago...");
-        let saldoDisponible = monto;
-        let exitoCount = 0;
+    const html = `
+        <div class="receipt-header">
+            <div>
+                <h2 style="margin:0; font-size:1.5rem; color:#0f172a; font-weight:800;">SCITIC S.A.S</h2>
+                <div style="font-size:0.85rem; color:#64748b; margin-top:3px;">NIT: 901.458.120-1 | Control de Proyectos y Viáticos</div>
+                <div style="margin-top:10px; font-size:0.9rem; font-weight:700; color:#ea580c;">COMPROBANTE DE PAGO DE GASTOS</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:1.1rem; font-weight:800; color:#0f172a;">${datosPago.numero}</div>
+                <div class="receipt-meta">Fecha: ${datosPago.fecha}</div>
+                <div class="receipt-meta">Método: <strong>${datosPago.metodo}</strong></div>
+            </div>
+        </div>
 
-        for (const gastoObj of gastosPendientes) {
-            if (saldoDisponible <= 0) break;
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; margin-bottom:1.5rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div>
+                <small style="color:#64748b; text-transform:uppercase; font-size:0.7rem; font-weight:700; display:block;">Beneficiario:</small>
+                <strong style="color:#0f172a; font-size:1.05rem;">${datosPago.beneficiario}</strong>
+            </div>
+            <div>
+                <small style="color:#64748b; text-transform:uppercase; font-size:0.7rem; font-weight:700; display:block;">Concepto / Notas:</small>
+                <span style="color:#334155; font-size:0.88rem;">${datosPago.notas || 'Liquidación y reembolso de viáticos operativos'}</span>
+            </div>
+        </div>
 
-            let deudaActual = Number(gastoObj.total || 0) - Number(gastoObj.monto_pagado || 0);
+        <table class="receipt-table">
+            <thead>
+                <tr>
+                    <th style="width:30px; text-align:center;">#</th>
+                    <th>Fecha Gasto</th>
+                    <th>Proyecto</th>
+                    <th>Ítem</th>
+                    <th style="text-align:right;">Total Gasto</th>
+                    <th style="text-align:right;">Monto Liquidado</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filasHtml}
+            </tbody>
+        </table>
 
-            if (saldoDisponible >= deudaActual) {
-                saldoDisponible -= deudaActual;
-                const success = await window.API.actualizarGasto(gastoObj.id, { estado: 'PAGO', fecha_pago: fechaPago, monto_pagado: gastoObj.total });
-                if (success) exitoCount++;
-            } else {
-                const nuevoMonto = Number(gastoObj.monto_pagado || 0) + saldoDisponible;
-                saldoDisponible = 0;
-                const success = await window.API.actualizarGasto(gastoObj.id, { estado: 'PENDIENTE', monto_pagado: nuevoMonto });
-                if (success) exitoCount++;
-            }
-        }
+        <div class="receipt-totals">
+            <div class="receipt-total-box">
+                <div style="display:flex; justify-content:space-between; font-size:1rem; font-weight:800; color:#0f172a; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">
+                    <span>TOTAL PAGADO:</span>
+                    <span style="color:#10b981;">$${datosPago.montoTotal.toLocaleString('es-CO')}</span>
+                </div>
+                ${datosPago.excedenteSaldoFavor > 0 ? `
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#06b6d4; margin-top:6px;">
+                    <span>Acreditado Saldo a Favor:</span>
+                    <span>+$${datosPago.excedenteSaldoFavor.toLocaleString('es-CO')}</span>
+                </div>
+                ` : ''}
+            </div>
+        </div>
 
-        // Si sobró saldo, se agrega como saldo a favor
-        if (saldoDisponible > 0) {
-            const workerProfile = (window.usuariosGlobal || []).find(u => u.nombre.trim() === trabajador);
-            let saldoActual = workerProfile ? Number(workerProfile.saldo_favor || 0) : 0;
-            const nuevoSaldo = saldoActual + saldoDisponible;
-            if (workerProfile) workerProfile.saldo_favor = nuevoSaldo;
-            await window.API.actualizarSaldoFavor(trabajador, nuevoSaldo);
-            Toast.success(`Pago procesado. Se agregaron $${saldoDisponible.toLocaleString('es-CO')} como saldo a favor.`);
-        } else {
-            Toast.success(`Se procesaron pagos en ${exitoCount} gastos.`);
-        }
+        <div style="display:flex; justify-content:space-between; margin-top:3.5rem; padding-top:1rem; border-top:1px dashed #cbd5e1;">
+            <div style="text-align:center; width:220px;">
+                <div style="border-bottom:1px solid #475569; height:35px; margin-bottom:5px;"></div>
+                <small style="color:#64748b; font-weight:600;">Autorizado Por (SCITIC)</small>
+            </div>
+            <div style="text-align:center; width:220px;">
+                <div style="border-bottom:1px solid #475569; height:35px; margin-bottom:5px;"></div>
+                <small style="color:#64748b; font-weight:600;">Recibí Conforme (${datosPago.beneficiario})</small>
+            </div>
+        </div>
+    `;
 
-        // Recargar datos
-        const gastosDb = await window.API.getGastos();
-        if (gastosDb) gastosDatos = gastosDb;
-        filtrarGastos();
-        document.getElementById('pagoMonto').value = '';
-        
-        registrarAuditoria("GASTO_PAGO", `Pago auto de $${monto} para ${trabajador} en ${exitoCount} registros.`);
-        hideLoader();
-    }
+    contenedor.innerHTML = html;
+    document.getElementById('modalReciboPago').classList.add('show');
 }
 
 async function eliminarGasto(id) {
@@ -1610,8 +2245,9 @@ async function eliminarGasto(id) {
         const success = await window.API.eliminarGasto(id);
         if (success) {
             gastosDatos = gastosDatos.filter(g => g.id !== id);
+            gastosSeleccionadosIds.delete(id);
             filtrarGastos();
-            Toast.success("Gasto eliminado.");
+            Toast.success("Gasto eliminado exitosamente.");
             registrarAuditoria("GASTO_ELIMINAR", `Se eliminó un registro de gasto.`);
         }
         hideLoader();

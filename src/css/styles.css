@@ -25,6 +25,10 @@
     --danger: #ef4444; 
     --danger-bg: rgba(239, 68, 68, 0.1);
     --success: #10b981;
+    --permiso-color: #06b6d4;
+    --incapacidad-color: #f43f5e;
+    --vacaciones-color: #8b5cf6;
+    --novedad-color: #ec4899;
 
     /* Tablas y Formularios */
     --table-header-bg: rgba(15, 23, 42, 0.8); 
@@ -584,4 +588,273 @@ tr:hover td { background: var(--table-row-hover); color: #fff; }
     border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* =========================================================
+   13. COMPONENTES MODERNIZADOS: NAVEGACIÓN Y TABS
+   ========================================================= */
+.module-nav-container {
+    display: flex;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    padding: 6px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    gap: 8px;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    box-shadow: var(--shadow-sm);
+}
+
+.module-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.4rem;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer !important;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    width: auto;
+    box-shadow: none;
+}
+
+.module-tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+}
+
+.module-tab-btn.active {
+    background: var(--primary-gradient);
+    color: #ffffff;
+    border-color: rgba(234, 88, 12, 0.4);
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+}
+
+.module-tab-badge {
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================================
+   14. SELECTOR DE MODO (LABORAL VS NOVEDAD / PERMISO)
+   ========================================================= */
+.mode-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    margin-bottom: 1.2rem;
+}
+
+.mode-btn {
+    padding: 0.6rem 0.8rem;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer !important;
+    transition: all 0.2s ease;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.mode-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.mode-btn.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mode-btn.active.novedad {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
+    color: #f472b6;
+    border-color: rgba(236, 72, 153, 0.4);
+}
+
+/* =========================================================
+   15. INSIGNIAS Y BADGES DINÁMICOS
+   ========================================================= */
+.badge-diseno { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.badge-rrhh { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.badge-obras { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-permiso { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.35); }
+.badge-incapacidad { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.35); }
+.badge-vacaciones { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); }
+.badge-nolaboral { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.35); }
+
+.badge-pago { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+.badge-pendiente { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.35); }
+.badge-abono { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.35); }
+
+/* Micro dot de estado */
+.status-pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+.dot-green { background: #10b981; box-shadow: 0 0 6px #10b981; }
+.dot-orange { background: #f97316; box-shadow: 0 0 6px #f97316; }
+.dot-yellow { background: #eab308; box-shadow: 0 0 6px #eab308; }
+
+/* =========================================================
+   16. BARRA FLOTANTE DE SELECCIÓN Y ACCIONES EN LOTE
+   ========================================================= */
+.floating-selection-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid rgba(234, 88, 12, 0.5);
+    box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.6), 0 0 20px rgba(234, 88, 12, 0.25);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.85rem 1.6rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    z-index: 999;
+    animation: slideUpFade 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 650px;
+    width: calc(100% - 40px);
+}
+
+.floating-selection-info {
+    font-size: 0.92rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.floating-selection-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* =========================================================
+   17. COMPROBANTE DE LIQUIDACIÓN Y ESTILOS DE IMPRESIÓN
+   ========================================================= */
+.receipt-sheet {
+    background: #ffffff;
+    color: #0f172a;
+    padding: 2.5rem;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.receipt-meta {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.receipt-table th {
+    background: #f1f5f9;
+    color: #1e293b;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    border-bottom: 2px solid #cbd5e1;
+    position: static;
+}
+
+.receipt-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.85rem;
+}
+
+.receipt-totals {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.receipt-total-box {
+    width: 280px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #modalReciboPago, #modalReciboPago * {
+        visibility: visible !important;
+    }
+    #modalReciboPago {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    #modalReciboPago .modal-content {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+    .no-print {
+        display: none !important;
+    }
 }
