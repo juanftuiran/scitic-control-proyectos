@@ -516,6 +516,19 @@
             z-index: 10000; box-shadow: 0 8px 25px rgba(0,0,0,0.5); display: none;
             align-items: center; gap: 8px; animation: fadeIn 0.25s ease;
         }
+        @keyframes iosViewIn {
+            0% {
+                opacity: 0;
+                transform: translateY(8px) scale(0.995);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .ios-view-in {
+            animation: iosViewIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
     </style>
 </head>
 <body>
@@ -2617,11 +2630,23 @@
     }
 
     function mostrarEditor() {
-        document.getElementById('vista-proyectos-hub').style.display = 'none';
-        document.getElementById('vista-editor').style.display = 'block';
+        const hub = document.getElementById('vista-proyectos-hub');
+        const editor = document.getElementById('vista-editor');
+        hub.style.display = 'none';
+        editor.style.display = 'block';
+        editor.classList.remove('ios-view-in');
+        void editor.offsetWidth;
+        editor.classList.add('ios-view-in');
     }
 
     function volverAlHubProyectos() {
+        const hub = document.getElementById('vista-proyectos-hub');
+        const editor = document.getElementById('vista-editor');
+        editor.style.display = 'none';
+        hub.style.display = 'block';
+        hub.classList.remove('ios-view-in');
+        void hub.offsetWidth;
+        hub.classList.add('ios-view-in');
         mostrarHubProyectos();
     }
 

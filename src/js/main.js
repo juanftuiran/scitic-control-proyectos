@@ -1423,21 +1423,29 @@ function switchModule(moduleName) {
     const tabGastos = document.getElementById('tabGastos');
     const tabHerramientas = document.getElementById('tabHerramientas');
 
-    if (horasModule) horasModule.style.display = 'none';
-    if (gastosModule) gastosModule.style.display = 'none';
-    if (herramientasModule) herramientasModule.style.display = 'none';
-    
-    if (tabHoras) tabHoras.classList.remove('active');
-    if (tabGastos) tabGastos.classList.remove('active');
-    if (tabHerramientas) tabHerramientas.classList.remove('active');
+    const modules = [
+        { name: 'horas', el: horasModule, tab: tabHoras },
+        { name: 'gastos', el: gastosModule, tab: tabGastos },
+        { name: 'herramientas', el: herramientasModule, tab: tabHerramientas }
+    ];
 
-    if (moduleName === 'horas') {
-        if (horasModule) horasModule.style.display = 'block';
-        if (tabHoras) tabHoras.classList.add('active');
-    } else if (moduleName === 'gastos') {
-        if (gastosModule) gastosModule.style.display = 'block';
-        if (tabGastos) tabGastos.classList.add('active');
-        
+    modules.forEach(m => {
+        if (m.el) {
+            m.el.style.display = 'none';
+            m.el.classList.remove('ios-view-enter');
+        }
+        if (m.tab) m.tab.classList.remove('active');
+    });
+
+    const activeMod = modules.find(m => m.name === moduleName);
+    if (activeMod && activeMod.el) {
+        activeMod.el.style.display = 'block';
+        void activeMod.el.offsetWidth; // Forzar reflow para animación suave iOS
+        activeMod.el.classList.add('ios-view-enter');
+        if (activeMod.tab) activeMod.tab.classList.add('active');
+    }
+
+    if (moduleName === 'gastos') {
         if (usuarioActual && usuarioActual.role === 'colaborador') {
             const inTrab = document.getElementById('gastoTrabajador');
             if (inTrab) {
@@ -1450,22 +1458,97 @@ function switchModule(moduleName) {
             gFecha.value = getFechaColombiaString();
         }
         filtrarGastos();
-    } else if (moduleName === 'herramientas') {
-        if (herramientasModule) herramientasModule.style.display = 'block';
-        if (tabHerramientas) tabHerramientas.classList.add('active');
     }
 }
 
-function abrirHerramienta(url) {
-    document.getElementById('herramientasCatalogo').style.display = 'none';
-    document.getElementById('herramientasVisor').style.display = 'block';
-    document.getElementById('iframeHerramienta').src = url;
+let toolTransitionTimeout = null;
+
+function abrirHerramienta(url, nombre) {
+    const catalogo = document.getElementById('herramientasCatalogo');
+    const visor = document.getElementById('herramientasVisor');
+    const iframe = document.getElementById('iframeHerramienta');
+    const loader = document.getElementById('iframeLoader');
+    const loaderText = document.getElementById('iframeLoaderText');
+    const lblTitulo = document.getElementById('lblTituloHerramienta');
+
+    if (lblTitulo) lblTitulo.textContent = nombre || 'Herramienta de Ingeniería';
+    if (loaderText) loaderText.textContent = `Iniciando ${nombre || 'aplicación'}...`;
+
+    // 1. Mostrar loader frosted glass y resetear iframe
+    if (loader) {
+        loader.classList.remove('hidden');
+        loader.style.opacity = '1';
+        loader.style.visibility = 'visible';
+    }
+    if (iframe) {
+        iframe.classList.remove('loaded');
+    }
+
+    // 2. Transición suave del catálogo hacia el visor estilo Apple
+    if (catalogo) {
+        catalogo.classList.remove('ios-view-enter');
+        catalogo.classList.add('ios-view-leave');
+    }
+
+    clearTimeout(toolTransitionTimeout);
+    toolTransitionTimeout = setTimeout(() => {
+        if (catalogo) {
+            catalogo.style.display = 'none';
+            catalogo.classList.remove('ios-view-leave');
+        }
+        if (visor) {
+            visor.style.display = 'block';
+            visor.classList.remove('ios-view-leave');
+            void visor.offsetWidth;
+            visor.classList.add('ios-view-enter');
+        }
+
+        // 3. Cargar la URL y esperar evento load para desvanecer el cargador suavemente
+        if (iframe) {
+            iframe.onload = () => {
+                setTimeout(() => {
+                    if (loader) {
+                        loader.classList.add('hidden');
+                    }
+                    iframe.classList.add('loaded');
+                }, 120);
+            };
+            iframe.src = url;
+        }
+    }, 160);
 }
 
 function cerrarHerramienta() {
-    document.getElementById('herramientasVisor').style.display = 'none';
-    document.getElementById('herramientasCatalogo').style.display = 'block';
-    document.getElementById('iframeHerramienta').src = '';
+    const catalogo = document.getElementById('herramientasCatalogo');
+    const visor = document.getElementById('herramientasVisor');
+    const iframe = document.getElementById('iframeHerramienta');
+    const loader = document.getElementById('iframeLoader');
+
+    if (visor) {
+        visor.classList.remove('ios-view-enter');
+        visor.classList.add('ios-view-leave');
+    }
+
+    clearTimeout(toolTransitionTimeout);
+    toolTransitionTimeout = setTimeout(() => {
+        if (visor) {
+            visor.style.display = 'none';
+            visor.classList.remove('ios-view-leave');
+        }
+        if (catalogo) {
+            catalogo.style.display = 'block';
+            void catalogo.offsetWidth;
+            catalogo.classList.add('ios-view-enter');
+        }
+        if (iframe) {
+            iframe.onload = null;
+            iframe.src = '';
+            iframe.classList.remove('loaded');
+        }
+        if (loader) {
+            loader.classList.remove('hidden');
+        }
+    }, 180);
 }
 
 function calcularTotalGasto() {
