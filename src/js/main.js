@@ -495,6 +495,18 @@ function manejarCambiosFormulario() {
     document.getElementById("trabajadoresList").innerHTML = [...trabajadoresSet].sort().map(t => `<option value="${t}"></option>`).join('');
 }
 
+function obtenerMesPorDefectoHoras() {
+    const mesesGlobales = new Set();
+    datos.forEach(d => {
+        if (d.fecha && d.fecha.length >= 7) mesesGlobales.add(d.fecha.substring(0, 7));
+    });
+    const mesActualHoy = getFechaColombiaString().substring(0, 7);
+    const listaMesesOrdenados = [...mesesGlobales].sort().reverse();
+    if (mesesGlobales.has(mesActualHoy)) return mesActualHoy;
+    if (listaMesesOrdenados.length > 0) return listaMesesOrdenados[0];
+    return '';
+}
+
 function inicializarDatosGlobales() {
     const mesesGlobales = new Set();
 
@@ -502,14 +514,27 @@ function inicializarDatosGlobales() {
         if (d.fecha && d.fecha.length >= 7) mesesGlobales.add(d.fecha.substring(0, 7));
     });
 
+    const listaMesesOrdenados = [...mesesGlobales].sort().reverse();
+
     let fMes = document.getElementById("fMes");
-    let valMesActual = fMes.value;
+    let valMesActual = fMes ? fMes.value : '';
+
+    // Si el usuario no ha cambiado manualmente el mes o el valor actual ya no es válido, asignar mes por defecto
+    let mesPorDefecto = valMesActual;
+    if (!fMes || !fMes.dataset.userChanged || (valMesActual && !mesesGlobales.has(valMesActual))) {
+        mesPorDefecto = obtenerMesPorDefectoHoras();
+    }
+
     let htmlMeses = '<option value="">Todos los meses</option>';
-    [...mesesGlobales].sort().reverse().forEach(val => {
-        const selected = val === valMesActual ? 'selected' : '';
+    listaMesesOrdenados.forEach(val => {
+        const selected = val === mesPorDefecto ? 'selected' : '';
         htmlMeses += `<option value="${val}" ${selected}>${val}</option>`;
     });
-    fMes.innerHTML = htmlMeses;
+
+    if (fMes) {
+        fMes.innerHTML = htmlMeses;
+        fMes.value = mesPorDefecto || '';
+    }
 
     manejarCambiosFormulario();
     filtrar();
@@ -578,7 +603,11 @@ function limpiarFiltros() {
     document.getElementById('fCliente').value = "";
     if (usuarioActual.role !== 'colaborador') document.getElementById('fTrabajador').value = "";
     document.getElementById('fProyecto').value = "";
-    document.getElementById('fMes').value = "";
+    const fMes = document.getElementById('fMes');
+    if (fMes) {
+        delete fMes.dataset.userChanged;
+        fMes.value = obtenerMesPorDefectoHoras();
+    }
     document.getElementById('fBusqueda').value = "";
     filtrar();
 }
@@ -892,12 +921,42 @@ function cerrarModal(modalId) {
 // ==========================================
 // 6. UI Y GRÁFICOS
 // ==========================================
+let actividadGraficoHoras = 'DISEÑO';
+
+function coincideActividadGrafico(actDato, actFiltro) {
+    if (!actFiltro || actFiltro === 'TODAS') return true;
+    if (!actDato) return false;
+    const cleanDato = String(actDato).trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const cleanFiltro = String(actFiltro).trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return cleanDato === cleanFiltro;
+}
+
+function cambiarActividadGrafico(act) {
+    actividadGraficoHoras = act || 'DISEÑO';
+    const container = document.getElementById('actividadGraficoTabs');
+    if (container) {
+        container.querySelectorAll('.widget-tab').forEach(tab => {
+            if (tab.getAttribute('data-act') === actividadGraficoHoras) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+    }
+    graficar(listaFiltradaGlobal || []);
+}
+
 function graficar(listaFiltrada) {
     const ctx = document.getElementById("grafico"); 
     if(!ctx || ctx.offsetParent === null) return; // No graficar si está oculto
 
+    // Filtrar por la actividad seleccionada en los tabs si no es 'TODAS'
+    const datosGrafico = (actividadGraficoHoras && actividadGraficoHoras !== 'TODAS')
+        ? (listaFiltrada || []).filter(d => coincideActividadGrafico(d.actividad, actividadGraficoHoras))
+        : (listaFiltrada || []);
+
     const resumen = {};
-    listaFiltrada.forEach(d => {
+    datosGrafico.forEach(d => {
         if (d.proyecto) {
             const p = d.proyecto.trim();
             resumen[p] = (resumen[p] || 0) + Number(d.horas || 0);
@@ -907,12 +966,79 @@ function graficar(listaFiltrada) {
     Chart.defaults.font.family = 'Inter';
     if (window.chart) window.chart.destroy();
 
+    // Colores personalizados según la actividad seleccionada
+    let colorStart = '#ea580c', colorEnd = '#c2410c', hoverColor = '#f97316';
+    if (actividadGraficoHoras === 'OBRAS') {
+        colorStart = '#10b981'; colorEnd = '#059669'; hoverColor = '#34d399';
+    } else if (actividadGraficoHoras === 'RRHH') {
+        colorStart = '#8b5cf6'; colorEnd = '#6d28d9'; hoverColor = '#a78bfa';
+    } else if (actividadGraficoHoras === 'TODAS') {
+        colorStart = '#3b82f6'; colorEnd = '#1d4ed8'; hoverColor = '#60a5fa';
+    }
+
     let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, '#ea580c'); gradient.addColorStop(1, '#c2410c');
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+
+    // Ordenar de mayor a menor horas para una mejor visualización ejecutiva
+    const sortedEntries = Object.entries(resumen).sort((a, b) => b[1] - a[1]);
+    const labels = sortedEntries.map(e => e[0]);
+    const dataValues = sortedEntries.map(e => e[1]);
+
+    const actNombreDisplay = actividadGraficoHoras === 'DISEÑO' ? 'Diseño'
+        : actividadGraficoHoras === 'OBRAS' ? 'Obras'
+        : actividadGraficoHoras === 'RRHH' ? 'RRHH'
+        : 'Todas';
 
     window.chart = new Chart(ctx, {
-        type: 'bar', data: { labels: Object.keys(resumen), datasets: [{ label: 'Horas', data: Object.values(resumen), backgroundColor: gradient, hoverBackgroundColor: '#f97316', borderRadius: 6, borderSkipped: false }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.95)', titleColor: '#fff', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }, x: { grid: { display: false } } }, onClick: (e, items) => { if (items.length > 0) { document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index]; filtrar(); } } }
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `Horas (${actNombreDisplay})`,
+                data: dataValues,
+                backgroundColor: gradient,
+                hoverBackgroundColor: hoverColor,
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#94a3b8',
+                    padding: 12,
+                    cornerRadius: 8,
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.parsed.y || 0} horas`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    beginAtZero: true
+                },
+                x: {
+                    grid: { display: false }
+                }
+            },
+            onClick: (e, items) => {
+                if (items.length > 0) {
+                    document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index];
+                    filtrar();
+                }
+            }
+        }
     });
 }
 
@@ -1462,6 +1588,10 @@ function switchModule(moduleName) {
             gFecha.value = getFechaColombiaString();
         }
         filtrarGastos();
+    } else if (moduleName === 'horas') {
+        setTimeout(() => {
+            graficar(listaFiltradaGlobal);
+        }, 50);
     }
 }
 

@@ -84,7 +84,7 @@
         <section class="card glass-panel">
             <h3>Filtros Avanzados</h3>
             <div class="filters-card">
-                <div class="form-group form-group-filter"><label>Mes</label><select id="fMes" onchange="filtrar()"><option value="">Todos los meses</option></select></div>
+                <div class="form-group form-group-filter"><label>Mes</label><select id="fMes" onchange="this.dataset.userChanged='true'; filtrar()"><option value="">Todos los meses</option></select></div>
                 <div class="form-group form-group-filter"><label>Cliente</label><select id="fCliente" onchange="filtrar()"><option value="">Todos</option></select></div>
                 <div class="form-group form-group-filter perm-trabajador-filtro"><label>Trabajador</label><select id="fTrabajador" onchange="filtrar()"><option value="">Todos</option></select></div>
                 <div class="form-group form-group-filter"><label>Proyecto</label><select id="fProyecto" onchange="filtrar()"><option value="">Todos</option></select></div>
@@ -218,7 +218,15 @@
             <main>
                 <div class="chart-alert-container">
                     <section class="card glass-panel" style="margin-bottom: 0;">
-                        <h3>Distribución de Carga</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="margin: 0; border: none; padding: 0;">Distribución de Carga</h3>
+                            <div class="widget-tabs" id="actividadGraficoTabs" style="margin-bottom: 0; width: auto; max-width: 100%;">
+                                <button type="button" class="widget-tab active" data-act="DISEÑO" onclick="cambiarActividadGrafico('DISEÑO')">Diseño</button>
+                                <button type="button" class="widget-tab" data-act="OBRAS" onclick="cambiarActividadGrafico('OBRAS')">Obras</button>
+                                <button type="button" class="widget-tab" data-act="RRHH" onclick="cambiarActividadGrafico('RRHH')">RRHH</button>
+                                <button type="button" class="widget-tab" data-act="TODAS" onclick="cambiarActividadGrafico('TODAS')">Todas</button>
+                            </div>
+                        </div>
                         <canvas id="grafico" style="cursor: pointer;"></canvas>
                     </section>
                     
