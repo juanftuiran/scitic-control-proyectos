@@ -623,11 +623,7 @@
         }
 
         function redondearBandejaTorres(valor) {
-            if (valor <= 0) return 0;
-            let baseCien = Math.floor(valor / 100) * 100;
-            let residuo = valor - baseCien;
-            let redondeado = (residuo >= 10) ? baseCien + 100 : baseCien;
-            return Math.max(200, redondeado);
+            return RitelFormulas.redondearBandeja(valor);
         }
 
         // ==========================================

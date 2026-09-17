@@ -237,22 +237,62 @@ const RitelFormulas = {
     },
 
     /**
+     * Redondeo normativo a ancho comercial recomendado de bandeja portacables (mm).
+     * Tamaños comerciales típicos: 100, 150, 200, 300, 400, 500, 600 mm.
+     * Mínimo comercial en troncal vertical: 100 mm.
+     * Si el residuo excede los 10 mm por encima del calibre comercial, se promueve al siguiente.
+     * @param {number} valor Ancho calculado en mm
+     * @returns {number}
+     */
+    redondearBandeja: function(valor) {
+        if (!valor || valor <= 0) return 0;
+        let baseCien = Math.floor(valor / 100) * 100;
+        let residuo = valor - baseCien;
+        let redondeado = (residuo >= 10) ? baseCien + 100 : (baseCien === 0 ? 100 : baseCien);
+        return Math.max(100, redondeado);
+    },
+
+    /**
      * Fórmulas para calcular el área requerida y el ancho de las bandejas portacables.
-     * Basado en la envolvente rectangular de los cables (Norma RITEL 2025):
-     * Area Coax Rect = 45.5625 mm², Area FO Rec = 13.69 mm²
+     * Basado en la envolvente rectangular de los cables y la regla de dimensionamiento RITEL 2025:
+     * 1. Área transversal de un cable = Diámetro^2 (Área rectangular: Coaxial = 45.5625 mm², FO = 13.69 mm²)
+     *    Conversión desde área circular: Área_Rect = Área_Circ * (4 / PI)
+     * 2. Área interna requerida de la bandeja = Suma del área transversal de los cables × 2 (Doble mm²)
+     *    (Factor 2 correspondiente al 50% de ocupación máxima permitida de la norma RITEL)
+     * 3. Ancho de bandeja = Área interna requerida (Doble mm²) / Alto de la bandeja
+     * 
      * @param {number} pauSeti Cantidad de PAUs acumulados hacia el SETI.
      * @param {number} pauSets Cantidad de PAUs acumulados hacia el SETS.
-     * @param {number} altoBandeja Altura de la bandeja en mm.
+     * @param {number} altoBandeja Altura de la bandeja en mm (por defecto 80 mm).
      * @returns {Object} { calcBanSeti, calcBanSets, anchoSeti, anchoSets, anchoTotal }
      */
     calcularBandejas: function(pauSeti, pauSets, altoBandeja) {
         if (!altoBandeja || altoBandeja <= 0) altoBandeja = 80;
 
-        // Cálculo de áreas rectangulares de cables (mm²)
-        let calcBanSeti = pauSeti === 0 ? 0 : (CONSTANTES.BANDEJA_BASE_SETI + (pauSeti * CONSTANTES.BANDEJA_FACTOR_SETI));
-        let calcBanSets = pauSets === 0 ? 0 : (CONSTANTES.BANDEJA_BASE_SETS + (pauSets * CONSTANTES.BANDEJA_FACTOR_SETS));
+        // Si el tramo no tiene PAUs en ninguna dirección (tramo sin uso)
+        if ((!pauSeti || pauSeti <= 0) && (!pauSets || pauSets <= 0)) {
+            return { calcBanSeti: 0, calcBanSets: 0, anchoSeti: 0, anchoSets: 0, anchoTotal: 0 };
+        }
 
-        // Ancho requerido dividiendo el área calculada por el alto de la bandeja
+        let pSeti = Math.max(0, pauSeti || 0);
+        let pSets = Math.max(0, pauSets || 0);
+
+        // Suma del área transversal de los cables en envolvente rectangular (d^2)
+        // Red Base SETI: 3 cables coaxiales rectangulares = 3 * 45.5625 = 136.6875 mm²
+        // Por cada PAU hacia SETI: 1 Coax Rect + 1 FO Rec = 45.5625 + 13.69 = 59.2525 mm²
+        let areaRectSeti = CONSTANTES.BANDEJA_BASE_SETI + (pSeti * CONSTANTES.BANDEJA_FACTOR_SETI);
+
+        // Red Base SETS: 10 cables coaxiales rectangulares = 10 * 45.5625 = 455.625 mm²
+        // Por cada PAU hacia SETS: 1 FO Rec = 13.69 mm²
+        let areaRectSets = CONSTANTES.BANDEJA_BASE_SETS + (pSets * CONSTANTES.BANDEJA_FACTOR_SETS);
+
+        // REGLA NORMATIVA RITEL:
+        // Área interna de la bandeja portacables = Suma del área transversal de los cables × 2
+        // Equivale al "Doble(mm²)" en las memorias de cálculo oficiales RITEL (50% de ocupación)
+        let calcBanSeti = areaRectSeti * 2;
+        let calcBanSets = areaRectSets * 2;
+
+        // Ancho requerido en mm dividiendo el área requerida (Doble mm²) por el alto de la bandeja
         let anchoSeti = calcBanSeti / altoBandeja;
         let anchoSets = calcBanSets / altoBandeja;
         let anchoTotal = anchoSeti + anchoSets;
@@ -260,3 +300,8 @@ const RitelFormulas = {
         return { calcBanSeti, calcBanSets, anchoSeti, anchoSets, anchoTotal };
     }
 };
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { RitelFormulas, CONSTANTES, TABLA_DIAMETROS_INTERNOS, TABLA_AT };
+}
+
