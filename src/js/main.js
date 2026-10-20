@@ -968,7 +968,8 @@ function graficar(listaFiltrada) {
             resumen[p] = (resumen[p] || 0) + Number(d.horas || 0);
         }
     });
-    Chart.defaults.color = '#94a3b8';
+    const isThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
+    Chart.defaults.color = isThemeLight ? '#475569' : '#94a3b8';
     Chart.defaults.font.family = 'Inter';
     if (window.chart) window.chart.destroy();
 
@@ -1015,12 +1016,12 @@ function graficar(listaFiltrada) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                    titleColor: '#fff',
-                    bodyColor: '#94a3b8',
+                    backgroundColor: isThemeLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(15, 23, 42, 0.95)',
+                    titleColor: isThemeLight ? '#0f172a' : '#fff',
+                    bodyColor: isThemeLight ? '#475569' : '#94a3b8',
                     padding: 12,
                     cornerRadius: 8,
-                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderColor: isThemeLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)',
                     borderWidth: 1,
                     callbacks: {
                         label: function(context) {
@@ -1031,7 +1032,7 @@ function graficar(listaFiltrada) {
             },
             scales: {
                 y: {
-                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    grid: { color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255,255,255,0.05)' },
                     beginAtZero: true
                 },
                 x: {
@@ -2116,7 +2117,8 @@ function graficarGastos(lista) {
         resumen[clave] = (resumen[clave] || 0) + Number(g.total || 0);
     });
 
-    Chart.defaults.color = '#94a3b8';
+    const isLightGastos = document.documentElement.getAttribute('data-theme') === 'light';
+    Chart.defaults.color = isLightGastos ? '#475569' : '#94a3b8';
     Chart.defaults.font.family = 'Inter';
     if (window.chartGastos) window.chartGastos.destroy();
 
@@ -2136,7 +2138,7 @@ function graficarGastos(lista) {
                 hoverBackgroundColor: tipoGraficoGastos === 'proyecto' ? '#34d399' : undefined, 
                 borderRadius: tipoGraficoGastos === 'proyecto' ? 6 : 0,
                 borderWidth: tipoGraficoGastos === 'proyecto' ? 0 : 2,
-                borderColor: '#020617'
+                borderColor: isLightGastos ? '#ffffff' : '#020617'
             }] 
         },
         options: { 
@@ -2146,16 +2148,22 @@ function graficarGastos(lista) {
                 legend: { 
                     display: tipoGraficoGastos === 'item',
                     position: 'right',
-                    labels: { color: '#f8fafc', font: { family: 'Inter' } }
+                    labels: { color: isLightGastos ? '#0f172a' : '#f8fafc', font: { family: 'Inter' } }
                 }, 
                 tooltip: { 
                     callbacks: { label: function(context) { return '$' + context.raw.toLocaleString('es-CO'); } },
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)', titleColor: '#fff', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8 
+                    backgroundColor: isLightGastos ? 'rgba(255, 255, 255, 0.98)' : 'rgba(15, 23, 42, 0.95)',
+                    titleColor: isLightGastos ? '#0f172a' : '#fff',
+                    bodyColor: isLightGastos ? '#475569' : '#94a3b8',
+                    borderColor: isLightGastos ? '#e2e8f0' : 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8 
                 } 
             }, 
             scales: tipoGraficoGastos === 'proyecto' ? { 
                 y: { 
-                    grid: { color: 'rgba(255,255,255,0.05)' }, 
+                    grid: { color: isLightGastos ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255,255,255,0.05)' }, 
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
@@ -2621,3 +2629,17 @@ async function eliminarGasto(id) {
         hideLoader();
     }
 }
+
+// Sincronizar gráficos ante cambios de tema dinámicos
+window.addEventListener('sciticthemechange', () => {
+    try {
+        if (typeof actualizarGrafico === 'function' && window.chart) {
+            actualizarGrafico();
+        }
+        if (typeof actualizarGraficoGastos === 'function' && window.chartGastos) {
+            actualizarGraficoGastos();
+        }
+    } catch (e) {
+        console.warn('Error al actualizar gráficos en cambio de tema:', e);
+    }
+});

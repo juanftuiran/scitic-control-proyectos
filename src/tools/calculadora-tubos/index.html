@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Canalizaciones y Tubería RITEL 2025 | SCITIC</title>
 
+    <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- Librerías desde la nube (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12,8 +26,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Integración con la API Central y Sistema de Diseño de SCITIC -->
-    <link rel="stylesheet" href="../../css/design-system.css?v=10">
-    <script src="../../js/components/Toast.js?v=10"></script>
+    <link rel="stylesheet" href="../../css/design-system.css?v=11">
+    <script src="../../js/components/Toast.js?v=11"></script>
     <script src="../../js/services/api.js"></script>
 
     <!-- Cargar fórmulas de la norma RITEL -->
@@ -38,6 +52,18 @@
             --danger: #ef4444;
             --purple: #a855f7;
             --orange: #f97316;
+        }
+
+        html[data-theme="light"] {
+            --bg-dark: #f8fafc;
+            --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
+            --panel-bg: #ffffff;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --input-bg: #ffffff;
+            --primary-blue: #0284c7;
         }
         
         * {
@@ -96,7 +122,7 @@
             font-size: 26px;
             font-weight: bold;
             text-align: center;
-            color: #f8fafc;
+            color: var(--text-main, #f8fafc);
             border: none;
             background: transparent;
             width: 100%;
@@ -178,7 +204,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            color: #f8fafc;
+            color: var(--text-main, #f8fafc);
             display: inline-flex;
             align-items: center;
             gap: 6px;

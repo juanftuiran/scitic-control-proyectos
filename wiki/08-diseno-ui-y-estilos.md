@@ -6,30 +6,32 @@
 
 ## 🎨 1. Paleta de Colores Corporativa (Color Palette)
 
-El sistema visual utiliza una estética **Dark Theme con Glassmorphism** (fondos translúcidos con desenfoque de fondo y bordes de cristal), centrada en el color corporativo naranja de **SCITIC S.A.S.**
+El sistema visual utiliza una arquitectura dual **Dark Theme Pro** y **Light Theme (Modo Campo / Oficina)** con acabados *Glassmorphism* (fondos translúcidos con desenfoque de fondo y bordes de cristal reflectante), centrada en el color corporativo naranja de **SCITIC S.A.S.**
 
 ```
-🟧 #EA580C  Primary SCITIC       🟩 #10B981  Success / Pagado     🟦 #06B6D4  Permiso Remunerado
-🟧 #F97316  Primary Hover        🟨 #F59E0B  Accent / Advertencia  🟪 #8B5CF6  Vacaciones
-⬛ #020617  Background Deep      🟥 #EF4444  Danger / Alerta       🌸 #EC4899  Novedades
-⬜ #F8FAFC  Text Main / Pure     🩶 #94A3B8  Text Muted           🌹 #F43F5E  Incapacidad
+🟧 #EA580C  Primary SCITIC       🟩 #10B981 / #059669  Success / Pagado    🟦 #06B6D4 / #0284C7  Permiso / Info
+🟧 #F97316  Primary Hover        🟨 #F59E0B / #D97706  Accent / Pendiente  🟪 #8B5CF6 / #7C3AED  Vacaciones
+⬛ #020617  Canvas Dark Slate    🟥 #EF4444 / #DC2626  Danger / Alerta     🌸 #EC4899 / #DB2777  Novedades
+⬜ #F8FAFC  Canvas Light Pure    🩶 #94A3B8 / #475569  Text Muted          🌹 #F43F5E / #E11D48  Incapacidad
 ```
 
-### 1.1. Tabla de Tokens de Color ([`src/css/styles.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/css/styles.css#L4-L51))
+### 1.1. Tabla de Tokens de Color ([`src/css/styles.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/css/styles.css) y [`src/css/design-system.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/css/design-system.css))
 
-| Token CSS | Valor HEX / RGBA | Muestra | Uso / Significado Semántico |
+| Token CSS | Modo Oscuro Pro | Modo Claro / Campo | Uso / Significado Semántico |
 |---|---|---|---|
-| `--primary` | `#ea580c` | <span style="background:#ea580c;color:#fff;padding:2px 8px;border-radius:4px;">#ea580c</span> | Naranja corporativo SCITIC. Botones primarios, acentos activos y logo. |
-| `--primary-hover` | `#f97316` | <span style="background:#f97316;color:#fff;padding:2px 8px;border-radius:4px;">#f97316</span> | Estado hover y foco en botones y enlaces principales. |
-| `--primary-gradient`| `linear-gradient(135deg, #ea580c, #f97316)` | <span style="background:linear-gradient(135deg, #ea580c, #f97316);color:#fff;padding:2px 8px;border-radius:4px;">Gradiente</span> | Botones de acción clave, loaders destacados y barras de progreso activas. |
-| `--scitic-gray` | `#334155` | <span style="background:#334155;color:#fff;padding:2px 8px;border-radius:4px;">#334155</span> | Separadores, bordes neutros y elementos secundarios. |
-| `--scitic-dark` | `#f8fafc` | <span style="background:#f8fafc;color:#000;padding:2px 8px;border-radius:4px;">#f8fafc</span> | Blanco humo para títulos de alto contraste. |
-| `--bg-main` | `#020617` | <span style="background:#020617;color:#fff;padding:2px 8px;border-radius:4px;">#020617</span> | Fondo base oscuro (Slate 950). |
-| `--bg-gradient` | `radial-gradient(circle at top left, #1e293b 0%, #020617 100%)` | <span style="background:#1e293b;color:#fff;padding:2px 8px;border-radius:4px;">Radial</span> | Fondo general de la página para dar profundidad tridimensional. |
-| `--card-bg` | `rgba(30, 41, 59, 0.5)` | - | Superficie translúcida de tarjetas y paneles (*Glassmorphism*). |
-| `--card-border` | `rgba(255, 255, 255, 0.08)` | - | Borde exterior de cristal reflectante en tarjetas. |
-| `--text-main` | `#f8fafc` | <span style="background:#f8fafc;color:#000;padding:2px 8px;border-radius:4px;">#f8fafc</span> | Texto principal en cuerpos, tablas e inputs. |
-| `--text-muted` | `#94a3b8` | <span style="background:#94a3b8;color:#000;padding:2px 8px;border-radius:4px;">#94a3b8</span> | Subtítulos, labels secundarios y texto complementario. |
+| `--primary` | `#ea580c` / `#f97316` | `#ea580c` | Naranja corporativo SCITIC. Botones primarios, acentos activos y logo. |
+| `--primary-hover` | `#f97316` | `#c2410c` | Estado hover y foco en botones y enlaces principales. |
+| `--primary-gradient`| `linear-gradient(135deg, #ea580c, #f97316)` | `linear-gradient(135deg, #ea580c, #f97316)` | Botones de acción clave, loaders destacados y barras de progreso activas. |
+| `--bg-main` | `#020617` (Slate 950) | `#f8fafc` (Slate 50) | Fondo base de la aplicación. |
+| `--bg-gradient` | Radial Slate 950/900 con aura naranja | Radial Blanco/Slate 50 con aura cálida | Fondo general con profundidad tridimensional de alta gama. |
+| `--card-bg` | `rgba(15, 23, 42, 0.72)` | `#ffffff` | Superficie de tarjetas y paneles (*Glassmorphism*). |
+| `--card-border` | `rgba(255, 255, 255, 0.08)` | `#e2e8f0` | Borde de tarjetas y paneles. |
+| `--text-main` | `#f8fafc` | `#0f172a` (Slate 900) | Texto principal en cuerpos, tablas e inputs. |
+| `--text-heading` | `#ffffff` | `#0f172a` | Encabezados de alto contraste y títulos de tarjetas. |
+| `--text-muted` | `#94a3b8` | `#475569` (Slate 600) | Subtítulos, labels secundarios y texto complementario (WCAG AAA). |
+| `--input-bg` | `rgba(9, 14, 28, 0.75)` | `#ffffff` | Fondo de campos de texto y selectores. |
+| `--input-border` | `rgba(255, 255, 255, 0.12)` | `#cbd5e1` | Bordes de inputs en reposo. |
+| `--table-header-bg` | `rgba(15, 23, 42, 0.85)` | `#f1f5f9` | Encabezado fijo de tablas con datos. |
 
 ---
 
@@ -112,7 +114,7 @@ Para que la aplicación se sienta como un software empresarial de ingeniería pe
 
 ### 4.0. Hoja de Sistema de Diseño Compartida ([`src/css/design-system.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/css/design-system.css))
 Unifica tokens entre el Shell principal y las 3 herramientas embebidas (`calculadora-tubos`, `loss-gen-app`, `informes-obra`), además de proveer:
-* **Modo Claro / Campo Opcional (`window.SCITICTheme`):** Alterna entre el tema **Dark Pro** por defecto y el modo **Claro / Campo** (`html[data-theme="light"]`) para lectura bajo luz solar intensa, sincronizando automáticamente el `<iframe>` activo.
+* **Alternancia Instantánea de Tema y Arquitectura Zero-FOUC (`window.SCITICTheme`):** Alterna entre el tema **Dark Pro** por defecto y el modo **Claro / Campo** (`html[data-theme="light"]`) con script preventivo en `<head>` para evitar destellos blancos/negros al recargar la página. Sincroniza automáticamente el tema con el `<iframe>` activo y actualiza reactivamente los gráficos de `Chart.js` mediante el evento `'sciticthemechange'`.
 * **Diálogo de Confirmación Glassmorphic (`window.SCITICModal.confirm`):** Reemplaza el `window.confirm()` nativo del navegador por una promesa asíncrona con estética corporativa, soporte para teclado (`Escape` / `Enter`) y variantes `danger` / `primary`.
 * **Estados Vacíos (`.scitic-empty-state`) y Píldoras de Conteo (`.filter-results-pill`):** Componentes reutilizables para tablas filtradas sin resultados y contadores en vivo.
 

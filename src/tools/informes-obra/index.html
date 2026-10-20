@@ -4,15 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCITIC - Registro TDT Obra</title>
+    <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <!-- Integración con Base de Datos SCITIC y Design System -->
-    <link rel="stylesheet" href="../../css/design-system.css?v=10">
+    <link rel="stylesheet" href="../../css/design-system.css?v=11">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../js/services/api.js"></script>
-    <script src="../../js/components/Toast.js?v=10"></script>
+    <script src="../../js/components/Toast.js?v=11"></script>
     <style>
         :root {
             --brand-orange: #ea580c;
@@ -30,6 +44,24 @@
             --badge-warning: #f59e0b;
             --badge-success: #10b981;
             --badge-danger: #ef4444;
+        }
+
+        html[data-theme="light"] {
+            --brand-orange: #ea580c;
+            --brand-orange-hover: #c2410c;
+            --bg-dark: #f8fafc;
+            --bg-darker: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-subtle: #e2e8f0;
+            --border-solid: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-subtle: #64748b;
+            --header-bg: rgba(255, 255, 255, 0.95);
+            --badge-gray: #475569;
+            --badge-warning: #d97706;
+            --badge-success: #059669;
+            --badge-danger: #dc2626;
         }
 
         * {

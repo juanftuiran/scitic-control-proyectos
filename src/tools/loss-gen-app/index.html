@@ -6,11 +6,25 @@
     <meta name="description" content="Calculadora de Pérdidas de Señal TDT para torres residenciales — SCITIC">
     <title>Calculadora de Pérdidas TDT — SCITIC</title>
 
+    <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- Integración con Base de Datos SCITIC y Design System -->
-    <link rel="stylesheet" href="../../css/design-system.css?v=10">
+    <link rel="stylesheet" href="../../css/design-system.css?v=11">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../js/services/api.js"></script>
-    <script src="../../js/components/Toast.js?v=10"></script>
+    <script src="../../js/components/Toast.js?v=11"></script>
 
     <style>
         :root {
@@ -30,6 +44,25 @@
             --ok: #10b981;
             --warn: #f59e0b;
             --bad: #ef4444;
+        }
+
+        html[data-theme="light"] {
+            --primary: #ea580c;
+            --primary-blue: #0284c7;
+            --secondary: #0284c7;
+            --accent: #d97706;
+            --bg-dark: #f8fafc;
+            --panel-bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-header-bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --input-bg: #ffffff;
+            --bg-light: #f8fafc;
+            --ok: #059669;
+            --warn: #d97706;
+            --bad: #dc2626;
         }
         * { box-sizing: border-box; }
         body {
