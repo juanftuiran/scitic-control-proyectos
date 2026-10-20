@@ -65,11 +65,15 @@ body {
     overflow-x: hidden; 
 }
 
-/* BLOQUEO GLOBAL DE SELECCIÓN DE TEXTO */
-body, h1, h2, h3, h4, p, span, div, th, td, label, aside, main, header, section, ul, li {
-    user-select: none !important;
-    -webkit-user-select: none !important;
-    cursor: default;
+/* BLOQUEO SELECTIVO DE SELECCIÓN EN INTERFAZ (Permite copiar datos en tablas y resúmenes) */
+h1, h2, h3, h4, label, aside, header, nav, button, .module-nav-container, .widget-tabs, .mode-selector {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+td, td *, .project-link, #obsContent, .receipt-sheet, .receipt-sheet * {
+    user-select: text !important;
+    -webkit-user-select: text !important;
 }
 
 /* HABILITACIÓN QUIRÚRGICA: Entradas de texto */
@@ -280,10 +284,19 @@ button:active {
     -webkit-background-clip: text; 
     background-clip: text; 
     -webkit-text-fill-color: transparent; 
-    margin-bottom: 2.5rem; 
+    margin-bottom: 0.4rem; 
+}
+.login-subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 0 0 2rem 0;
+    font-weight: 500;
+}
+.login-field {
+    width: 100%;
 }
 .login-box input { 
-    margin-bottom: 1.2rem; 
+    margin-bottom: 1.1rem; 
     text-align: center; 
     border-radius: 12px; 
 }
@@ -354,10 +367,43 @@ header {
     margin-bottom: 2rem; 
 }
 .stat-card { 
-    padding: 1.8rem; 
+    padding: 1.5rem 1.8rem; 
     border-radius: 18px; 
     transition: transform 0.35s var(--ios-ease), box-shadow 0.35s var(--ios-ease), border-color 0.35s var(--ios-ease); 
     border-top: 4px solid var(--primary); 
+}
+.stat-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+}
+.stat-kpi-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(234, 88, 12, 0.14);
+    color: var(--primary);
+    border: 1px solid rgba(234, 88, 12, 0.28);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.stat-kpi-icon.icon-emerald {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.28);
+}
+.stat-kpi-icon.icon-sky {
+    background: rgba(14, 165, 233, 0.14);
+    color: #38bdf8;
+    border-color: rgba(14, 165, 233, 0.28);
+}
+.stat-kpi-icon.icon-amber {
+    background: rgba(245, 158, 11, 0.14);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.28);
 }
 .stat-card:hover { 
     transform: translateY(-5px) scale(1.015); 

@@ -841,7 +841,13 @@ function mostrar(lista) {
         </tr>`;
     });
 
+    if (listaOrdenada.length === 0) {
+        htmlTabla = `<tr><td colspan="${esAdmin ? 8 : 6}"><div class="scitic-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h4>Sin registros para los filtros seleccionados</h4><p>Ajusta los filtros superiores o registra una nueva actividad laboral.</p></div></td></tr>`;
+    }
+
     document.getElementById('tabla').innerHTML = htmlTabla;
+    const pillHoras = document.getElementById('contadorResultadosHoras');
+    if (pillHoras) pillHoras.textContent = `${listaOrdenada.length} ${listaOrdenada.length === 1 ? 'registro' : 'registros'}`;
     // Animar las horas filtradas; al terminar, mostrar en formato legible
     animarNumero('stat-horas', totalH, " h");
     if (esAdmin) animarNumero('stat-presupuesto', totalP, "$", true);
@@ -1154,7 +1160,16 @@ function limpiarFormulario() {
 async function eliminar(id) {
     if (usuarioActual.role !== 'admin') return;
     const registro = datos.find(d => d.id === id);
-    if (confirm("¿Seguro que deseas eliminar permanentemente este registro?")) {
+    const ok = window.SCITICModal
+        ? await window.SCITICModal.confirm({
+            title: 'Eliminar registro de horas',
+            message: `¿Seguro que deseas eliminar permanentemente el registro de ${registro ? registro.trabajador : ''} (${registro ? registro.proyecto : ''})?`,
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        })
+        : confirm("¿Seguro que deseas eliminar permanentemente este registro?");
+    if (ok) {
         showLoader("Eliminando registro...");
         const success = await window.API.eliminarRegistro(id);
         if (success) {
@@ -1617,6 +1632,10 @@ function ocultarLoaderHerramienta() {
         iframe.classList.add('loaded');
         iframe.style.opacity = '1';
         iframe.style.transform = 'scale(1)';
+        if (window.SCITICTheme) {
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            window.SCITICTheme.apply(currentTheme);
+        }
     }
 }
 
@@ -1978,8 +1997,14 @@ function mostrarGastos(lista) {
         `;
     });
 
+    if (lista.length === 0) {
+        html = `<tr><td colspan="11"><div class="scitic-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><h4>Sin gastos para los filtros seleccionados</h4><p>Cambia los criterios de búsqueda o registra un nuevo gasto operativo.</p></div></td></tr>`;
+    }
+
     const tablaGastos = document.getElementById('tablaGastos');
     if (tablaGastos) tablaGastos.innerHTML = html;
+    const pillGastos = document.getElementById('contadorResultadosGastos');
+    if (pillGastos) pillGastos.textContent = `${lista.length} ${lista.length === 1 ? 'gasto' : 'gastos'}`;
 
     animarNumero('stat-gastos-total', totalGeneral, "$", true);
     animarNumero('stat-gastos-pagado', totalPagado, "$", true);
@@ -2386,7 +2411,16 @@ async function procesarLiquidacionPago() {
 
     const numComprobante = comprobante || `CP-${Date.now().toString().slice(-6)}`;
 
-    if (!confirm(`¿Confirmar liquidación de $${monto.toLocaleString('es-CO')} a ${trab} vía ${metodo} (Ref: ${numComprobante})?`)) {
+    const confirmarPago = window.SCITICModal
+        ? await window.SCITICModal.confirm({
+            title: 'Confirmar Liquidación de Pago',
+            message: `¿Confirmar liquidación por $${monto.toLocaleString('es-CO')} a favor de ${trab} vía ${metodo} (Ref: ${numComprobante})?`,
+            confirmText: 'Confirmar y Liquidar',
+            cancelText: 'Revisar',
+            type: 'warning'
+        })
+        : confirm(`¿Confirmar liquidación de $${monto.toLocaleString('es-CO')} a ${trab} vía ${metodo} (Ref: ${numComprobante})?`);
+    if (!confirmarPago) {
         return;
     }
 
@@ -2565,7 +2599,16 @@ function generarComprobantePago(datosPago) {
 }
 
 async function eliminarGasto(id) {
-    if (confirm("¿Seguro que deseas eliminar permanentemente este gasto?")) {
+    const ok = window.SCITICModal
+        ? await window.SCITICModal.confirm({
+            title: 'Eliminar registro de gasto',
+            message: '¿Seguro que deseas eliminar permanentemente este gasto?',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        })
+        : confirm("¿Seguro que deseas eliminar permanentemente este gasto?");
+    if (ok) {
         showLoader("Eliminando gasto...");
         const success = await window.API.eliminarGasto(id);
         if (success) {

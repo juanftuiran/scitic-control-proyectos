@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCITIC S.A.S | Control de Proyectos</title>
+    <title>SCITIC S.A.S | Suite de Ingeniería y Control de Proyectos</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./src/css/styles.css?v=9">
-    <link rel="stylesheet" href="./src/css/toast.css?v=9">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./src/css/design-system.css?v=10">
+    <link rel="stylesheet" href="./src/css/styles.css?v=10">
+    <link rel="stylesheet" href="./src/css/toast.css?v=10">
 </head>
 
 <body>
@@ -22,34 +23,50 @@
 
 <div id="loginView" style="display: none;">
     <div class="login-box glass-panel">
-    <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-login">
-    <h2>SCITIC Access</h2>
-    <input type="text" id="inUser" placeholder="Usuario">
-        <input type="password" id="inPass" placeholder="Contraseña" onkeypress="if(event.key === 'Enter') iniciarSesion()">
-        <button class="btn-primary" onclick="iniciarSesion()">Ingresar al Sistema</button>
+        <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-login">
+        <h2>SCITIC Access</h2>
+        <p class="login-subtitle">Plataforma de Control de Proyectos e Ingeniería RITEL</p>
+        <div class="login-field">
+            <input type="text" id="inUser" placeholder="Usuario corporativo" autocomplete="username">
+        </div>
+        <div class="login-field">
+            <input type="password" id="inPass" placeholder="Contraseña" autocomplete="current-password" onkeypress="if(event.key === 'Enter') iniciarSesion()">
+        </div>
+        <button class="btn-primary" onclick="iniciarSesion()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>Ingresar al Sistema</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
         <p id="loginError" style="color: var(--danger); font-size: 0.85rem; display: none; margin-top: 1.5rem; font-weight: 500;">Credenciales incorrectas.</p>
     </div>
 </div>
 
 <div id="appView" style="display: none;">
     <header>
-    <div class="header-title">
-        <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-header"> 
-        SCITIC S.A.S
-    </div>
+        <div class="header-title">
+            <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-header">
+            <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                <span>SCITIC S.A.S</span>
+                <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">Engineering &amp; Operations Suite</span>
+            </div>
+        </div>
         <div class="user-info">
             <div class="status-indicator">
                 <span class="status-dot"></span>
                 <span>SISTEMA ONLINE</span>
             </div>
+            <button type="button" id="btnThemeToggle" class="btn-secondary" onclick="window.SCITICTheme && window.SCITICTheme.toggle()" style="width: 36px; height: 36px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;" title="Alternar Modo Oscuro / Modo Campo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
             <span id="displayUserName" style="color: var(--scitic-dark);">Cargando...</span>
             <span id="displayUserRole" class="badge bg-blue">ROL</span>
-            <button class="btn-secondary" style="padding: 0.4rem 1.2rem; width: auto; font-size: 0.8rem; border-radius: 8px;" onclick="cerrarSesion()">Cerrar Sesión</button>
+            <button class="btn-secondary" style="padding: 0.45rem 1.1rem; width: auto; font-size: 0.8rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;" onclick="cerrarSesion()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span>Cerrar Sesión</span>
+            </button>
         </div>
     </header>
 
     <div class="container">
-        <!-- Navegación entre módulos -->
         <!-- Navegación moderna entre módulos (Segmented Bar) -->
         <div class="module-nav-container">
             <button class="module-tab-btn active" id="tabHoras" onclick="switchModule('horas')">
@@ -69,227 +86,280 @@
 
         <div id="horasModule">
             <section class="dashboard-grid" id="statsContainer">
-            <div class="stat-card glass-panel"><h4>Horas Filtradas</h4><p id="stat-horas">0</p></div>
-            <div class="stat-card glass-panel perm-financiero"><h4>Ejecución Presupuesto</h4><p id="stat-presupuesto">$0</p></div>
-            <div class="stat-card glass-panel"><h4>Proyectos Activos</h4><p id="stat-proyectos">0</p></div>
-        </section>
-
-        <section class="card glass-panel" id="topWorkersContainer" style="display: none; margin-bottom: 2rem;">
-            <h3>Top Contribuidores del Mes</h3>
-            <div id="topWorkersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <!-- Dynamically populated -->
-            </div>
-        </section>
-
-        <section class="card glass-panel">
-            <h3>Filtros Avanzados</h3>
-            <div class="filters-card">
-                <div class="form-group form-group-filter"><label>Mes</label><select id="fMes" onchange="this.dataset.userChanged='true'; filtrar()"><option value="">Todos los meses</option></select></div>
-                <div class="form-group form-group-filter"><label>Cliente</label><select id="fCliente" onchange="filtrar()"><option value="">Todos</option></select></div>
-                <div class="form-group form-group-filter perm-trabajador-filtro"><label>Trabajador</label><select id="fTrabajador" onchange="filtrar()"><option value="">Todos</option></select></div>
-                <div class="form-group form-group-filter"><label>Proyecto</label><select id="fProyecto" onchange="filtrar()"><option value="">Todos</option></select></div>
-                <div class="form-group form-group-filter"><label>Búsqueda Rápida</label><input type="text" id="fBusqueda" placeholder="Ej. diseño, incapacidad..." onkeyup="filtrar()"></div>
-                <div class="form-group form-group-filter"><button class="btn-secondary" onclick="limpiarFiltros()">Resetear</button></div>
-            </div>
-        </section>
-
-        <div class="main-layout">
-            <aside>
-                <section class="card glass-panel" id="formularioRegistro">
-                    <h3 id="formTitle">Nuevo Registro</h3>
-                    
-                    <!-- Selector de Modo: Laboral vs Novedad/Ausencia -->
-                    <div class="mode-selector">
-                        <button type="button" class="mode-btn active" id="btnModoLaboral" onclick="cambiarModoRegistro('laboral')">
-                            💼 Jornada Laboral
-                        </button>
-                        <button type="button" class="mode-btn" id="btnModoNovedad" onclick="cambiarModoRegistro('novedad')">
-                            🏖️ Novedad / Permiso
-                        </button>
+                <div class="stat-card glass-panel">
+                    <div class="stat-card-top">
+                        <h4>Horas Filtradas</h4>
+                        <span class="stat-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
                     </div>
+                    <p id="stat-horas">0</p>
+                </div>
+                <div class="stat-card glass-panel perm-financiero">
+                    <div class="stat-card-top">
+                        <h4>Ejecución Presupuesto</h4>
+                        <span class="stat-kpi-icon icon-emerald"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+                    </div>
+                    <p id="stat-presupuesto">$0</p>
+                </div>
+                <div class="stat-card glass-panel">
+                    <div class="stat-card-top">
+                        <h4>Proyectos Activos</h4>
+                        <span class="stat-kpi-icon icon-sky"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+                    </div>
+                    <p id="stat-proyectos">0</p>
+                </div>
+            </section>
 
-                    <div class="form-group">
-                        <label>Trabajador</label>
-                        <div class="input-clearable">
-                            <input id="trabajador" list="trabajadoresList" placeholder="Seleccione personal..." onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
-                            <button type="button" class="btn-clear" onclick="clearInput('trabajador')" title="Limpiar campo">×</button>
+            <section class="card glass-panel" id="topWorkersContainer" style="display: none; margin-bottom: 2rem;">
+                <h3>Top Contribuidores del Mes</h3>
+                <div id="topWorkersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+
+            <section class="card glass-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0; border: none; padding: 0;">Filtros Avanzados</h3>
+                    <span class="filter-results-pill" id="contadorResultadosHoras">Cargando...</span>
+                </div>
+                <div class="filters-card">
+                    <div class="form-group form-group-filter"><label>Mes</label><select id="fMes" onchange="this.dataset.userChanged='true'; filtrar()"><option value="">Todos los meses</option></select></div>
+                    <div class="form-group form-group-filter"><label>Cliente</label><select id="fCliente" onchange="filtrar()"><option value="">Todos</option></select></div>
+                    <div class="form-group form-group-filter perm-trabajador-filtro"><label>Trabajador</label><select id="fTrabajador" onchange="filtrar()"><option value="">Todos</option></select></div>
+                    <div class="form-group form-group-filter"><label>Proyecto</label><select id="fProyecto" onchange="filtrar()"><option value="">Todos</option></select></div>
+                    <div class="form-group form-group-filter"><label>Búsqueda Rápida</label><input type="text" id="fBusqueda" placeholder="Ej. diseño, incapacidad..." onkeyup="filtrar()"></div>
+                    <div class="form-group form-group-filter"><button class="btn-secondary" onclick="limpiarFiltros()">Resetear</button></div>
+                </div>
+            </section>
+
+            <div class="main-layout">
+                <aside>
+                    <section class="card glass-panel" id="formularioRegistro">
+                        <h3 id="formTitle">Nuevo Registro</h3>
+
+                        <!-- Selector de Modo: Laboral vs Novedad/Ausencia -->
+                        <div class="mode-selector">
+                            <button type="button" class="mode-btn active" id="btnModoLaboral" onclick="cambiarModoRegistro('laboral')">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                <span>Jornada Laboral</span>
+                            </button>
+                            <button type="button" class="mode-btn" id="btnModoNovedad" onclick="cambiarModoRegistro('novedad')">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <span>Novedad / Permiso</span>
+                            </button>
                         </div>
-                        <datalist id="trabajadoresList"></datalist>
-                    </div>
 
-                    <!-- Campos específicos para Novedades (Permisos / Incapacidades) -->
-                    <div id="seccionNovedad" style="display: none; background: rgba(236, 72, 153, 0.05); border: 1px solid rgba(236, 72, 153, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 15px;">
-                        <div class="form-group" style="margin-bottom: 10px;">
-                            <label style="color: #f472b6;">Tipo de Novedad</label>
-                            <select id="tipoNovedad" onchange="manejarCambioTipoNovedad()">
-                                <option value="PERMISO REMUNERADO">Permiso Remunerado</option>
-                                <option value="PERMISO NO REMUNERADO">Permiso No Remunerado</option>
-                                <option value="INCAPACIDAD MÉDICA">Incapacidad Médica</option>
-                                <option value="VACACIONES">Vacaciones</option>
-                                <option value="FESTIVO / NO LABORAL">Día No Laboral / Festivo</option>
+                        <div class="form-group">
+                            <label>Trabajador</label>
+                            <div class="input-clearable">
+                                <input id="trabajador" list="trabajadoresList" placeholder="Seleccione personal..." onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
+                                <button type="button" class="btn-clear" onclick="clearInput('trabajador')" title="Limpiar campo">×</button>
+                            </div>
+                            <datalist id="trabajadoresList"></datalist>
+                        </div>
+
+                        <!-- Campos específicos para Novedades (Permisos / Incapacidades) -->
+                        <div id="seccionNovedad" style="display: none; background: rgba(236, 72, 153, 0.05); border: 1px solid rgba(236, 72, 153, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 15px;">
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="color: #f472b6;">Tipo de Novedad</label>
+                                <select id="tipoNovedad" onchange="manejarCambioTipoNovedad()">
+                                    <option value="PERMISO REMUNERADO">Permiso Remunerado</option>
+                                    <option value="PERMISO NO REMUNERADO">Permiso No Remunerado</option>
+                                    <option value="INCAPACIDAD MÉDICA">Incapacidad Médica</option>
+                                    <option value="VACACIONES">Vacaciones</option>
+                                    <option value="FESTIVO / NO LABORAL">Día No Laboral / Festivo</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px;">Modalidad de Duración:</label>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="btn-secondary" id="btnDurCompleto" onclick="setDuracionNovedad('completo')" style="flex:1; padding: 6px; font-size: 0.75rem; border-radius: 8px;">Día (8h)</button>
+                                    <button type="button" class="btn-secondary" id="btnDurParcial" onclick="setDuracionNovedad('parcial')" style="flex:1; padding: 6px; font-size: 0.75rem; border-radius: 8px;">Horas</button>
+                                    <button type="button" class="btn-secondary" id="btnDurRango" onclick="setDuracionNovedad('rango')" style="flex:1; padding: 6px; font-size: 0.75rem; border-radius: 8px;">Rango Días</button>
+                                </div>
+                            </div>
+
+                            <!-- Selector de rango de fechas si aplica -->
+                            <div id="campoRangoFechas" style="display: none; margin-top: 10px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div><label style="font-size:0.75rem;">Desde</label><input type="date" id="fechaNovedadDesde"></div>
+                                    <div><label style="font-size:0.75rem;">Hasta</label><input type="date" id="fechaNovedadHasta"></div>
+                                </div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="checkbox" id="chkOmitirDomingos" checked style="width: 14px; height: 14px;"> Omitir domingos en el rango
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Proyecto</label>
+                            <div class="input-clearable">
+                                <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
+                                <button type="button" class="btn-clear" onclick="clearInput('proyecto')" title="Limpiar campo">×</button>
+                            </div>
+                            <datalist id="proyectosList"></datalist>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <div class="input-clearable">
+                                <input id="cliente" list="clientesList" placeholder="Ej. INELECT" onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
+                                <button type="button" class="btn-clear" onclick="clearInput('cliente')" title="Limpiar campo">×</button>
+                            </div>
+                            <datalist id="clientesList"></datalist>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group perm-mod-admin"><label>H. Presup.</label><input type="number" id="horasPres" value="0"></div>
+                            <div class="form-group perm-mod-admin"><label>Valor/Hora</label><input type="number" id="valor" value="0"></div>
+                        </div>
+
+                        <div id="filaFechaHorasSimple" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group"><label>Fecha</label><input type="date" id="fecha"></div>
+                            <div class="form-group">
+                                <label>Horas <span id="horasPreview" style="font-size:0.75rem; color: var(--primary); font-weight:600; margin-left:4px;"></span></label>
+                                <input type="text" id="horas" value="0" placeholder="Ej: 1:30 o 1.5" oninput="actualizarPreviewHoras(this.value)" autocomplete="off">
+                                <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 3px; display: block;">Formato: <strong>H:MM</strong> (ej. 1:30) o decimal (ej. 1.5)</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="grupoActividad">
+                            <label>Actividad</label>
+                            <select id="actividad">
+                                <option value="DISEÑO">DISEÑO</option>
+                                <option value="RRHH">RRHH</option>
+                                <option value="OBRAS">OBRAS</option>
+                                <option value="PERMISO REMUNERADO">PERMISO REMUNERADO</option>
+                                <option value="PERMISO NO REMUNERADO">PERMISO NO REMUNERADO</option>
+                                <option value="INCAPACIDAD MÉDICA">INCAPACIDAD MÉDICA</option>
+                                <option value="VACACIONES">VACACIONES</option>
+                                <option value="FESTIVO / NO LABORAL">FESTIVO / NO LABORAL</option>
                             </select>
                         </div>
-                        
-                        <div style="margin-bottom: 10px;">
-                            <label style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px;">Modalidad de Duración:</label>
-                            <div style="display: flex; gap: 6px;">
-                                <button type="button" class="btn-secondary" id="btnDurCompleto" onclick="setDuracionNovedad('completo')" style="flex:1; padding: 6px; font-size: 0.75rem; border-radius: 8px;">Día (8h)</button>
-                                <button type="button" class="btn-secondary" id="btnDurParcial" onclick="setDuracionNovedad('parcial')" style="flex:1; padding: 6px; font-size: 0.75rem; border-radius: 8px;">Horas</button>
-                                <button type="button" class="btn-secondary" id="btnDurRango" onclick="setDuracionNovedad('rango')" style="flex:1; padding: 6px; font-size: 0.75rem; border-radius: 8px;">Rango Días</button>
-                            </div>
-                        </div>
 
-                        <!-- Selector de rango de fechas si aplica -->
-                        <div id="campoRangoFechas" style="display: none; margin-top: 10px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <div><label style="font-size:0.75rem;">Desde</label><input type="date" id="fechaNovedadDesde"></div>
-                                <div><label style="font-size:0.75rem;">Hasta</label><input type="date" id="fechaNovedadHasta"></div>
-                            </div>
-                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                <input type="checkbox" id="chkOmitirDomingos" checked style="width: 14px; height: 14px;"> Omitir domingos en el rango
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Proyecto</label>
-                        <div class="input-clearable">
-                            <input id="proyecto" list="proyectosList" placeholder="Ej. CASA LAGO" onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
-                            <button type="button" class="btn-clear" onclick="clearInput('proyecto')" title="Limpiar campo">×</button>
-                        </div>
-                        <datalist id="proyectosList"></datalist>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <div class="input-clearable">
-                            <input id="cliente" list="clientesList" placeholder="Ej. INELECT" onchange="manejarCambiosFormulario()" oninput="toggleClearBtn(this)">
-                            <button type="button" class="btn-clear" onclick="clearInput('cliente')" title="Limpiar campo">×</button>
-                        </div>
-                        <datalist id="clientesList"></datalist>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group perm-mod-admin"><label>H. Presup.</label><input type="number" id="horasPres" value="0"></div>
-                        <div class="form-group perm-mod-admin"><label>Valor/Hora</label><input type="number" id="valor" value="0"></div>
-                    </div>
-                    
-                    <div id="filaFechaHorasSimple" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group"><label>Fecha</label><input type="date" id="fecha"></div>
-                        <div class="form-group">
-                            <label>Horas <span id="horasPreview" style="font-size:0.75rem; color: var(--primary); font-weight:600; margin-left:4px;"></span></label>
-                            <input type="text" id="horas" value="0" placeholder="Ej: 1:30 o 1.5" oninput="actualizarPreviewHoras(this.value)" autocomplete="off">
-                            <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 3px; display: block;">Formato: <strong>H:MM</strong> (ej. 1:30) o decimal (ej. 1.5)</small>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group" id="grupoActividad">
-                        <label>Actividad</label>
-                        <select id="actividad">
-                            <option value="DISEÑO">DISEÑO</option>
-                            <option value="RRHH">RRHH</option>
-                            <option value="OBRAS">OBRAS</option>
-                            <option value="PERMISO REMUNERADO">PERMISO REMUNERADO</option>
-                            <option value="PERMISO NO REMUNERADO">PERMISO NO REMUNERADO</option>
-                            <option value="INCAPACIDAD MÉDICA">INCAPACIDAD MÉDICA</option>
-                            <option value="VACACIONES">VACACIONES</option>
-                            <option value="FESTIVO / NO LABORAL">FESTIVO / NO LABORAL</option>
-                        </select>
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button class="btn-primary" id="btnGuardar" onclick="guardar()">Guardar Actividad</button>
-                        <button class="btn-secondary" id="btnLimpiar" onclick="limpiarFormulario()">🧹 Limpiar Campos</button>
-                        <button class="btn-secondary" id="btnCancelar" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormulario()">❌ Cancelar Edición</button>
-                    </div>
-                </section>
-
-                <section class="card glass-panel perm-admin-only">
-                    <h3>Herramientas Admin</h3>
-                    <div class="btn-group">
-                        <input type="file" id="excelFile" style="display:none" onchange="importarExcel()" accept=".xlsx, .xls">
-                        <button class="btn-secondary" onclick="document.getElementById('excelFile').click()">📂 Subir Excel</button>
-                        <button class="btn-secondary" onclick="exportarExcel()">💾 Descargar Reporte</button>
-                        <button class="btn-secondary" style="color: var(--primary);" onclick="descargarAuditoria()">📜 Registro Auditoría</button>
-                    </div>
-                </section>
-            </aside>
-
-            <main>
-                <div class="chart-alert-container">
-                    <section class="card glass-panel" style="margin-bottom: 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                            <h3 style="margin: 0; border: none; padding: 0;">Distribución de Carga</h3>
-                            <div class="widget-tabs" id="actividadGraficoTabs" style="margin-bottom: 0; width: auto; max-width: 100%;">
-                                <button type="button" class="widget-tab active" data-act="DISEÑO" onclick="cambiarActividadGrafico('DISEÑO')">Diseño</button>
-                                <button type="button" class="widget-tab" data-act="OBRAS" onclick="cambiarActividadGrafico('OBRAS')">Obras</button>
-                                <button type="button" class="widget-tab" data-act="RRHH" onclick="cambiarActividadGrafico('RRHH')">RRHH</button>
-                                <button type="button" class="widget-tab" data-act="TODAS" onclick="cambiarActividadGrafico('TODAS')">Todas</button>
-                            </div>
-                        </div>
-                        <canvas id="grafico" style="cursor: pointer;"></canvas>
-                    </section>
-                    
-                    <section class="card glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column;">
-                        <div class="widget-tabs" id="widgetTabs">
-                            <button class="widget-tab active" onclick="switchWidget('alertas')" id="tabAlertas">⚠️ Alertas</button>
-                            <button class="widget-tab" onclick="switchWidget('pendientes')" id="tabPendientes">📋 Pendientes</button>
-                        </div>
-                        
-                        <div id="widgetAlertas" class="widget-panel">
-                            <div id="alertasContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
-                                <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
-                            </div>
-                        </div>
-                        
-                        <div id="widgetPendientes" class="widget-panel" style="display: none;">
-                            <div id="pendientesContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
-                                <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando registros pendientes...</p>
-                            </div>
+                        <div class="btn-group">
+                            <button class="btn-primary" id="btnGuardar" onclick="guardar()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <span>Guardar Actividad</span>
+                            </button>
+                            <button class="btn-secondary" id="btnLimpiar" onclick="limpiarFormulario()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <span>Limpiar Campos</span>
+                            </button>
+                            <button class="btn-secondary" id="btnCancelar" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormulario()">Cancelar Edición</button>
                         </div>
                     </section>
-                </div>
 
-                <section class="card glass-panel perm-admin-only" id="adminDesgloseContainer" style="display: none;">
-                    <h3>Desglose Administrativo</h3>
-                    <div class="admin-view-wrapper">
-                        <div id="adminDesgloseContent" class="admin-view-grid"></div>
-                    </div>
-                </section>
+                    <section class="card glass-panel perm-admin-only">
+                        <h3>Operaciones de Datos</h3>
+                        <div class="btn-group">
+                            <input type="file" id="excelFile" style="display:none" onchange="importarExcel()" accept=".xlsx, .xls">
+                            <button class="btn-secondary" onclick="document.getElementById('excelFile').click()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <span>Importar desde Excel</span>
+                            </button>
+                            <button class="btn-secondary" onclick="exportarExcel()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <span>Exportar Reporte (.xlsx)</span>
+                            </button>
+                            <button class="btn-secondary" style="color: var(--primary); display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onclick="descargarAuditoria()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <span>Bitácora de Auditoría</span>
+                            </button>
+                        </div>
+                    </section>
+                </aside>
 
-                <section class="card glass-panel">
-                    <h3>Historial de Registros</h3>
-                    <div class="table-container custom-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th> <th>Proyecto</th> <th>Personal</th> <th>Horas</th>
-                                    <th class="perm-financiero">Costo</th> <th class="perm-financiero">Avance Histórico</th>
-                                    <th>Actividad</th> <th style="text-align: center;">Ajustes</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla"></tbody>
-                        </table>
+                <main>
+                    <div class="chart-alert-container">
+                        <section class="card glass-panel" style="margin-bottom: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <h3 style="margin: 0; border: none; padding: 0;">Distribución de Carga</h3>
+                                <div class="widget-tabs" id="actividadGraficoTabs" style="margin-bottom: 0; width: auto; max-width: 100%;">
+                                    <button type="button" class="widget-tab active" data-act="DISEÑO" onclick="cambiarActividadGrafico('DISEÑO')">Diseño</button>
+                                    <button type="button" class="widget-tab" data-act="OBRAS" onclick="cambiarActividadGrafico('OBRAS')">Obras</button>
+                                    <button type="button" class="widget-tab" data-act="RRHH" onclick="cambiarActividadGrafico('RRHH')">RRHH</button>
+                                    <button type="button" class="widget-tab" data-act="TODAS" onclick="cambiarActividadGrafico('TODAS')">Todas</button>
+                                </div>
+                            </div>
+                            <canvas id="grafico" style="cursor: pointer;"></canvas>
+                        </section>
+
+                        <section class="card glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column;">
+                            <div class="widget-tabs" id="widgetTabs">
+                                <button class="widget-tab active" onclick="switchWidget('alertas')" id="tabAlertas" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    <span>Alertas</span>
+                                </button>
+                                <button class="widget-tab" onclick="switchWidget('pendientes')" id="tabPendientes" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                                    <span>Pendientes</span>
+                                </button>
+                            </div>
+
+                            <div id="widgetAlertas" class="widget-panel">
+                                <div id="alertasContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
+                                    <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando estado de proyectos...</p>
+                                </div>
+                            </div>
+
+                            <div id="widgetPendientes" class="widget-panel" style="display: none;">
+                                <div id="pendientesContainer" style="flex: 1; overflow-y: auto; max-height: 250px; padding-right: 5px;" class="custom-scroll">
+                                    <p style="color: var(--text-muted); font-size: 0.85rem;">Analizando registros pendientes...</p>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                </section>
-            </main>
-        </div>
+
+                    <section class="card glass-panel perm-admin-only" id="adminDesgloseContainer" style="display: none;">
+                        <h3>Desglose Administrativo</h3>
+                        <div class="admin-view-wrapper">
+                            <div id="adminDesgloseContent" class="admin-view-grid"></div>
+                        </div>
+                    </section>
+
+                    <section class="card glass-panel">
+                        <h3>Historial de Registros</h3>
+                        <div class="table-container custom-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th> <th>Proyecto</th> <th>Personal</th> <th>Horas</th>
+                                        <th class="perm-financiero">Costo</th> <th class="perm-financiero">Avance Histórico</th>
+                                        <th>Actividad</th> <th style="text-align: center;">Ajustes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </main>
+            </div>
         </div> <!-- Fin de horasModule -->
 
-        <!-- Nuevo Módulo de Gastos -->
+        <!-- Módulo de Gastos -->
         <div id="gastosModule" style="display: none;">
-            
+
             <section class="dashboard-grid" id="statsGastosContainer">
                 <div class="stat-card glass-panel" style="border-left: 4px solid var(--primary);">
-                    <h4>Total Gastos</h4>
+                    <div class="stat-card-top">
+                        <h4>Total Gastos</h4>
+                        <span class="stat-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+                    </div>
                     <p id="stat-gastos-total">$0</p>
                 </div>
                 <div class="stat-card glass-panel" style="border-left: 4px solid var(--success);">
-                    <h4>Total Reembolsado</h4>
+                    <div class="stat-card-top">
+                        <h4>Total Reembolsado</h4>
+                        <span class="stat-kpi-icon icon-emerald"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+                    </div>
                     <p id="stat-gastos-pagado">$0</p>
                 </div>
                 <div class="stat-card glass-panel" style="border-left: 4px solid #f97316;">
-                    <h4>Pendiente por Pagar</h4>
+                    <div class="stat-card-top">
+                        <h4>Pendiente por Pagar</h4>
+                        <span class="stat-kpi-icon icon-amber"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                    </div>
                     <p id="stat-gastos-pendiente">$0</p>
                 </div>
                 <div class="stat-card glass-panel stat-card-saldo-favor" id="cardSaldoFavorGastos" style="display: none;">
@@ -306,12 +376,15 @@
             </section>
 
             <section class="card glass-panel">
-                <h3>Filtros de Gastos</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0; border: none; padding: 0;">Filtros de Gastos</h3>
+                    <span class="filter-results-pill" id="contadorResultadosGastos">Cargando...</span>
+                </div>
                 <div class="filters-card">
                     <div class="form-group form-group-filter"><label>Mes</label><select id="fMesGasto" onchange="filtrarGastos()"><option value="">Todos los meses</option></select></div>
                     <div class="form-group form-group-filter perm-mod-admin"><label>Trabajador</label><select id="fTrabajadorGasto" onchange="filtrarGastos()"><option value="">Todos</option></select></div>
                     <div class="form-group form-group-filter"><label>Proyecto</label><select id="fProyectoGasto" onchange="filtrarGastos()"><option value="">Todos</option></select></div>
-                    <div class="form-group form-group-filter"><label>Estado</label><select id="fEstadoGasto" onchange="filtrarGastos()"><option value="">Todos los estados</option><option value="PENDIENTE">⏳ Solo Pendientes</option><option value="PAGO">✅ Solo Pagados</option></select></div>
+                    <div class="form-group form-group-filter"><label>Estado</label><select id="fEstadoGasto" onchange="filtrarGastos()"><option value="">Todos los estados</option><option value="PENDIENTE">Solo Pendientes</option><option value="PAGO">Solo Pagados</option></select></div>
                     <div class="form-group form-group-filter"><label>Búsqueda Rápida</label><input type="text" id="fBusquedaGasto" placeholder="Ej. transporte, viáticos..." onkeyup="filtrarGastos()"></div>
                     <div class="form-group form-group-filter" style="display: flex; gap: 8px;">
                         <button class="btn-secondary" onclick="limpiarFiltrosGastos()" style="flex:1;">Resetear</button>
@@ -323,7 +396,7 @@
                 <aside>
                     <section class="card glass-panel" id="formularioGasto">
                         <h3 id="formTitleGasto">Registrar Gasto</h3>
-                        
+
                         <div class="form-group">
                             <label>Trabajador</label>
                             <input id="gastoTrabajador" list="trabajadoresList" placeholder="Seleccione personal...">
@@ -333,12 +406,12 @@
                             <label>Proyecto</label>
                             <input id="gastoProyecto" list="proyectosList" placeholder="Ej. CASA LAGO">
                         </div>
-                        
+
                         <div class="form-group">
                             <label>Fecha</label>
                             <input type="date" id="gastoFecha">
                         </div>
-                        
+
                         <div class="form-group">
                             <label>Ítem / Concepto</label>
                             <select id="gastoItem">
@@ -351,7 +424,7 @@
                                 <option>Otro</option>
                             </select>
                         </div>
-                        
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group">
                                 <label>Cantidad</label>
@@ -362,21 +435,27 @@
                                 <input type="number" id="gastoValor" value="0" min="0" oninput="calcularTotalGasto()">
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label>Total</label>
-                            <input type="number" id="gastoTotal" value="0" readonly style="background: rgba(0,0,0,0.05); font-weight: bold; color: var(--scitic-dark);">
+                            <input type="number" id="gastoTotal" value="0" readonly class="num-mono" style="background: rgba(0,0,0,0.05); font-weight: bold; color: var(--scitic-dark);">
                         </div>
 
                         <div class="form-group">
                             <label>Observaciones / Factura</label>
                             <textarea id="gastoObservaciones" rows="3" placeholder="N° Factura, destino, detalles del viático..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); font-family: inherit; font-size: 0.95rem; resize: vertical; box-sizing: border-box;"></textarea>
                         </div>
-                        
+
                         <div class="btn-group">
-                            <button class="btn-primary" id="btnGuardarGasto" onclick="guardarGasto()">💾 Guardar Gasto</button>
-                            <button class="btn-secondary" id="btnLimpiarGasto" onclick="limpiarFormularioGasto()">🧹 Limpiar</button>
-                            <button class="btn-secondary" id="btnCancelarGasto" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormularioGasto()">❌ Cancelar Edición</button>
+                            <button class="btn-primary" id="btnGuardarGasto" onclick="guardarGasto()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <span>Guardar Gasto</span>
+                            </button>
+                            <button class="btn-secondary" id="btnLimpiarGasto" onclick="limpiarFormularioGasto()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <span>Limpiar</span>
+                            </button>
+                            <button class="btn-secondary" id="btnCancelarGasto" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormularioGasto()">Cancelar Edición</button>
                         </div>
                     </section>
                 </aside>
@@ -390,13 +469,16 @@
                                 <button class="widget-tab" id="btnChartItem" onclick="cambiarGraficoGastos('item')">Por Categoría</button>
                             </div>
                         </div>
-                        
+
                         <div class="chart-alert-container">
                             <div style="width: 100%;">
                                 <canvas id="graficoGastos" style="cursor: pointer; max-height: 250px;"></canvas>
                             </div>
                             <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.2rem; overflow-y: auto; max-height: 250px;" class="custom-scroll">
-                                <h4 style="margin-bottom: 15px; color: #f97316; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">⚠️ Pendientes de Reembolso</h4>
+                                <h4 style="margin-bottom: 15px; color: #f97316; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    <span>Pendientes de Reembolso</span>
+                                </h4>
                                 <div id="tablaPendientesGastos"></div>
                             </div>
                         </div>
@@ -424,9 +506,9 @@
                                         <th class="perm-mod-admin" style="width: 40px; text-align: center;">
                                             <input type="checkbox" id="selectAllGastos" onchange="toggleSelectAllGastos(this.checked)" title="Seleccionar todos los gastos pendientes visibles">
                                         </th>
-                                        <th>Fecha</th> 
-                                        <th>Personal</th> 
-                                        <th>Proyecto</th> 
+                                        <th>Fecha</th>
+                                        <th>Personal</th>
+                                        <th>Proyecto</th>
                                         <th>Ítem</th>
                                         <th style="text-align: center;">Cant.</th>
                                         <th style="text-align: right;">V. Unitario</th>
@@ -445,13 +527,14 @@
                         <!-- Barra Flotante de Selección para Pago Masivo -->
                         <div id="barraSeleccionGastos" class="floating-selection-bar" style="display: none;">
                             <div class="floating-selection-info">
-                                <span>⚡ <strong id="cantGastosSeleccionados">0</strong> seleccionado(s)</span>
+                                <span><strong id="cantGastosSeleccionados">0</strong> seleccionado(s)</span>
                                 <span style="color: var(--text-muted); opacity: 0.5;">|</span>
-                                <span style="color: #f97316; font-weight: 800; font-size: 1.05rem;" id="totalMontoSeleccionado">$0</span>
+                                <span class="num-mono" style="color: #f97316; font-weight: 800; font-size: 1.05rem;" id="totalMontoSeleccionado">$0</span>
                             </div>
                             <div class="floating-selection-actions">
                                 <button class="btn-primary" onclick="abrirModalLiquidacion('seleccion')" style="background: var(--success); border-color: var(--success); padding: 0.5rem 1.2rem; font-size: 0.85rem; width: auto; display: inline-flex; align-items: center; gap: 6px;">
-                                    💸 Pagar Seleccionados
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span>Pagar Seleccionados</span>
                                 </button>
                                 <button class="btn-secondary" onclick="deseleccionarTodosGastos()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: auto;">
                                     Cancelar
@@ -463,7 +546,7 @@
             </div>
         </div>
 
-        <!-- Nuevo Módulo de Herramientas -->
+        <!-- Módulo de Herramientas -->
         <div id="herramientasModule" style="display: none;">
             <!-- Vista de Catálogo -->
             <div id="herramientasCatalogo">
@@ -471,17 +554,20 @@
                 <!-- Header del módulo -->
                 <div class="card glass-panel" style="margin-bottom: 2rem; padding: 2rem 2.5rem; border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
-                        <h3 style="border: none; padding: 0; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: -0.5px;">🛠️ Centro de Herramientas</h3>
-                        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem; line-height: 1.5;">Aplicaciones de ingeniería y cálculo disponibles para el equipo SCITIC. Seleccione una herramienta para comenzar.</p>
+                        <h3 style="border: none; padding: 0; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            <span>Centro de Herramientas de Ingeniería</span>
+                        </h3>
+                        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem; line-height: 1.5;">Suite de cálculo normativo RITEL 2025, balance de radiofrecuencia TDT y bitácoras de obra con sincronización en la nube.</p>
                     </div>
-                    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 28px; flex-wrap: wrap;">
                         <div style="text-align: center;">
-                            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">2</div>
-                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600;">Herramientas</div>
+                            <div class="num-mono" style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">3</div>
+                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600;">Aplicaciones</div>
                         </div>
                         <div style="text-align: center;">
                             <div style="font-size: 1.8rem; font-weight: 800; color: var(--success);">●</div>
-                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600;">Online</div>
+                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600;">Cloud Sync</div>
                         </div>
                     </div>
                 </div>
@@ -500,11 +586,11 @@
                             </div>
                             <div class="herramienta-card-content">
                                 <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Tubos RITEL</h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Dimensionamiento de canalización para Torres (SETI/SETS) y Parcelaciones (SETU) según RITEL 2025.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Dimensionamiento de canalización para Torres (SETI/SETS), Bandejas Portacables y Parcelaciones (SETU) según RITEL 2025.</p>
                             </div>
                         </div>
                         <div class="herramienta-card-footer">
-                            <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">Torres & Parcelaciones</span>
+                            <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">Torres &amp; Parcelaciones</span>
                             <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">RITEL 2025</span>
                             <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 Abrir
@@ -524,12 +610,12 @@
                             </div>
                             <div class="herramienta-card-content">
                                 <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Pérdidas TDT</h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Cálculo de pérdidas de señal, niveles y distribución para torres residenciales.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Balance de potencia RF (470/698 MHz), cadenas de derivadores y cumplimiento CRC 5405 (47–70 dBµV).</p>
                             </div>
                         </div>
                         <div class="herramienta-card-footer">
                             <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">Señal TDT</span>
-                            <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">Torres</span>
+                            <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">CRC 5405</span>
                             <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 Abrir
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -548,7 +634,7 @@
                             </div>
                             <div class="herramienta-card-content">
                                 <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Registro de Instalación TDT</h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Control de avance de obra, red vertical, dispersión y tomas interiores.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Control de avance de obra, red SETS, vertical, dispersión, tomas interiores y cuantificación consolidada.</p>
                             </div>
                         </div>
                         <div class="herramienta-card-footer">
@@ -596,15 +682,15 @@
     <div class="modal-content">
         <h2 id="modalNombreProy" style="color: var(--scitic-dark); margin-top:0; font-size: 1.8rem; letter-spacing: -0.5px;"></h2>
         <p id="modalCliente" style="color: var(--primary); font-weight: 500; margin-top: -10px;"></p>
-        
+
         <div id="modalStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
             <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);">
                 <small style="color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Horas Totales</small>
-                <p id="mHoras" style="font-size: 1.8rem; font-weight:700; color: var(--scitic-dark); margin: 8px 0 0;"></p>
+                <p id="mHoras" class="num-mono" style="font-size: 1.8rem; font-weight:700; color: var(--scitic-dark); margin: 8px 0 0;"></p>
             </div>
             <div class="perm-financiero" style="background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.2);">
                 <small style="color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Costo Generado</small>
-                <p id="mCosto" style="font-size: 1.8rem; font-weight:700; color: var(--success); margin: 8px 0 0;"></p>
+                <p id="mCosto" class="num-mono" style="font-size: 1.8rem; font-weight:700; color: var(--success); margin: 8px 0 0;"></p>
             </div>
         </div>
         <div style="margin-top: 25px;">
@@ -628,7 +714,8 @@
     <div class="modal-content" style="max-width: 620px; padding: 2.2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
             <h3 style="margin: 0; border: none; padding: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;">
-                💸 Liquidación y Registro de Pago
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Liquidación y Registro de Pago</span>
             </h3>
             <button type="button" class="btn-secondary" onclick="cerrarModal('modalLiquidacion')" style="width: auto; padding: 4px 10px; font-size: 1rem; border-radius: 8px;">✕</button>
         </div>
@@ -636,10 +723,10 @@
         <!-- Selector de Tipo de Liquidación -->
         <div class="mode-selector" style="margin-bottom: 1.2rem;">
             <button type="button" class="mode-btn active" id="btnLiqModoSeleccion" onclick="cambiarModoLiquidacion('seleccion')">
-                📋 Pagar Gastos Marcados (<span id="liqContadorSeleccion">0</span>)
+                <span>Pagar Gastos Marcados (<span id="liqContadorSeleccion">0</span>)</span>
             </button>
             <button type="button" class="mode-btn" id="btnLiqModoAbono" onclick="cambiarModoLiquidacion('abono')">
-                💳 Abono General a Trabajador
+                <span>Abono General a Trabajador</span>
             </button>
         </div>
 
@@ -654,8 +741,8 @@
                 </div>
                 <div style="text-align: right;">
                     <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600;">Deuda Pendiente</small>
-                    <div id="liqDeudaTrabajador" style="color: #f97316; font-size: 1.15rem; font-weight: 800;">$0</div>
-                    <small id="liqSaldoFavorTag" style="color: #22d3ee; font-size: 0.75rem; font-weight: 600; display: block;">Saldo a favor: $0</small>
+                    <div id="liqDeudaTrabajador" class="num-mono" style="color: #f97316; font-size: 1.15rem; font-weight: 800;">$0</div>
+                    <small id="liqSaldoFavorTag" class="num-mono" style="color: #22d3ee; font-size: 0.75rem; font-weight: 600; display: block;">Saldo a favor: $0</small>
                 </div>
             </div>
 
@@ -669,7 +756,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div class="form-group">
                 <label>Monto a Pagar ($)</label>
-                <input type="number" id="liqMonto" min="1" placeholder="Ej: 150000" oninput="calcularExcedenteLiquidacion()" style="font-size: 1.05rem; font-weight: 700; color: #10b981;">
+                <input type="number" id="liqMonto" class="num-mono" min="1" placeholder="Ej: 150000" oninput="calcularExcedenteLiquidacion()" style="font-size: 1.05rem; font-weight: 700; color: #10b981;">
             </div>
             <div class="form-group">
                 <label>Fecha de Pago</label>
@@ -702,12 +789,13 @@
 
         <!-- Mensaje dinámico si el monto excede la deuda -->
         <div id="liqAvisoExcedente" style="display: none; padding: 10px 14px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; color: #34d399; font-size: 0.85rem; margin-bottom: 15px;">
-            ℹ️ El monto supera la deuda. Se acreditarán <strong id="liqMontoExcedente">$0</strong> al Saldo a Favor del trabajador.
+            El monto supera la deuda. Se acreditarán <strong id="liqMontoExcedente" class="num-mono">$0</strong> al Saldo a Favor del trabajador.
         </div>
 
         <div class="btn-group" style="margin-top: 15px;">
-            <button class="btn-primary" onclick="procesarLiquidacionPago()" style="background: var(--success); border-color: var(--success); padding: 0.9rem; font-size: 0.95rem;">
-                ✅ Confirmar y Registrar Pago
+            <button class="btn-primary" onclick="procesarLiquidacionPago()" style="background: var(--success); border-color: var(--success); padding: 0.9rem; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Confirmar y Registrar Pago</span>
             </button>
             <button class="btn-secondary" onclick="cerrarModal('modalLiquidacion')">Cancelar</button>
         </div>
@@ -718,12 +806,16 @@
 <div id="modalReciboPago" class="modal">
     <div class="modal-content" style="max-width: 680px; padding: 1.5rem; background: #0f172a;">
         <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin:0; border:none; padding:0; font-size:1.1rem; color: #fff;">📄 Comprobante de Liquidación</h3>
+            <h3 style="margin:0; border:none; padding:0; font-size:1.1rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Comprobante de Liquidación</span>
+            </h3>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-primary" onclick="window.print()" style="width:auto; padding: 0.4rem 1rem; font-size: 0.82rem; background: #3b82f6; border-color: #3b82f6; display: inline-flex; align-items: center; gap: 6px;">
-                    🖨️ Imprimir / Guardar PDF
+                <button class="btn-primary" onclick="window.print()" style="width:auto; padding: 0.45rem 1.1rem; font-size: 0.82rem; background: #3b82f6; border-color: #3b82f6; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    <span>Imprimir / Guardar PDF</span>
                 </button>
-                <button class="btn-secondary" onclick="cerrarModal('modalReciboPago')" style="width:auto; padding: 0.4rem 0.8rem; font-size: 0.82rem;">
+                <button class="btn-secondary" onclick="cerrarModal('modalReciboPago')" style="width:auto; padding: 0.45rem 0.9rem; font-size: 0.82rem;">
                     ✕ Cerrar
                 </button>
             </div>
@@ -736,9 +828,9 @@
     </div>
 </div>
 
-<script src="./src/js/components/Toast.js?v=9"></script>
-<script src="./src/js/store/appState.js?v=9"></script>
-<script src="./src/js/services/api.js?v=9"></script>
-<script src="./src/js/main.js?v=9"></script>
+<script src="./src/js/components/Toast.js?v=10"></script>
+<script src="./src/js/store/appState.js?v=10"></script>
+<script src="./src/js/services/api.js?v=10"></script>
+<script src="./src/js/main.js?v=10"></script>
 </body>
 </html>

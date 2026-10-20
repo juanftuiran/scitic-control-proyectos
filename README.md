@@ -19,20 +19,25 @@ El proyecto ha sido refactorizado para mantener una estructura de código escala
 ```
 📦 scitic-app
  ┣ 📂 assets              # Imágenes y logos de la aplicación (e.g., logo.png)
+ ┣ 📂 sql                 # Scripts de base de datos, RLS, triggers y RPCs
  ┣ 📂 src
  ┃ ┣ 📂 css
  ┃ ┃ ┣ 📜 styles.css      # Estilos generales del sistema y UI principal
  ┃ ┃ ┗ 📜 toast.css       # Estilos específicos para las notificaciones Toast
- ┃ ┗ 📂 js
- ┃   ┣ 📂 components      # Componentes reutilizables de UI
- ┃   ┃ ┗ 📜 Toast.js      # Clase para notificaciones modales
- ┃   ┣ 📂 services        # Integraciones externas
- ┃   ┃ ┗ 📜 api.js        # Comunicación con la base de datos (Supabase)
- ┃   ┣ 📂 store           # Manejo de estados y lógica global
- ┃   ┃ ┗ 📜 appState.js   # Store reactivo (AppStore)
- ┃   ┗ 📜 main.js         # Lógica principal, controladores de vistas y DOM
+ ┃ ┣ 📂 js
+ ┃ ┃ ┣ 📂 components      # Componentes reutilizables de UI (Toast.js)
+ ┃ ┃ ┣ 📂 services        # Integraciones externas (api.js - Supabase)
+ ┃ ┃ ┣ 📂 store           # Manejo de estados y lógica global (appState.js)
+ ┃ ┃ ┗ 📜 main.js         # Lógica principal, controladores de vistas y DOM
+ ┃ ┗ 📂 tools             # Micro-herramientas (calculadora-tubos, loss-gen-app, informes-obra)
+ ┣ 📂 wiki                # 📚 WIKI TÉCNICA PROFESIONAL (Arquitectura, BD, Módulos y Guías)
  ┗ 📜 index.html          # Punto de entrada y estructura principal de la aplicación
 ```
+
+## 📚 Documentación Técnica (Wiki)
+
+Para consultar la arquitectura en profundidad, esquemas de bases de datos, guías de desarrollo y manuales de modificación rápida, consulta la **[Wiki Técnica del Sistema](wiki/README.md)**.
+
 
 ## 🛠️ Tecnologías Usadas
 

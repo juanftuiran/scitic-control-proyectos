@@ -1,0 +1,456 @@
+/* =========================================================================
+   SCITIC S.A.S. — SISTEMA DE DISEÑO UNIFICADO (ENTERPRISE ENGINEERING UI)
+   Compartido entre el Shell Principal y las Micro-Herramientas de Ingeniería
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Identidad Corporativa SCITIC */
+    --scitic-orange: #ea580c;
+    --scitic-orange-hover: #f97316;
+    --scitic-orange-soft: rgba(234, 88, 12, 0.14);
+    --scitic-orange-border: rgba(234, 88, 12, 0.35);
+    --scitic-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+
+    /* Superficies en Capas (Dark Engineering Theme) */
+    --ds-bg-canvas: #020617;
+    --ds-bg-gradient: radial-gradient(ellipse 80% 60% at 15% -10%, rgba(30, 41, 59, 0.9) 0%, #020617 75%),
+                      radial-gradient(ellipse 60% 50% at 90% 10%, rgba(234, 88, 12, 0.06) 0%, transparent 70%);
+    --ds-surface-1: rgba(15, 23, 42, 0.78);
+    --ds-surface-2: rgba(30, 41, 59, 0.55);
+    --ds-surface-elevated: #0f172a;
+    --ds-surface-input: rgba(9, 14, 28, 0.75);
+
+    /* Bordes de Cristal y Sombras */
+    --ds-border: rgba(255, 255, 255, 0.08);
+    --ds-border-strong: rgba(255, 255, 255, 0.14);
+    --ds-border-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    --ds-shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.35), var(--ds-border-highlight);
+    --ds-shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.45), var(--ds-border-highlight);
+    --ds-shadow-lg: 0 20px 45px -10px rgba(0, 0, 0, 0.65), var(--ds-border-highlight);
+
+    /* Tipografía */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --ds-text-primary: #f8fafc;
+    --ds-text-secondary: #cbd5e1;
+    --ds-text-muted: #94a3b8;
+    --ds-text-subtle: #64748b;
+
+    /* Semántica de Ingeniería */
+    --ds-success: #10b981;
+    --ds-success-soft: rgba(16, 185, 129, 0.14);
+    --ds-warning: #f59e0b;
+    --ds-warning-soft: rgba(245, 158, 11, 0.14);
+    --ds-danger: #ef4444;
+    --ds-danger-soft: rgba(239, 68, 68, 0.14);
+    --ds-info: #0ea5e9;
+    --ds-info-soft: rgba(14, 165, 233, 0.14);
+
+    /* radios y curvas */
+    --ds-radius-sm: 8px;
+    --ds-radius-md: 12px;
+    --ds-radius-lg: 16px;
+    --ds-radius-xl: 20px;
+    --ds-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================================================================
+   MODO CLARO / CAMPO SOLAR OPCIONAL ([data-theme="light"])
+   ========================================================================= */
+html[data-theme="light"] {
+    --bg-main: #f1f5f9;
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --ds-bg-canvas: #f1f5f9;
+    --ds-bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --panel-bg: rgba(255, 255, 255, 0.92);
+    --ds-surface-1: rgba(255, 255, 255, 0.92);
+    --ds-surface-2: rgba(248, 250, 252, 0.88);
+    --ds-surface-elevated: #ffffff;
+    --ds-surface-input: #ffffff;
+    --input-bg: #ffffff;
+    --card-border: rgba(15, 23, 42, 0.1);
+    --border: rgba(15, 23, 42, 0.12);
+    --border-subtle: rgba(15, 23, 42, 0.1);
+    --border-solid: #cbd5e1;
+    --input-border: rgba(15, 23, 42, 0.16);
+    --ds-border: rgba(15, 23, 42, 0.1);
+    --ds-border-strong: rgba(15, 23, 42, 0.18);
+    --text-main: #0f172a;
+    --scitic-dark: #0f172a;
+    --ds-text-primary: #0f172a;
+    --ds-text-secondary: #1e293b;
+    --ds-text-muted: #475569;
+    --table-header-bg: #f1f5f9;
+    --table-row-hover: rgba(234, 88, 12, 0.04);
+    --header-bg: #e2e8f0;
+}
+
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] .project-title,
+html[data-theme="light"] .hub-title-group h1,
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea {
+    color: #0f172a;
+}
+
+html[data-theme="light"] header,
+html[data-theme="light"] .app-header {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] th {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+/* =========================================================================
+   TIPOGRAFÍA NUMÉRICA Y SELECCIÓN DE DATOS EN TABLAS
+   ========================================================================= */
+.num-mono,
+.calc-cell,
+.val-at,
+.val-cnc-seti,
+.val-cnc-sets,
+.val-tub-seti-c,
+.val-tub-sets-c,
+.tubos-fisicos,
+.tubos-total-cell,
+.ban-calc-seti,
+.ban-calc-sets,
+.ban-ancho-seti,
+.ban-ancho-sets,
+.ban-total,
+.ban-recomendada,
+.stat-val,
+.kpi-val,
+.info-value,
+#stat-horas,
+#stat-presupuesto,
+#stat-proyectos,
+#stat-gastos-total,
+#stat-gastos-pagado,
+#stat-gastos-pendiente,
+#stat-gastos-saldo-favor {
+    font-family: var(--font-mono) !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+/* Permitir copiar cifras, nombres de proyectos y celdas de tabla */
+td,
+td span,
+td strong,
+.project-link,
+.hub-card-title,
+.hub-card-resume,
+#obsContent,
+.recibo-paper,
+.recibo-paper * {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+/* =========================================================================
+   BARRAS DE HERRAMIENTAS AGRUPADAS (TOOLBARS DE INGENIERÍA)
+   ========================================================================= */
+.scitic-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--ds-surface-1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-sm);
+    margin-bottom: 16px;
+}
+
+.scitic-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-right: 12px;
+    border-right: 1px solid var(--ds-border);
+}
+
+.scitic-toolbar-group:last-child {
+    border-right: none;
+    padding-right: 0;
+}
+
+.scitic-toolbar-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ds-text-subtle);
+    margin-right: 4px;
+    user-select: none;
+}
+
+/* Botones estandarizados de ingeniería (anulan width:100% cuando están en toolbars) */
+.scitic-btn {
+    width: auto !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: var(--ds-radius-sm);
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: all 0.2s var(--ds-ease);
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.scitic-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.scitic-btn-primary {
+    background: var(--scitic-gradient);
+    color: #ffffff;
+    box-shadow: 0 3px 12px rgba(234, 88, 12, 0.3);
+}
+.scitic-btn-primary:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.42);
+}
+
+.scitic-btn-surface {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--ds-text-primary);
+    border-color: var(--ds-border-strong);
+}
+.scitic-btn-surface:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.24);
+    transform: translateY(-1px);
+}
+
+.scitic-btn-outline-orange {
+    background: var(--scitic-orange-soft);
+    color: #fb923c;
+    border-color: var(--scitic-orange-border);
+}
+.scitic-btn-outline-orange:hover {
+    background: rgba(234, 88, 12, 0.24);
+    color: #ffffff;
+}
+
+.scitic-btn-excel {
+    background: rgba(16, 185, 129, 0.14);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.scitic-btn-excel:hover {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.scitic-btn-pdf {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+.scitic-btn-pdf:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+/* =========================================================================
+   MODAL CORPORATIVO DE CONFIRMACIÓN Y ALERTA (SCITICModal)
+   ========================================================================= */
+.scitic-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.22s var(--ds-ease);
+}
+
+.scitic-dialog-backdrop.is-open {
+    opacity: 1;
+}
+
+.scitic-dialog-box {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 430px;
+    padding: 24px;
+    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    transform: scale(0.94) translateY(8px);
+    transition: transform 0.26s var(--ds-ease);
+    color: #f8fafc;
+    font-family: var(--font-sans);
+}
+
+.scitic-dialog-backdrop.is-open .scitic-dialog-box {
+    transform: scale(1) translateY(0);
+}
+
+.scitic-dialog-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.scitic-dialog-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.scitic-dialog-icon.type-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.scitic-dialog-icon.type-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.scitic-dialog-icon.type-info {
+    background: rgba(234, 88, 12, 0.15);
+    color: #fb923c;
+    border: 1px solid rgba(234, 88, 12, 0.3);
+}
+
+.scitic-dialog-title {
+    margin: 0 0 6px 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.scitic-dialog-message {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: #94a3b8;
+    white-space: pre-line;
+}
+
+.scitic-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scitic-dialog-btn {
+    width: auto !important;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s var(--ds-ease);
+}
+
+.scitic-dialog-btn-cancel {
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.scitic-dialog-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.scitic-dialog-btn-confirm {
+    background: var(--scitic-gradient);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+}
+.scitic-dialog-btn-confirm.is-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+/* =========================================================================
+   ESTADOS VACÍOS (EMPTY STATES) Y CONTADORES DE FILTRO
+   ========================================================================= */
+.scitic-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.8rem 1.5rem;
+    text-align: center;
+    color: var(--ds-text-muted);
+}
+
+.scitic-empty-state svg {
+    width: 44px;
+    height: 44px;
+    stroke: var(--scitic-orange);
+    opacity: 0.65;
+    margin-bottom: 12px;
+}
+
+.scitic-empty-state h4 {
+    font-size: 0.95rem;
+    color: var(--ds-text-primary);
+    margin: 0 0 4px 0;
+    text-transform: none;
+    letter-spacing: -0.01em;
+}
+
+.scitic-empty-state p {
+    font-size: 0.82rem;
+    color: var(--ds-text-muted);
+    margin: 0;
+    max-width: 360px;
+}
+
+.filter-results-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(234, 88, 12, 0.12);
+    color: #fb923c;
+    border: 1px solid rgba(234, 88, 12, 0.25);
+}

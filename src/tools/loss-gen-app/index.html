@@ -6,9 +6,11 @@
     <meta name="description" content="Calculadora de Pérdidas de Señal TDT para torres residenciales — SCITIC">
     <title>Calculadora de Pérdidas TDT — SCITIC</title>
 
-    <!-- Integración con Base de Datos SCITIC -->
+    <!-- Integración con Base de Datos SCITIC y Design System -->
+    <link rel="stylesheet" href="../../css/design-system.css?v=10">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../js/services/api.js"></script>
+    <script src="../../js/components/Toast.js?v=10"></script>
 
     <style>
         :root {
@@ -17,7 +19,7 @@
             --secondary: #0284c7;
             --accent: #f59e0b;
             --bg-dark: #020617;
-            --panel-bg: rgba(30, 41, 59, 0.7);
+            --panel-bg: rgba(30, 41, 59, 0.72);
             --card-bg: #1e293b;
             --card-header-bg: #0f172a;
             --border: rgba(255, 255, 255, 0.12);
@@ -31,117 +33,132 @@
         }
         * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
             background: radial-gradient(circle at top left, #1e293b 0%, #020617 100%);
             background-attachment: fixed;
             margin: 0; padding: 20px;
-            color: var(--text-main); font-size: 12px;
+            color: var(--text-main); font-size: 12.5px;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ── Título del proyecto ── */
         .project-title {
-            font-size: 28px; font-weight: bold;
+            font-size: 26px; font-weight: 800; letter-spacing: -0.02em;
             text-align: center; color: var(--text-main);
             border: none; background: transparent;
-            width: 100%; margin-bottom: 20px;
+            width: 100%; margin-bottom: 18px;
             border-bottom: 2px dashed transparent;
-            transition: 0.3s; display: block;
+            transition: 0.25s; display: block;
             padding: 8px 0;
         }
         .project-title:focus { outline: none; border-bottom: 2px dashed var(--primary); }
 
         /* ── Paneles ── */
         .header-panel {
-            background: var(--panel-bg); backdrop-filter: blur(12px);
-            border: 1px solid var(--border); padding: 16px 20px;
-            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin-bottom: 12px; display: flex;
+            background: var(--panel-bg); backdrop-filter: blur(14px);
+            border: 1px solid var(--border); padding: 18px 20px;
+            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.32);
+            margin-bottom: 14px; display: flex;
             flex-wrap: wrap; gap: 12px; align-items: flex-end;
         }
         .panel-section-title {
-            width: 100%; font-size: 13px; font-weight: bold;
-            color: var(--primary-blue); margin: 0 0 -4px 0;
-            padding-bottom: 4px; border-bottom: 1px solid var(--border);
+            width: 100%; font-size: 13px; font-weight: 700;
+            color: var(--primary-blue); margin: 0 0 -2px 0;
+            padding-bottom: 6px; border-bottom: 1px solid var(--border);
             display: flex; align-items: center; gap: 6px; justify-content: space-between;
+            letter-spacing: 0.01em;
         }
         .panel-section-title .icon { font-size: 16px; }
         .input-group { display: flex; flex-direction: column; }
         .input-group label {
-            font-size: 11px; font-weight: bold;
+            font-size: 11px; font-weight: 600;
             color: var(--primary-blue); margin-bottom: 4px;
         }
         .input-group input:not([type="checkbox"]), .input-group select {
-            padding: 7px 8px; background: var(--input-bg);
+            padding: 7px 10px; background: var(--input-bg);
             color: var(--text-main); border: 1px solid var(--border);
-            border-radius: 4px; font-size: 12px;
-            transition: border-color 0.2s;
+            border-radius: 6px; font-size: 12px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-group input:focus, .input-group select:focus {
             border-color: var(--primary); outline: none;
-            box-shadow: 0 0 0 2px rgba(234,88,12,0.2);
+            box-shadow: 0 0 0 3px rgba(234,88,12,0.2);
         }
-        .input-group input[type="number"] { width: 85px; }
+        .input-group input[type="number"] {
+            width: 88px;
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
+        }
         .input-group select { min-width: 160px; }
         .checkbox-group {
             display: flex; align-items: center; gap: 8px;
             background: var(--input-bg); padding: 8px 12px;
-            border: 1px solid var(--border); border-radius: 4px;
-            height: 33px; font-weight: bold; color: var(--text-main);
+            border: 1px solid var(--border); border-radius: 6px;
+            height: 34px; font-weight: 600; color: var(--text-main);
             cursor: pointer;
         }
         .spacer { flex-grow: 1; }
 
         /* ── Matriz de Cableado UI ── */
         .matrix-section {
-            width: 100%; display: flex; gap: 10px; margin-top: 6px; overflow-x: auto; padding-bottom: 8px;
+            width: 100%; display: flex; gap: 12px; margin-top: 8px; overflow-x: auto; padding-bottom: 8px;
         }
         .apto-card {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
-            padding: 8px; min-width: 200px; display: flex; flex-direction: column; gap: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px; min-width: 210px; display: flex; flex-direction: column; gap: 7px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+            transition: border-color 0.2s;
+        }
+        .apto-card:hover {
+            border-color: rgba(56, 189, 248, 0.35);
         }
         .apto-card-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); padding-bottom: 4px;
+            border-bottom: 1px solid var(--border); padding-bottom: 6px;
         }
         .apto-card-header input[type="text"] {
-            font-weight: bold; font-size: 11px; width: 90px; padding: 3px 6px;
+            font-weight: 700; font-size: 11px; width: 95px; padding: 4px 7px;
             background: var(--input-bg); color: var(--primary);
-            border: 1px solid var(--border); border-radius: 3px;
+            border: 1px solid var(--border); border-radius: 5px;
         }
         .apto-card-header input[type="text"]:focus {
             border-color: var(--primary); background: #1a233a; outline: none;
         }
         .apto-card-row {
-            display: flex; justify-content: space-between; align-items: center; font-size: 10px;
+            display: flex; justify-content: space-between; align-items: center; font-size: 10.5px;
         }
         .apto-card-row label {
             color: var(--text-muted);
         }
         .apto-card-row input[type="number"] {
-            width: 50px; padding: 3px; background: var(--input-bg); color: var(--text-main);
-            border: 1px solid var(--border); border-radius: 3px; text-align: center;
+            width: 54px; padding: 3px 4px; background: var(--input-bg); color: var(--text-main);
+            border: 1px solid var(--border); border-radius: 4px; text-align: center;
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
         }
         .tomas-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
-            background: var(--input-bg); padding: 6px; border-radius: 4px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;
+            background: var(--input-bg); padding: 7px; border-radius: 6px;
             border: 1px solid var(--border);
         }
         .toma-input-wrapper {
             display: flex; flex-direction: column; align-items: center;
         }
-        .toma-input-wrapper label { font-size: 9px; color: var(--primary-blue); font-weight: bold; margin-bottom: 2px; }
+        .toma-input-wrapper label { font-size: 9.5px; color: var(--primary-blue); font-weight: 700; margin-bottom: 2px; }
         .toma-input-wrapper input {
-            width: 100%; text-align: center; padding: 3px; font-size: 10px;
+            width: 100%; text-align: center; padding: 3px 4px; font-size: 10.5px;
             background: var(--card-bg); color: var(--text-main);
-            border: 1px solid var(--border); border-radius: 3px;
+            border: 1px solid var(--border); border-radius: 4px;
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
         }
 
         
         /* ── Leyendas / Signos de Interrogación ── */
         .help-tip {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 14px; height: 14px; border-radius: 50%;
+            width: 15px; height: 15px; border-radius: 50%;
             background: rgba(56, 189, 248, 0.2); color: #38bdf8;
             font-size: 10px; font-weight: bold; cursor: help;
             margin-left: 3px; vertical-align: middle; user-select: none;
@@ -153,40 +170,40 @@
         .chain-bifurc-fields.hidden { display: none !important; }
         .ritel-row td { background: rgba(16, 185, 129, 0.1) !important; color: #34d399 !important; font-weight: bold; border-top: 2px solid #10b981; }
         .ritel-row.ritel-bad td { background: rgba(239, 68, 68, 0.1) !important; color: #f87171 !important; border-top: 2px solid #ef4444; }
-        /* ── Botones ── */
+        /* ── Botones Armonizados ── */
         button {
-            padding: 9px 16px; border: none; border-radius: 5px;
-            font-weight: bold; cursor: pointer;
+            padding: 8px 14px; border: 1px solid transparent; border-radius: 8px;
+            font-weight: 600; cursor: pointer; font-family: inherit;
             transition: all 0.2s; color: white; font-size: 12px;
-            display: inline-flex; align-items: center; gap: 5px;
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        button:active { transform: scale(0.97); }
-        .btn-calc  { background: var(--primary); }
-        .btn-calc:hover  { background: #c2410c; }
-        .btn-config { background: var(--secondary); }
-        .btn-config:hover { background: #0369a1; }
-        .btn-save  { background: var(--accent); color: #000; }
-        .btn-save:hover { filter: brightness(0.9); }
-        .btn-json-save { background: #8b5cf6; }
-        .btn-json-save:hover { background: #7c3aed; }
-        .btn-json-load { background: #0d9488; }
-        .btn-json-load:hover { background: #0f766e; }
-        .btn-excel { background: #16a34a; }
-        .btn-excel:hover { background: #15803d; }
-        .btn-pdf   { background: #dc2626; }
-        .btn-pdf:hover { background: #b91c1c; }
+        button:active { transform: scale(0.98); }
+        .btn-calc  { background: linear-gradient(135deg, #ea580c, #c2410c); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.28); }
+        .btn-calc:hover  { background: linear-gradient(135deg, #f97316, #ea580c); transform: translateY(-1px); }
+        .btn-config { background: rgba(2, 132, 199, 0.2); border-color: rgba(56, 189, 248, 0.35); color: #7dd3fc; }
+        .btn-config:hover { background: rgba(2, 132, 199, 0.35); color: #fff; }
+        .btn-save  { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d; }
+        .btn-save:hover { background: rgba(245, 158, 11, 0.3); color: #fff; }
+        .btn-json-save { background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.38); color: #c4b5fd; }
+        .btn-json-save:hover { background: rgba(139, 92, 246, 0.3); color: #fff; }
+        .btn-json-load { background: rgba(13, 148, 136, 0.2); border-color: rgba(20, 184, 166, 0.38); color: #5eead4; }
+        .btn-json-load:hover { background: rgba(13, 148, 136, 0.34); color: #fff; }
+        .btn-excel { background: rgba(22, 163, 74, 0.22); border-color: rgba(34, 197, 94, 0.42); color: #4ade80; }
+        .btn-excel:hover { background: rgba(22, 163, 74, 0.35); color: #fff; }
+        .btn-pdf   { background: rgba(220, 38, 38, 0.2); border-color: rgba(248, 113, 113, 0.4); color: #fca5a5; }
+        .btn-pdf:hover { background: rgba(220, 38, 38, 0.34); color: #fff; }
 
         /* ── Contenedor de tablas ── */
         .table-container {
             overflow-x: auto; background: var(--panel-bg);
-            backdrop-filter: blur(12px); border: 1px solid var(--border);
-            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(14px); border: 1px solid var(--border);
+            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             margin-bottom: 16px;
         }
         table { width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }
         th {
             background-color: var(--input-bg); color: var(--primary-blue);
-            padding: 7px 6px; border: 1px solid var(--border);
+            padding: 8px 6px; border: 1px solid var(--border);
             font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 2;
         }
         th.sub-th { background-color: rgba(2, 132, 199, 0.25); color: var(--text-main); font-size: 11px; }
@@ -195,36 +212,44 @@
         td {
             padding: 5px 4px; border: 1px solid var(--border);
             white-space: nowrap; color: var(--text-main);
+            user-select: text;
         }
         tr:nth-child(even) { background-color: var(--bg-light); }
         tr:hover { background-color: rgba(255, 255, 255, 0.06); }
 
         .piso-cell {
-            font-weight: bold; color: var(--primary-blue);
-            background-color: rgba(15, 23, 42, 0.7) !important;
+            font-weight: 700; color: var(--primary-blue);
+            background-color: rgba(15, 23, 42, 0.94) !important;
             font-size: 11px; writing-mode: horizontal-tb;
             text-align: center; vertical-align: middle;
+            position: sticky; left: 0; z-index: 1;
         }
-        .bold-cell { font-weight: bold; color: var(--text-main); }
+        .bold-cell { font-weight: 700; color: var(--text-main); }
 
         /* ── Inputs dentro de celdas ── */
         .cell-edit {
             width: 58px; text-align: center; padding: 3px 2px;
-            border: 1px solid var(--border); border-radius: 3px;
+            border: 1px solid var(--border); border-radius: 4px;
             font-size: 11px; background: var(--input-bg); color: var(--text-main);
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
             transition: all 0.2s;
         }
         .cell-edit:focus {
             border-color: var(--primary); background: #1e293b;
             outline: none; box-shadow: 0 0 0 2px rgba(234,88,12,0.25);
         }
-        .bold-input { font-weight: bold; color: var(--primary); }
-        .calc-cell { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .bold-input { font-weight: 700; color: var(--primary); }
+        .calc-cell {
+            color: var(--text-muted);
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
+        }
 
         /* ── Nivel de señal colores ── */
-        .nivel-ok   { color: #34d399; font-weight: bold; }
-        .nivel-warn { color: #fbbf24; font-weight: bold; }
-        .nivel-bad  { color: #f87171; font-weight: bold; background: rgba(239, 68, 68, 0.2) !important; }
+        .nivel-ok   { color: #34d399; font-weight: 700; font-family: var(--font-mono, 'JetBrains Mono', monospace); font-variant-numeric: tabular-nums; }
+        .nivel-warn { color: #fbbf24; font-weight: 700; font-family: var(--font-mono, 'JetBrains Mono', monospace); font-variant-numeric: tabular-nums; }
+        .nivel-bad  { color: #f87171; font-weight: 700; font-family: var(--font-mono, 'JetBrains Mono', monospace); font-variant-numeric: tabular-nums; background: rgba(239, 68, 68, 0.2) !important; }
 
         /* ── Resumen ── */
         .summary-row td { font-weight: bold; border-top: 2px solid var(--accent); }
@@ -1576,12 +1601,12 @@
     // EXPORTAR EXCEL CON FORMATO
     // ════════════════════════════════════════
     function exportarExcel() {
-        if (typeof XLSX === 'undefined') { alert('Librería XLSX no disponible'); return; }
+        if (typeof XLSX === 'undefined') { notificarToast('Librería XLSX no disponible', 'error'); return; }
 
         const projectName = document.getElementById('project-title').value || 'Proyecto TDT';
         const wb = XLSX.utils.book_new();
         const rows = document.querySelectorAll('#results-body tr');
-        if (rows.length === 0) { alert('Genera la tabla primero'); return; }
+        if (rows.length === 0) { notificarToast('Genera la tabla primero', 'warning'); return; }
 
         const useRG11 = document.getElementById('use-rg11').checked;
         const cableTroncal = CONSTANTES.cables[document.getElementById('cable-troncal').value] || CONSTANTES.cables['RG6/100X'];
@@ -1861,7 +1886,7 @@
     }
 
     function exportarPDF() {
-        if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') { alert('Librería jsPDF no disponible'); return; }
+        if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') { notificarToast('Librería jsPDF no disponible', 'error'); return; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
         const projectName = document.getElementById('project-title').value || 'Proyecto TDT';
@@ -2395,7 +2420,7 @@
                 notificarToast('Proyecto cargado exitosamente desde archivo JSON.', 'success');
             } catch (err) {
                 console.error(err);
-                alert('Error al leer o procesar el archivo JSON: ' + err.message);
+                notificarToast('Error al leer o procesar el archivo JSON: ' + err.message, 'error');
             } finally {
                 event.target.value = '';
             }
@@ -2424,6 +2449,17 @@
     }
 
     function notificarToast(mensaje, tipo = 'info') {
+        try {
+            if (window.parent && window.parent !== window && window.parent.Toast) {
+                window.parent.Toast.show(mensaje, tipo);
+                return;
+            }
+            if (window.Toast) {
+                window.Toast.show(mensaje, tipo);
+                return;
+            }
+        } catch (_) {}
+
         const toast = document.getElementById('toast-calc');
         if (!toast) return;
 
@@ -2434,6 +2470,8 @@
             toast.style.background = '#10b981';
         } else if (tipo === 'error') {
             toast.style.background = '#ef4444';
+        } else if (tipo === 'warning') {
+            toast.style.background = '#f59e0b';
         } else {
             toast.style.background = '#0284c7';
         }
@@ -2441,6 +2479,18 @@
         setTimeout(() => {
             toast.style.display = 'none';
         }, 3500);
+    }
+
+    async function confirmarDialogoLossGen(opts) {
+        try {
+            if (window.parent && window.parent !== window && window.parent.SCITICModal) {
+                return await window.parent.SCITICModal.confirm(opts);
+            }
+            if (window.SCITICModal) {
+                return await window.SCITICModal.confirm(opts);
+            }
+        } catch (_) {}
+        return confirm(opts.message || '¿Confirmar acción?');
     }
 
     function abrirModalGuardar() {
@@ -2483,7 +2533,7 @@
     async function guardarProyectoEnServidor(esNuevo = false) {
         const api = getAPIService();
         if (!api) {
-            alert('El servicio de conexión con la base de datos no está disponible.');
+            notificarToast('El servicio de conexión con la base de datos no está disponible.', 'error');
             return;
         }
 
@@ -2491,7 +2541,7 @@
         const nombreProyecto = inNombre ? inNombre.value.trim() : '';
 
         if (!nombreProyecto) {
-            alert('Por favor escribe un nombre para el proyecto.');
+            notificarToast('Por favor escribe un nombre para el proyecto.', 'warning');
             inNombre?.focus();
             return;
         }
@@ -2523,7 +2573,7 @@
             }
         } catch (error) {
             console.error("Error al guardar:", error);
-            alert("No se pudo guardar el proyecto en el servidor: " + (error.message || error));
+            notificarToast("No se pudo guardar el proyecto en el servidor: " + (error.message || error), "error");
         }
     }
 
@@ -2672,7 +2722,7 @@
     async function cargarProyectoDesdeServidor(id) {
         const api = getAPIService();
         if (!api) {
-            alert('Servicio API no disponible.');
+            notificarToast('Servicio API no disponible.', 'error');
             return;
         }
 
@@ -2691,14 +2741,18 @@
             notificarToast(`Proyecto "${proyectoActivoNombre}" cargado con éxito.`, "success");
         } catch (error) {
             console.error("Error al cargar proyecto:", error);
-            alert("Error al cargar el proyecto desde el servidor: " + (error.message || error));
+            notificarToast("Error al cargar el proyecto desde el servidor: " + (error.message || error), "error");
         }
     }
 
     async function eliminarProyectoDesdeServidor(id, nombre) {
-        if (!confirm(`¿Estás seguro de que deseas eliminar definitivamente el proyecto "${nombre}" del servidor?`)) {
-            return;
-        }
+        const ok = await confirmarDialogoLossGen({
+            title: 'Eliminar Proyecto del Servidor',
+            message: `¿Estás seguro de que deseas eliminar definitivamente el proyecto "${nombre}" del servidor?`,
+            confirmText: 'Sí, Eliminar',
+            variant: 'danger'
+        });
+        if (!ok) return;
 
         const api = getAPIService();
         if (!api) return;
@@ -2713,14 +2767,14 @@
             notificarToast("Proyecto eliminado correctamente.", "success");
         } catch (error) {
             console.error("Error al eliminar:", error);
-            alert("No se pudo eliminar el proyecto: " + (error.message || error));
+            notificarToast("No se pudo eliminar el proyecto: " + (error.message || error), "error");
         }
     }
 
     async function abrirModalProyectos() {
         const api = getAPIService();
         if (!api) {
-            alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+            notificarToast("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.", "warning");
             return;
         }
 

@@ -11,7 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Integración con la API Central de SCITIC -->
+    <!-- Integración con la API Central y Sistema de Diseño de SCITIC -->
+    <link rel="stylesheet" href="../../css/design-system.css?v=10">
+    <script src="../../js/components/Toast.js?v=10"></script>
     <script src="../../js/services/api.js"></script>
 
     <!-- Cargar fórmulas de la norma RITEL -->
@@ -25,13 +27,13 @@
             --secondary: #0284c7;
             --accent: #f59e0b;
             --bg-dark: #020617;
-            --bg-gradient: radial-gradient(circle at top left, #1e293b 0%, #020617 100%);
-            --panel-bg: rgba(30, 41, 59, 0.7);
-            --card-bg: #1e293b;
-            --border: rgba(255, 255, 255, 0.12);
+            --bg-gradient: radial-gradient(ellipse 80% 60% at 15% -10%, rgba(30, 41, 59, 0.9) 0%, #020617 75%);
+            --panel-bg: rgba(15, 23, 42, 0.78);
+            --card-bg: rgba(30, 41, 59, 0.65);
+            --border: rgba(255, 255, 255, 0.1);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --input-bg: #0f172a;
+            --input-bg: rgba(9, 14, 28, 0.85);
             --success: #10b981;
             --danger: #ef4444;
             --purple: #a855f7;
@@ -43,10 +45,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
             background: var(--bg-gradient);
             background-attachment: fixed;
-            margin: 15px 20px;
+            margin: 16px 22px;
             color: var(--text-main);
         }
 
@@ -169,43 +171,45 @@
         }
 
         button {
-            padding: 8.5px 14px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 700;
+            padding: 8px 13px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            font-family: var(--font-sans, 'Inter', sans-serif);
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.25s ease;
-            color: white;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #f8fafc;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             font-size: 12.5px;
+            width: auto;
         }
         button:hover {
             transform: translateY(-1px);
         }
-        .btn-calc { background-color: var(--primary); }
-        .btn-calc:hover { background-color: var(--primary-hover); }
-        .btn-add { background-color: var(--secondary); }
-        .btn-add:hover { background-color: #0369a1; }
-        .btn-toggle { background-color: #0284c7; }
-        .btn-toggle:hover { background-color: #0369a1; }
-        .btn-example { background-color: var(--purple); }
-        .btn-example:hover { background-color: #9333ea; }
-        .btn-clear { background-color: #475569; }
-        .btn-clear:hover { background-color: #334155; }
-        .btn-backup { background-color: var(--orange); }
-        .btn-backup:hover { background-color: #ea580c; }
-        .btn-import { background-color: #6366f1; }
-        .btn-import:hover { background-color: #4f46e5; }
-        .btn-excel { background-color: var(--success); }
-        .btn-excel:hover { background-color: #059669; }
-        .btn-pdf { background-color: var(--danger); }
-        .btn-pdf:hover { background-color: #dc2626; }
-        .btn-server-save { background-color: #0284c7; }
-        .btn-server-save:hover { background-color: #0369a1; }
-        .btn-server-load { background-color: #7c3aed; }
-        .btn-server-load:hover { background-color: #6d28d9; }
+        .btn-calc { background: linear-gradient(135deg, #ea580c, #f97316); border-color: rgba(249, 115, 22, 0.5); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3); font-weight: 700; }
+        .btn-calc:hover { filter: brightness(1.08); }
+        .btn-add { background: rgba(14, 165, 233, 0.16); color: #38bdf8; border-color: rgba(14, 165, 233, 0.38); }
+        .btn-add:hover { background: #0284c7; color: #fff; }
+        .btn-toggle { background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); }
+        .btn-toggle:hover { background: rgba(56, 189, 248, 0.24); color: #fff; }
+        .btn-example { background: rgba(255, 255, 255, 0.06); color: #e2e8f0; border-color: rgba(255, 255, 255, 0.14); }
+        .btn-example:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+        .btn-clear { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.12); }
+        .btn-clear:hover { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); }
+        .btn-backup { background: rgba(245, 158, 11, 0.14); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
+        .btn-backup:hover { background: #d97706; color: #fff; }
+        .btn-import { background: rgba(255, 255, 255, 0.06); color: #cbd5e1; border-color: rgba(255, 255, 255, 0.15); }
+        .btn-import:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+        .btn-excel { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.38); }
+        .btn-excel:hover { background: #10b981; color: #fff; }
+        .btn-pdf { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.38); }
+        .btn-pdf:hover { background: #ef4444; color: #fff; }
+        .btn-server-save { background: rgba(234, 88, 12, 0.16); color: #fb923c; border-color: rgba(234, 88, 12, 0.4); }
+        .btn-server-save:hover { background: #ea580c; color: #fff; }
+        .btn-server-load { background: rgba(255, 255, 255, 0.06); color: #e2e8f0; border-color: rgba(255, 255, 255, 0.15); }
+        .btn-server-load:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
 
         /* MODALES Y PERSISTENCIA */
         .modal-overlay {
@@ -326,10 +330,12 @@
 
         .table-container {
             overflow-x: auto;
+            max-height: 68vh;
             background: var(--card-bg);
-            border-radius: 10px;
+            backdrop-filter: blur(14px);
+            border-radius: 12px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.35);
             margin-bottom: 20px;
         }
         table {
@@ -341,9 +347,18 @@
         th {
             background-color: #0f172a;
             color: #f8fafc;
-            padding: 9px 6px;
+            padding: 10px 7px;
             border: 1px solid var(--border);
             font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 4;
+        }
+        #tabla-calculo-torres tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #0f172a;
         }
         th.sub-th {
             background-color: #1e293b;
@@ -1109,7 +1124,7 @@
                 aptosDefault = parseInt(document.getElementById('in-aptos').value) || 0;
 
                 if (pisos < pisoBase) {
-                    alert("El piso más alto debe ser mayor o igual al piso del SETI.");
+                    notificarToast("El piso más alto debe ser mayor o igual al piso del SETI.", "warning");
                     document.getElementById('in-pisos').value = pisoBase;
                     return;
                 }
@@ -1122,7 +1137,7 @@
                 let inputTexto = document.getElementById('in-pisos-atipicos')?.value || '';
                 let partes = inputTexto.split(',').map(s => s.trim()).filter(s => s.length > 0);
                 if (partes.length === 0) {
-                    alert("Por favor ingresa la secuencia de pisos separados por comas (ej. 5, 4, 3, 2, 1, 99, 98, 97, 96, 95).");
+                    notificarToast("Por favor ingresa la secuencia de pisos separados por comas (ej. 5, 4, 3, 2, 1).", "warning");
                     return;
                 }
                 listaPisos = partes;
@@ -1436,8 +1451,21 @@
             agregarFilaParcelacion(desde, hasta, pau, mat, dia, curvas);
         }
 
-        function limpiarTablaParcelacion() {
-            if (confirm('¿Estás seguro de que deseas borrar todos los tramos de parcelación?')) {
+        async function confirmarDialogoTubos(opciones) {
+            const modalSvc = (window.parent && window.parent.SCITICModal) ? window.parent.SCITICModal : window.SCITICModal;
+            if (modalSvc) return await modalSvc.confirm(opciones);
+            return confirm(typeof opciones === 'string' ? opciones : opciones.message);
+        }
+
+        async function limpiarTablaParcelacion() {
+            const ok = await confirmarDialogoTubos({
+                title: 'Limpiar tramos de parcelación',
+                message: '¿Estás seguro de que deseas borrar todos los tramos de parcelación actuales?',
+                confirmText: 'Sí, limpiar todo',
+                cancelText: 'Cancelar',
+                type: 'danger'
+            });
+            if (ok) {
                 document.getElementById('tabla-body-parcelaciones').innerHTML = '';
                 document.getElementById('empty-state-parc').classList.remove('hidden');
                 recalcularParcelacion();
@@ -1749,7 +1777,7 @@
                     notificarToast("Copia local cargada correctamente.", "success");
                 } catch (err) {
                     console.error("Error al importar JSON:", err);
-                    alert("❌ Error al leer el archivo JSON: " + err.message);
+                    notificarToast("Error al leer el archivo JSON: " + err.message, "error");
                 } finally {
                     event.target.value = '';
                 }
@@ -1764,7 +1792,7 @@
         function abrirModalGuardar() {
             const api = getAPIService();
             if (!api) {
-                alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+                notificarToast("El servicio de conexión no está disponible. Abre esta herramienta desde la aplicación principal.", "warning");
                 return;
             }
 
@@ -1807,7 +1835,7 @@
 
             const nombreInput = document.getElementById('modal-in-nombre-proyecto').value.trim();
             if (!nombreInput) {
-                alert("Por favor ingresa un nombre para el proyecto.");
+                notificarToast("Por favor ingresa un nombre para el proyecto.", "warning");
                 return;
             }
 
@@ -1843,7 +1871,7 @@
         async function abrirModalProyectos() {
             const api = getAPIService();
             if (!api) {
-                alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+                notificarToast("El servicio de conexión no está disponible. Abre esta herramienta desde la aplicación principal.", "warning");
                 return;
             }
 
@@ -1948,12 +1976,19 @@
                 notificarToast(`Proyecto "${proyecto.nombre_proyecto}" cargado en pantalla.`, "success");
             } catch (err) {
                 console.error("Error restaurando proyecto:", err);
-                alert("Error al procesar los datos del proyecto: " + err.message);
+                notificarToast("Error al procesar los datos del proyecto: " + err.message, "error");
             }
         }
 
         async function eliminarProyectoDesdeServidor(id, nombre) {
-            if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente el proyecto "${nombre}"? Esta acción no se puede deshacer.`)) {
+            const confirmar = await confirmarDialogoTubos({
+                title: 'Eliminar proyecto del servidor',
+                message: `¿Estás seguro de que deseas eliminar permanentemente el proyecto "${nombre}"? Esta acción no se puede deshacer.`,
+                confirmText: 'Sí, eliminar',
+                cancelText: 'Cancelar',
+                type: 'danger'
+            });
+            if (!confirmar) {
                 return;
             }
 
@@ -2110,7 +2145,7 @@
             
             let filas = document.querySelectorAll('#tabla-body-parcelaciones tr');
             if (filas.length === 0) {
-                alert("No hay tramos para exportar.");
+                notificarToast("No hay tramos para exportar.", "warning");
                 return;
             }
 

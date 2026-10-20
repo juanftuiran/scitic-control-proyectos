@@ -8,9 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <!-- Integración con Base de Datos SCITIC -->
+    <!-- Integración con Base de Datos SCITIC y Design System -->
+    <link rel="stylesheet" href="../../css/design-system.css?v=10">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../js/services/api.js"></script>
+    <script src="../../js/components/Toast.js?v=10"></script>
     <style>
         :root {
             --brand-orange: #ea580c;
@@ -283,10 +285,32 @@
 
         /* KPI Cards in Informe */
         .kpi-card {
-            background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.55); border-radius: 12px; padding: 1.35rem 1.25rem;
             text-align: center; border: 1px solid var(--border-subtle);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
-        .kpi-val { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; color: var(--brand-orange); }
+        .kpi-card:hover { transform: translateY(-2px); border-color: rgba(234, 88, 12, 0.35); }
+        .kpi-val {
+            font-size: 2rem; font-weight: 800; margin: 0.45rem 0 0.65rem;
+            color: var(--brand-orange);
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
+        }
+        .kpi-progress-track {
+            width: 100%; height: 6px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08); overflow: hidden;
+        }
+        .kpi-progress-fill {
+            height: 100%; width: 0%; border-radius: 999px;
+            background: linear-gradient(90deg, var(--brand-orange), #fb923c);
+            transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .stat-val {
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
+        }
+        td { user-select: text; }
 
         @media print {
             body { background: white; color: black; padding: 0; }
@@ -859,18 +883,22 @@
                     <div class="kpi-card">
                         <div class="text-sm text-muted">Progreso Vertical</div>
                         <div class="kpi-val" id="inf-kpi-vert">0%</div>
+                        <div class="kpi-progress-track"><div class="kpi-progress-fill" id="inf-bar-vert"></div></div>
                     </div>
                     <div class="kpi-card">
                         <div class="text-sm text-muted">Progreso Dispersión</div>
                         <div class="kpi-val" id="inf-kpi-disp">0%</div>
+                        <div class="kpi-progress-track"><div class="kpi-progress-fill" id="inf-bar-disp"></div></div>
                     </div>
                     <div class="kpi-card">
                         <div class="text-sm text-muted">Progreso Interior</div>
                         <div class="kpi-val" id="inf-kpi-int">0%</div>
+                        <div class="kpi-progress-track"><div class="kpi-progress-fill" id="inf-bar-int"></div></div>
                     </div>
                     <div class="kpi-card" style="border-color: var(--brand-orange);">
                         <div class="text-sm text-muted">PROGRESO GENERAL</div>
                         <div class="kpi-val" id="inf-kpi-gen">0%</div>
+                        <div class="kpi-progress-track"><div class="kpi-progress-fill" id="inf-bar-gen" style="background: linear-gradient(90deg, #10b981, #34d399);"></div></div>
                     </div>
                 </div>
 
@@ -1253,8 +1281,14 @@
             document.querySelector('.tab-btn[data-target="tab-vertical"]').click();
         };
 
-        window.reiniciarProyecto = function() {
-            if (confirm("¿Estás seguro de borrar todos los datos del proyecto? Esto no se puede deshacer.")) {
+        window.reiniciarProyecto = async function() {
+            const ok = await confirmarDialogoObra({
+                title: 'Reiniciar Proyecto',
+                message: '¿Estás seguro de borrar todos los datos del proyecto? Esto no se puede deshacer.',
+                confirmText: 'Sí, Borrar Todo',
+                variant: 'danger'
+            });
+            if (ok) {
                 state.config.generado = false;
                 state.sets = {
                     antena: { equipo: 'Antena UHF', ref: '', cableTipo: 'RG-6 LSZH', cable: '', conectores: '', estado: 'Pendiente', cargas: '' },
@@ -1596,8 +1630,14 @@
             });
         };
 
-        window.copiarPrimerApto = function() {
-            if(!confirm("¿Copiar los valores, modelo y ESTADO del primer apartamento a TODOS los demás?")) return;
+        window.copiarPrimerApto = async function() {
+            const ok = await confirmarDialogoObra({
+                title: 'Copiar Configuración de 1er Apto',
+                message: '¿Copiar los valores, modelo y ESTADO del primer apartamento a TODOS los demás?',
+                confirmText: 'Sí, Copiar a Todos',
+                variant: 'primary'
+            });
+            if(!ok) return;
             const c = state.config;
             const maxP = Math.max(c.pisoInicial, c.pisoFinal);
             const primerId = getAptoId(maxP, c.sufijos[0]);
@@ -1625,8 +1665,14 @@
             showToast('Valores copiados a todos los apartamentos');
         };
 
-        window.marcarInteriorInstalado = function() {
-            if(!confirm("¿Marcar todos los repartidores y espacios de la red interior como INSTALADO?")) return;
+        window.marcarInteriorInstalado = async function() {
+            const ok = await confirmarDialogoObra({
+                title: 'Marcar Red Interior Instalada',
+                message: '¿Marcar todos los repartidores y espacios de la red interior como INSTALADO?',
+                confirmText: 'Sí, Marcar Instalado',
+                variant: 'primary'
+            });
+            if(!ok) return;
             Object.keys(state.interior).forEach(id => {
                 if (state.interior[id].repartidor.tipo !== 'Ninguno') {
                     state.interior[id].repartidor.estado = 'Instalado';
@@ -1853,6 +1899,15 @@
             document.getElementById('inf-kpi-disp').innerText = pD.toFixed(1) + '%';
             document.getElementById('inf-kpi-int').innerText = pI.toFixed(1) + '%';
             document.getElementById('inf-kpi-gen').innerText = pG.toFixed(1) + '%';
+
+            const barV = document.getElementById('inf-bar-vert');
+            const barD = document.getElementById('inf-bar-disp');
+            const barI = document.getElementById('inf-bar-int');
+            const barG = document.getElementById('inf-bar-gen');
+            if (barV) barV.style.width = `${Math.min(100, Math.max(0, pV)).toFixed(1)}%`;
+            if (barD) barD.style.width = `${Math.min(100, Math.max(0, pD)).toFixed(1)}%`;
+            if (barI) barI.style.width = `${Math.min(100, Math.max(0, pI)).toFixed(1)}%`;
+            if (barG) barG.style.width = `${Math.min(100, Math.max(0, pG)).toFixed(1)}%`;
         }
 
         // --- EXPORT ---
@@ -2076,7 +2131,7 @@
                     }
                 } catch(err) {
                     console.error('Error al cargar proyecto:', err);
-                    alert('Error al leer el archivo de backup: ' + err.message);
+                    notificarToast('Error al leer el archivo de backup: ' + err.message, 'error');
                 } finally {
                     e.target.value = '';
                 }
@@ -2175,6 +2230,17 @@
         }
 
         function notificarToast(mensaje, tipo = 'info') {
+            try {
+                if (window.parent && window.parent !== window && window.parent.Toast) {
+                    window.parent.Toast.show(mensaje, tipo);
+                    return;
+                }
+                if (window.Toast) {
+                    window.Toast.show(mensaje, tipo);
+                    return;
+                }
+            } catch (_) {}
+
             const toast = document.getElementById('toast-calc');
             if (!toast) return;
 
@@ -2185,6 +2251,8 @@
                 toast.style.background = '#10b981';
             } else if (tipo === 'error') {
                 toast.style.background = '#ef4444';
+            } else if (tipo === 'warning') {
+                toast.style.background = '#f59e0b';
             } else {
                 toast.style.background = '#0284c7';
             }
@@ -2192,6 +2260,18 @@
             setTimeout(() => {
                 toast.style.display = 'none';
             }, 3500);
+        }
+
+        async function confirmarDialogoObra(opts) {
+            try {
+                if (window.parent && window.parent !== window && window.parent.SCITICModal) {
+                    return await window.parent.SCITICModal.confirm(opts);
+                }
+                if (window.SCITICModal) {
+                    return await window.SCITICModal.confirm(opts);
+                }
+            } catch (_) {}
+            return confirm(opts.message || '¿Confirmar acción?');
         }
 
         function abrirModalGuardar() {
@@ -2234,7 +2314,7 @@
         async function guardarProyectoEnServidor(esNuevo = false) {
             const api = getAPIService();
             if (!api) {
-                alert('El servicio de conexión con la base de datos no está disponible.');
+                notificarToast('El servicio de conexión con la base de datos no está disponible.', 'error');
                 return;
             }
 
@@ -2242,7 +2322,7 @@
             const nombreProyecto = inNombre ? inNombre.value.trim() : '';
 
             if (!nombreProyecto) {
-                alert('Por favor escribe un nombre para el proyecto.');
+                notificarToast('Por favor escribe un nombre para el proyecto.', 'warning');
                 inNombre?.focus();
                 return;
             }
@@ -2275,7 +2355,7 @@
                 }
             } catch (error) {
                 console.error("Error al guardar:", error);
-                alert("No se pudo guardar el proyecto en el servidor: " + (error.message || error));
+                notificarToast("No se pudo guardar el proyecto en el servidor: " + (error.message || error), "error");
             }
         }
 
@@ -2459,7 +2539,7 @@
         async function cargarProyectoDesdeServidor(id) {
             const api = getAPIService();
             if (!api) {
-                alert('Servicio API no disponible.');
+                notificarToast('Servicio API no disponible.', 'error');
                 return;
             }
 
@@ -2477,14 +2557,18 @@
                 notificarToast(`Proyecto "${proyectoActivoNombre}" cargado con éxito.`, "success");
             } catch (error) {
                 console.error("Error al cargar proyecto:", error);
-                alert("Error al cargar el proyecto desde el servidor: " + (error.message || error));
+                notificarToast("Error al cargar el proyecto desde el servidor: " + (error.message || error), "error");
             }
         }
 
         async function eliminarProyectoDesdeServidor(id, nombre) {
-            if (!confirm(`¿Estás seguro de que deseas eliminar definitivamente el proyecto "${nombre}" del servidor?`)) {
-                return;
-            }
+            const ok = await confirmarDialogoObra({
+                title: 'Eliminar Proyecto del Servidor',
+                message: `¿Estás seguro de que deseas eliminar definitivamente el proyecto "${nombre}" del servidor?`,
+                confirmText: 'Sí, Eliminar',
+                variant: 'danger'
+            });
+            if (!ok) return;
 
             const api = getAPIService();
             if (!api) return;
@@ -2499,14 +2583,14 @@
                 notificarToast("Proyecto eliminado correctamente.", "success");
             } catch (error) {
                 console.error("Error al eliminar:", error);
-                alert("No se pudo eliminar el proyecto: " + (error.message || error));
+                notificarToast("No se pudo eliminar el proyecto: " + (error.message || error), "error");
             }
         }
 
         async function abrirModalProyectos() {
             const api = getAPIService();
             if (!api) {
-                alert("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.");
+                notificarToast("El servicio de conexión no está disponible. Por favor, abre esta herramienta desde la aplicación principal.", "warning");
                 return;
             }
 
