@@ -23,12 +23,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./src/theme/theme.css?v=15">
-    <link rel="stylesheet" href="./src/css/design-system.css?v=15">
-    <link rel="stylesheet" href="./src/css/styles.css?v=15">
-    <link rel="stylesheet" href="./src/css/toast.css?v=15">
-    <script src="./src/theme/theme.js?v=15"></script>
-    <script src="./src/theme/icons.js?v=15"></script>
+    <link rel="stylesheet" href="./src/theme/theme.css?v=16">
+    <link rel="stylesheet" href="./src/css/design-system.css?v=16">
+    <link rel="stylesheet" href="./src/css/styles.css?v=16">
+    <link rel="stylesheet" href="./src/css/toast.css?v=16">
+    <script src="./src/theme/theme.js?v=16"></script>
+    <script src="./src/theme/icons.js?v=16"></script>
 </head>
 
 <body>
@@ -54,6 +54,12 @@
             <span data-icon="login" data-size="16"></span>
         </button>
         <p id="loginError" style="color: var(--danger); font-size: 0.85rem; display: none; margin-top: 1.5rem; font-weight: 500;">Credenciales incorrectas.</p>
+    </div>
+
+    <!-- Marca de agua del creador en pantalla de acceso -->
+    <div class="creator-watermark-login">
+        <span class="watermark-status-dot"></span>
+        <span class="watermark-text">by <span class="watermark-name">JF</span></span>
     </div>
 </div>
 
@@ -685,6 +691,14 @@
             </div>
         </div>
 
+        <!-- Marca de agua del creador al final de la web -->
+        <footer class="creator-watermark-footer">
+            <div class="creator-watermark-pill" title="SCITIC Platform — Crafted by JF">
+                <span class="watermark-status-dot"></span>
+                <span class="watermark-text">by <span class="watermark-name">JF</span></span>
+            </div>
+        </footer>
+
     </div>
 </div>
 
@@ -838,9 +852,9 @@
     </div>
 </div>
 
-<script src="./src/js/components/Toast.js?v=15"></script>
-<script src="./src/js/store/appState.js?v=15"></script>
-<script src="./src/js/services/api.js?v=15"></script>
-<script src="./src/js/main.js?v=15"></script>
+<script src="./src/js/components/Toast.js?v=16"></script>
+<script src="./src/js/store/appState.js?v=16"></script>
+<script src="./src/js/services/api.js?v=16"></script>
+<script src="./src/js/main.js?v=16"></script>
 </body>
 </html>
