@@ -104,11 +104,21 @@ class SCITICModal {
 }
 
 /**
- * SCITICTheme — Gestor de tema (Dark Corporativo por defecto + Modo Campo Claro opcional)
+ * SCITICTheme — Gestor de tema (Compatibilidad y fallback si no se cargó src/theme/theme.js)
  */
-class SCITICTheme {
+class SCITICThemeFallback {
     static getTheme() {
         return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    }
+
+    static getColor(varName) {
+        if (!varName) return '';
+        const name = varName.startsWith('--') ? varName : `--${varName}`;
+        try {
+            return window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        } catch (e) {
+            return '';
+        }
     }
 
     static init() {
@@ -186,9 +196,13 @@ class SCITICTheme {
 
 window.Toast = Toast;
 window.SCITICModal = SCITICModal;
-window.SCITICTheme = SCITICTheme;
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => SCITICTheme.init());
-} else {
-    SCITICTheme.init();
+
+// Preservar la API del tema central si ya fue cargada desde src/theme/theme.js
+if (!window.SCITICTheme) {
+    window.SCITICTheme = SCITICThemeFallback;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => SCITICThemeFallback.init());
+    } else {
+        SCITICThemeFallback.init();
+    }
 }

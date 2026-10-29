@@ -243,61 +243,86 @@ async function iniciarApp() {
     cargandoApp = true;
 
     showLoader("Cargando entorno de trabajo...");
-    document.getElementById('loginView').style.display = 'none';
-    const appView = document.getElementById('appView');
-    appView.style.display = 'block';
-    appView.classList.remove('ios-view-enter');
-    void appView.offsetWidth;
-    appView.classList.add('ios-view-enter');
-    if (usuarioActual) {
-        document.getElementById('displayUserName').innerText = usuarioActual.name;
-        document.getElementById('displayUserRole').innerText = usuarioActual.role;
-    } else {
-        document.getElementById('displayUserName').innerText = "Cargando...";
-    }
 
-    aplicarPermisos();
-    aplicarPermisosWidget();
+    // Watchdog de seguridad: bajo ninguna circunstancia la pantalla debe quedarse bloqueada
+    const safetyTimeout = setTimeout(() => {
+        if (cargandoApp) {
+            console.warn("Safety timeout alcanzado en iniciarApp: forzando cierre de loader.");
+            hideLoader();
+            cargandoApp = false;
+        }
+    }, 6000);
 
     try {
-        // Carga en paralelo de datos para máxima velocidad
-        const [registrosDb, auditDb, gastosDb, usersDb] = await Promise.all([
-            window.API.getRegistros(),
-            window.API.getAuditoria(),
-            window.API.getGastos(),
-            window.API.getUsuarios()
-        ]);
+        const loginEl = document.getElementById('loginView');
+        if (loginEl) loginEl.style.display = 'none';
 
-        if (registrosDb) datos = registrosDb;
-        if (auditDb) auditoria = auditDb;
-        if (gastosDb) gastosDatos = gastosDb;
-        if (usersDb) {
-            window.usuariosGlobal = usersDb;
-            trabajadoresActivosParaPendientes = usersDb
-                .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
-                .map(u => u.nombre.trim());
+        const appView = document.getElementById('appView');
+        if (appView) {
+            appView.style.display = 'block';
+            appView.classList.remove('ios-view-enter');
+            void appView.offsetWidth;
+            appView.classList.add('ios-view-enter');
         }
-    } catch (e) {
-        console.error("Error al cargar datos iniciales:", e);
+
+        const userNameEl = document.getElementById('displayUserName');
+        const userRoleEl = document.getElementById('displayUserRole');
+        if (usuarioActual) {
+            if (userNameEl) userNameEl.innerText = usuarioActual.name;
+            if (userRoleEl) userRoleEl.innerText = usuarioActual.role;
+        } else {
+            if (userNameEl) userNameEl.innerText = "Cargando...";
+        }
+
+        try { aplicarPermisos(); } catch (e) { console.warn("Error en aplicarPermisos:", e); }
+        try { aplicarPermisosWidget(); } catch (e) { console.warn("Error en aplicarPermisosWidget:", e); }
+
+        try {
+            // Carga en paralelo de datos para máxima velocidad
+            const [registrosDb, auditDb, gastosDb, usersDb] = await Promise.all([
+                window.API.getRegistros(),
+                window.API.getAuditoria(),
+                window.API.getGastos(),
+                window.API.getUsuarios()
+            ]);
+
+            if (registrosDb) datos = registrosDb;
+            if (auditDb) auditoria = auditDb;
+            if (gastosDb) gastosDatos = gastosDb;
+            if (usersDb) {
+                window.usuariosGlobal = usersDb;
+                trabajadoresActivosParaPendientes = usersDb
+                    .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
+                    .map(u => u.nombre.trim());
+            }
+        } catch (e) {
+            console.error("Error al cargar datos iniciales:", e);
+        }
+
+        try { recalcularProgresos(); } catch (err) { console.error("Error en recalcularProgresos:", err); }
+        
+        const fechaEl = document.getElementById('fecha');
+        if (fechaEl) fechaEl.value = getFechaColombiaString();
+
+        try { inicializarDatosGlobales(); } catch (err) { console.error("Error en inicializarDatosGlobales:", err); }
+        try { inicializarDatosGlobalesGastos(); } catch (err) { console.error("Error en inicializarDatosGlobalesGastos:", err); }
+
+        if (usuarioActual) {
+            if (userNameEl) userNameEl.innerText = usuarioActual.name;
+            if (userRoleEl) userRoleEl.innerText = usuarioActual.role;
+        }
+    } catch (fatalErr) {
+        console.error("Error crítico durante iniciarApp:", fatalErr);
+    } finally {
+        clearTimeout(safetyTimeout);
+        hideLoader();
+        cargandoApp = false;
     }
-
-    recalcularProgresos();
-    document.getElementById('fecha').value = getFechaColombiaString();
-
-    inicializarDatosGlobales();
-    inicializarDatosGlobalesGastos();
-
-    if (usuarioActual) {
-        document.getElementById('displayUserName').innerText = usuarioActual.name;
-        document.getElementById('displayUserRole').innerText = usuarioActual.role;
-    }
-    hideLoader();
-    cargandoApp = false;
     
     // Registrar login sin bloquear la carga y evitando duplicar en refrescos
     if (!sessionStorage.getItem('scitic_login_audited')) {
         sessionStorage.setItem('scitic_login_audited', 'true');
-        registrarAuditoria("LOGIN", "El usuario inició sesión.");
+        try { registrarAuditoria("LOGIN", "El usuario inició sesión."); } catch (e) {}
     }
 }
 
@@ -954,141 +979,149 @@ function cambiarActividadGrafico(act) {
 }
 
 function graficar(listaFiltrada) {
-    const ctx = document.getElementById("grafico"); 
-    if(!ctx || ctx.offsetParent === null) return; // No graficar si está oculto
+    try {
+        const ctx = document.getElementById("grafico"); 
+        if(!ctx || ctx.offsetParent === null) return; // No graficar si está oculto
 
-    // Filtrar por la actividad seleccionada en los tabs si no es 'TODAS'
-    const datosGrafico = (actividadGraficoHoras && actividadGraficoHoras !== 'TODAS')
-        ? (listaFiltrada || []).filter(d => coincideActividadGrafico(d.actividad, actividadGraficoHoras))
-        : (listaFiltrada || []);
+        // Filtrar por la actividad seleccionada en los tabs si no es 'TODAS'
+        const datosGrafico = (actividadGraficoHoras && actividadGraficoHoras !== 'TODAS')
+            ? (listaFiltrada || []).filter(d => coincideActividadGrafico(d.actividad, actividadGraficoHoras))
+            : (listaFiltrada || []);
 
-    const resumen = {};
-    datosGrafico.forEach(d => {
-        if (d.proyecto) {
-            const p = d.proyecto.trim();
-            resumen[p] = (resumen[p] || 0) + Number(d.horas || 0);
+        const resumen = {};
+        datosGrafico.forEach(d => {
+            if (d.proyecto) {
+                const p = d.proyecto.trim();
+                resumen[p] = (resumen[p] || 0) + Number(d.horas || 0);
+            }
+        });
+        const isThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (window.Chart) {
+            Chart.defaults.color = isThemeLight ? '#475569' : '#A0A8A2';
+            Chart.defaults.font.family = "'Space Grotesk', 'Inter', sans-serif";
         }
-    });
-    const isThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
-    Chart.defaults.color = isThemeLight ? '#475569' : '#A0A8A2';
-    Chart.defaults.font.family = "'Space Grotesk', 'Inter', sans-serif";
-    if (window.chart) window.chart.destroy();
+        if (window.chart) {
+            try { window.chart.destroy(); } catch (e) {}
+        }
 
-    // Colores dinámicos centralizados desde SCITICTheme / theme.css
-    const primaryToken = (window.SCITICTheme && window.SCITICTheme.getColor('--primary')) || '#00FF66';
-    const primaryHoverToken = (window.SCITICTheme && window.SCITICTheme.getColor('--primary-hover')) || '#33ff85';
+        // Colores dinámicos centralizados desde SCITICTheme / theme.css
+        const primaryToken = (window.SCITICTheme && typeof window.SCITICTheme.getColor === 'function' ? window.SCITICTheme.getColor('--primary') : '') || '#00FF66';
+        const primaryHoverToken = (window.SCITICTheme && typeof window.SCITICTheme.getColor === 'function' ? window.SCITICTheme.getColor('--primary-hover') : '') || '#33ff85';
 
-    // Paleta Cyberpunk según la actividad seleccionada
-    let colorStart = primaryToken, colorMid = 'rgba(0, 255, 102, 0.45)', colorEnd = 'rgba(0, 255, 102, 0.03)', hoverColor = primaryHoverToken;
-    let borderColor = 'rgba(0, 255, 102, 0.85)';
+        // Paleta Cyberpunk según la actividad seleccionada
+        let colorStart = primaryToken, colorMid = 'rgba(0, 255, 102, 0.45)', colorEnd = 'rgba(0, 255, 102, 0.03)', hoverColor = primaryHoverToken;
+        let borderColor = 'rgba(0, 255, 102, 0.85)';
 
-    if (actividadGraficoHoras === 'OBRAS') {
-        colorStart = '#00e5ff'; colorMid = 'rgba(0, 229, 255, 0.45)'; colorEnd = 'rgba(0, 229, 255, 0.03)'; hoverColor = '#33ecff'; borderColor = 'rgba(0, 229, 255, 0.85)';
-    } else if (actividadGraficoHoras === 'RRHH') {
-        colorStart = '#f72585'; colorMid = 'rgba(247, 37, 133, 0.45)'; colorEnd = 'rgba(247, 37, 133, 0.03)'; hoverColor = '#ff4d9e'; borderColor = 'rgba(247, 37, 133, 0.85)';
-    } else if (actividadGraficoHoras === 'TODAS') {
-        colorStart = '#38bdf8'; colorMid = 'rgba(56, 189, 248, 0.45)'; colorEnd = 'rgba(56, 189, 248, 0.03)'; hoverColor = '#60a5fa'; borderColor = 'rgba(56, 189, 248, 0.85)';
-    }
+        if (actividadGraficoHoras === 'OBRAS') {
+            colorStart = '#00e5ff'; colorMid = 'rgba(0, 229, 255, 0.45)'; colorEnd = 'rgba(0, 229, 255, 0.03)'; hoverColor = '#33ecff'; borderColor = 'rgba(0, 229, 255, 0.85)';
+        } else if (actividadGraficoHoras === 'RRHH') {
+            colorStart = '#f72585'; colorMid = 'rgba(247, 37, 133, 0.45)'; colorEnd = 'rgba(247, 37, 133, 0.03)'; hoverColor = '#ff4d9e'; borderColor = 'rgba(247, 37, 133, 0.85)';
+        } else if (actividadGraficoHoras === 'TODAS') {
+            colorStart = '#38bdf8'; colorMid = 'rgba(56, 189, 248, 0.45)'; colorEnd = 'rgba(56, 189, 248, 0.03)'; hoverColor = '#60a5fa'; borderColor = 'rgba(56, 189, 248, 0.85)';
+        }
 
-    const canvasH = ctx.clientHeight || 280;
-    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, canvasH);
-    if (isThemeLight) {
-        gradient.addColorStop(0, colorStart);
-        gradient.addColorStop(1, '#059669');
-    } else {
-        gradient.addColorStop(0, colorStart);
-        gradient.addColorStop(0.35, colorMid);
-        gradient.addColorStop(0.85, colorEnd);
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    }
+        const canvasH = ctx.clientHeight || 280;
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, canvasH);
+        if (isThemeLight) {
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(1, '#059669');
+        } else {
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(0.35, colorMid);
+            gradient.addColorStop(0.85, colorEnd);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        }
 
-    // Ordenar de mayor a menor horas para una mejor visualización ejecutiva
-    const sortedEntries = Object.entries(resumen).sort((a, b) => b[1] - a[1]);
-    const labels = sortedEntries.map(e => e[0]);
-    const dataValues = sortedEntries.map(e => e[1]);
+        // Ordenar de mayor a menor horas para una mejor visualización ejecutiva
+        const sortedEntries = Object.entries(resumen).sort((a, b) => b[1] - a[1]);
+        const labels = sortedEntries.map(e => e[0]);
+        const dataValues = sortedEntries.map(e => e[1]);
 
-    const actNombreDisplay = actividadGraficoHoras === 'DISEÑO' ? 'Diseño'
-        : actividadGraficoHoras === 'OBRAS' ? 'Obras'
-        : actividadGraficoHoras === 'RRHH' ? 'RRHH'
-        : 'Todas';
+        const actNombreDisplay = actividadGraficoHoras === 'DISEÑO' ? 'Diseño'
+            : actividadGraficoHoras === 'OBRAS' ? 'Obras'
+            : actividadGraficoHoras === 'RRHH' ? 'RRHH'
+            : 'Todas';
 
-    window.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: `Horas (${actNombreDisplay})`,
-                data: dataValues,
-                backgroundColor: gradient,
-                borderColor: isThemeLight ? 'transparent' : borderColor,
-                borderWidth: isThemeLight ? 0 : { top: 2, right: 1, bottom: 0, left: 1 },
-                hoverBackgroundColor: colorStart,
-                hoverBorderColor: '#ffffff',
-                hoverBorderWidth: 2,
-                borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 2, bottomRight: 2 },
-                borderSkipped: false,
-                barPercentage: 0.65,
-                categoryPercentage: 0.75
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: isThemeLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(6, 10, 7, 0.96)',
-                    titleColor: isThemeLight ? '#0f172a' : '#ffffff',
-                    titleFont: { family: "'Space Grotesk', sans-serif", size: 13, weight: '700' },
-                    bodyColor: isThemeLight ? '#475569' : colorStart,
-                    bodyFont: { family: "'JetBrains Mono', monospace", size: 13, weight: '600' },
-                    borderColor: isThemeLight ? '#e2e8f0' : (isThemeLight ? '#cbd5e1' : colorStart),
-                    borderWidth: 1.5,
-                    padding: { top: 10, bottom: 10, left: 14, right: 14 },
-                    cornerRadius: 8,
-                    displayColors: true,
-                    boxWidth: 8,
-                    boxHeight: 8,
-                    usePointStyle: true,
-                    callbacks: {
-                        label: function(context) {
-                            return ` ${context.parsed.y || 0} horas registradas`;
+        window.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `Horas (${actNombreDisplay})`,
+                    data: dataValues,
+                    backgroundColor: gradient,
+                    borderColor: isThemeLight ? 'transparent' : borderColor,
+                    borderWidth: isThemeLight ? 0 : { top: 2, right: 1, bottom: 0, left: 1 },
+                    hoverBackgroundColor: colorStart,
+                    hoverBorderColor: '#ffffff',
+                    hoverBorderWidth: 2,
+                    borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 2, bottomRight: 2 },
+                    borderSkipped: false,
+                    barPercentage: 0.65,
+                    categoryPercentage: 0.75
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isThemeLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(6, 10, 7, 0.96)',
+                        titleColor: isThemeLight ? '#0f172a' : '#ffffff',
+                        titleFont: { family: "'Space Grotesk', sans-serif", size: 13, weight: '700' },
+                        bodyColor: isThemeLight ? '#475569' : colorStart,
+                        bodyFont: { family: "'JetBrains Mono', monospace", size: 13, weight: '600' },
+                        borderColor: isThemeLight ? '#e2e8f0' : (isThemeLight ? '#cbd5e1' : colorStart),
+                        borderWidth: 1.5,
+                        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+                        cornerRadius: 8,
+                        displayColors: true,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.parsed.y || 0} horas registradas`;
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    grid: { 
-                        color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(0, 255, 102, 0.07)',
-                        borderDash: [4, 4],
-                        drawBorder: false
-                    },
-                    ticks: {
-                        color: isThemeLight ? '#475569' : '#A0A8A2',
-                        font: { family: "'JetBrains Mono', monospace", size: 11, weight: '500' },
-                        callback: function(v) { return v + ' h'; }
-                    },
-                    beginAtZero: true
                 },
-                x: {
-                    grid: { display: false },
-                    ticks: {
-                        color: isThemeLight ? '#0f172a' : '#A0A8A2',
-                        font: { family: "'Space Grotesk', 'Inter', sans-serif", size: 11.5, weight: '600' },
-                        maxRotation: 25,
-                        minRotation: 0
+                scales: {
+                    y: {
+                        grid: { 
+                            color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(0, 255, 102, 0.07)',
+                            borderDash: [4, 4],
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: isThemeLight ? '#475569' : '#A0A8A2',
+                            font: { family: "'JetBrains Mono', monospace", size: 11, weight: '500' },
+                            callback: function(v) { return v + ' h'; }
+                        },
+                        beginAtZero: true
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: isThemeLight ? '#0f172a' : '#A0A8A2',
+                            font: { family: "'Space Grotesk', 'Inter', sans-serif", size: 11.5, weight: '600' },
+                            maxRotation: 25,
+                            minRotation: 0
+                        }
+                    }
+                },
+                onClick: (e, items) => {
+                    if (items.length > 0) {
+                        document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index];
+                        filtrar();
                     }
                 }
-            },
-            onClick: (e, items) => {
-                if (items.length > 0) {
-                    document.getElementById('fProyecto').value = window.chart.data.labels[items[0].index];
-                    filtrar();
-                }
             }
-        }
-    });
+        });
+    } catch (errGrafico) {
+        console.warn("Aviso: no se pudo renderizar gráfico de horas:", errGrafico);
+    }
 }
 
 // ==========================================
@@ -2139,11 +2172,12 @@ function verObservacionesGasto(obsEncoded) {
 }
 
 function graficarGastos(lista) {
-    const ctx = document.getElementById("graficoGastos"); 
-    if(!ctx || ctx.offsetParent === null) return;
+    try {
+        const ctx = document.getElementById("graficoGastos"); 
+        if(!ctx || ctx.offsetParent === null) return;
 
-    const resumen = {};
-    lista.forEach(g => {
+        const resumen = {};
+        (lista || []).forEach(g => {
         let clave = tipoGraficoGastos === 'proyecto' ? (g.proyecto || 'N/A').trim() : (g.item || 'Otros').trim();
         resumen[clave] = (resumen[clave] || 0) + Number(g.total || 0);
     });
@@ -2264,6 +2298,9 @@ function graficarGastos(lista) {
     };
 
     window.chartGastos = new Chart(ctx, config);
+    } catch (errGraficoGastos) {
+        console.warn("Aviso: no se pudo renderizar gráfico de gastos:", errGraficoGastos);
+    }
 }
 
 // ==========================================
