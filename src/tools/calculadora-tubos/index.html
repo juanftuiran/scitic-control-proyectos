@@ -25,8 +25,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Integración con la API Central y Sistema de Diseño de SCITIC -->
-    <link rel="stylesheet" href="../../css/design-system.css?v=11">
+    <!-- Integración con la API Central y Sistema de Diseño de SCITIC (Single Source of Truth) -->
+    <link rel="stylesheet" href="../../theme/theme.css?v=14">
+    <link rel="stylesheet" href="../../css/design-system.css?v=14">
+    <script src="../../theme/theme.js?v=14"></script>
+    <script src="../../theme/icons.js?v=14"></script>
     <script src="../../js/components/Toast.js?v=11"></script>
     <script src="../../js/services/api.js"></script>
 
@@ -34,38 +37,7 @@
     <script src="ritel-formulas.js"></script>
     
     <style>
-        :root {
-            --primary: #ea580c;
-            --primary-hover: #f97316;
-            --primary-blue: #38bdf8;
-            --secondary: #0284c7;
-            --accent: #f59e0b;
-            --bg-dark: #020617;
-            --bg-gradient: radial-gradient(ellipse 80% 60% at 15% -10%, rgba(30, 41, 59, 0.9) 0%, #020617 75%);
-            --panel-bg: rgba(15, 23, 42, 0.78);
-            --card-bg: rgba(30, 41, 59, 0.65);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --input-bg: rgba(9, 14, 28, 0.85);
-            --success: #10b981;
-            --danger: #ef4444;
-            --purple: #a855f7;
-            --orange: #f97316;
-        }
-
-        html[data-theme="light"] {
-            --bg-dark: #f8fafc;
-            --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
-            --panel-bg: #ffffff;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --input-bg: #ffffff;
-            --primary-blue: #0284c7;
-        }
-        
+        /* Hereda tokens y colores centralizados desde ../../theme/theme.css */
         * {
             box-sizing: border-box;
         }
@@ -115,7 +87,7 @@
             background: var(--primary);
             color: #ffffff;
             border-color: var(--primary-hover);
-            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
         }
         
         .project-title {
@@ -214,7 +186,7 @@
         button:hover {
             transform: translateY(-1px);
         }
-        .btn-calc { background: linear-gradient(135deg, #ea580c, #f97316); border-color: rgba(249, 115, 22, 0.5); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3); font-weight: 700; }
+        .btn-calc { background: linear-gradient(135deg, #059669, #10b981); border-color: rgba(52, 211, 153, 0.5); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); font-weight: 700; }
         .btn-calc:hover { filter: brightness(1.08); }
         .btn-add { background: rgba(14, 165, 233, 0.16); color: #38bdf8; border-color: rgba(14, 165, 233, 0.38); }
         .btn-add:hover { background: #0284c7; color: #fff; }
@@ -232,8 +204,8 @@
         .btn-excel:hover { background: #10b981; color: #fff; }
         .btn-pdf { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.38); }
         .btn-pdf:hover { background: #ef4444; color: #fff; }
-        .btn-server-save { background: rgba(234, 88, 12, 0.16); color: #fb923c; border-color: rgba(234, 88, 12, 0.4); }
-        .btn-server-save:hover { background: #ea580c; color: #fff; }
+        .btn-server-save { background: rgba(16, 185, 129, 0.16); color: #34d399; border-color: rgba(16, 185, 129, 0.4); }
+        .btn-server-save:hover { background: #10b981; color: #fff; }
         .btn-server-load { background: rgba(255, 255, 255, 0.06); color: #e2e8f0; border-color: rgba(255, 255, 255, 0.15); }
         .btn-server-load:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
 
@@ -552,7 +524,7 @@
             font-weight: 700;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -560,7 +532,7 @@
         }
         .btn-hub-new:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
         }
         .hub-toolbar {
             display: flex;
@@ -583,7 +555,7 @@
         .hub-search-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
         }
         .hub-counter {
             font-size: 13px;
@@ -2256,7 +2228,7 @@
             let tituloDoc = esVistaTubos ? 'Tubería' : 'Bandejas';
 
             doc.setFontSize(14);
-            doc.setTextColor(234, 88, 12);
+            doc.setTextColor(16, 185, 129);
             doc.text(`Memoria de Cálculo de ${tituloDoc} - Torres / Edificios`, 14, 12);
             doc.setFontSize(10);
             doc.setTextColor(148, 163, 184);
@@ -2292,7 +2264,7 @@
             let tramoMax = document.getElementById('card-tramo-max').textContent;
 
             doc.setFontSize(14);
-            doc.setTextColor(234, 88, 12);
+            doc.setTextColor(16, 185, 129);
             doc.text(`Memoria de Cálculo de Tuberías - Parcelaciones / Casas (SETU)`, 14, 12);
             
             doc.setFontSize(10);
@@ -2333,7 +2305,7 @@
                         { content: 'CNC Cables (mm²)', colSpan: 2, styles: { halign: 'center' } },
                         { content: 'Dist. SETI', colSpan: 2, styles: { halign: 'center' } },
                         { content: 'Dist. SETS', colSpan: 2, styles: { halign: 'center' } },
-                        { content: 'TOTAL TUBOS', rowSpan: 2, styles: { halign: 'center', fillColor: [234, 88, 12], textColor: [255, 255, 255] } }
+                        { content: 'TOTAL TUBOS', rowSpan: 2, styles: { halign: 'center', fillColor: [16, 185, 129], textColor: [255, 255, 255] } }
                     ],
                     [
                         { content: 'Desde' },

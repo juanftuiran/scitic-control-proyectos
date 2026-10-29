@@ -22,51 +22,19 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <!-- Integración con Base de Datos SCITIC y Design System -->
-    <link rel="stylesheet" href="../../css/design-system.css?v=11">
+    <!-- Integración con Base de Datos SCITIC y Tema Central (Single Source of Truth) -->
+    <link rel="stylesheet" href="../../theme/theme.css?v=14">
+    <link rel="stylesheet" href="../../css/design-system.css?v=14">
+    <script src="../../theme/theme.js?v=14"></script>
+    <script src="../../theme/icons.js?v=14"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../js/services/api.js"></script>
     <script src="../../js/components/Toast.js?v=11"></script>
     <style>
-        :root {
-            --brand-orange: #ea580c;
-            --brand-orange-hover: #f97316;
-            --bg-dark: #0f172a;
-            --bg-darker: #020617;
-            --card-bg: rgba(30, 41, 59, 0.6);
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-solid: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-subtle: #64748b;
-            --header-bg: #1a2744;
-            --badge-gray: #64748b;
-            --badge-warning: #f59e0b;
-            --badge-success: #10b981;
-            --badge-danger: #ef4444;
-        }
-
-        html[data-theme="light"] {
-            --brand-orange: #ea580c;
-            --brand-orange-hover: #c2410c;
-            --bg-dark: #f8fafc;
-            --bg-darker: #f1f5f9;
-            --card-bg: #ffffff;
-            --border-subtle: #e2e8f0;
-            --border-solid: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --text-subtle: #64748b;
-            --header-bg: rgba(255, 255, 255, 0.95);
-            --badge-gray: #475569;
-            --badge-warning: #d97706;
-            --badge-success: #059669;
-            --badge-danger: #dc2626;
-        }
-
+        /* Hereda tokens y paleta cromática centralizada desde ../../theme/theme.css */
         * {
             margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-sans, 'Inter', sans-serif);
         }
 
         body {
@@ -80,8 +48,8 @@
         /* Scrollbar */
         ::-webkit-scrollbar { width: 14px; height: 14px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-left: 1px solid var(--border-solid); }
-        ::-webkit-scrollbar-thumb { background: rgba(234, 88, 12, 0.4); border-radius: 7px; border: 3px solid rgba(0,0,0,0.4); }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(234, 88, 12, 0.8); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-soft); border-radius: 7px; border: 3px solid rgba(0,0,0,0.4); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
         /* Typography */
         h1, h2, h3, h4 { font-weight: 600; }
@@ -136,7 +104,7 @@
         .tab-btn.active::after {
             content: ''; position: absolute; bottom: -1px; left: 0; width: 100%;
             height: 2px; background: var(--brand-orange);
-            box-shadow: 0 -2px 10px rgba(234, 88, 12, 0.5);
+            box-shadow: 0 -2px 10px rgba(16, 185, 129, 0.5);
         }
 
         /* Content Container */
@@ -170,7 +138,7 @@
         }
         .form-input:focus, .form-select:focus {
             outline: none; border-color: var(--brand-orange);
-            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
         }
         
         .form-select option { background: var(--bg-dark); color: var(--text-main); }
@@ -183,9 +151,9 @@
         }
         .btn-primary {
             background: linear-gradient(to right, var(--brand-orange), var(--brand-orange-hover));
-            color: white; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+            color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45); }
         .btn-primary:active { transform: translateY(1px); }
 
         .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border-subtle); }
@@ -276,7 +244,7 @@
             display: none;
         }
         .apto-card.expanded .apto-body { display: block; }
-        .apto-card.expanded { border-color: rgba(234, 88, 12, 0.3); }
+        .apto-card.expanded { border-color: rgba(16, 185, 129, 0.3); }
 
         /* Toast */
         #toast-container {
@@ -322,7 +290,7 @@
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
-        .kpi-card:hover { transform: translateY(-2px); border-color: rgba(234, 88, 12, 0.35); }
+        .kpi-card:hover { transform: translateY(-2px); border-color: rgba(16, 185, 129, 0.35); }
         .kpi-val {
             font-size: 2rem; font-weight: 800; margin: 0.45rem 0 0.65rem;
             color: var(--brand-orange);
@@ -393,7 +361,7 @@
             font-weight: 700;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -401,7 +369,7 @@
         }
         .btn-hub-new:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
         }
         .hub-toolbar {
             display: flex;
@@ -424,7 +392,7 @@
         .hub-search-input:focus {
             outline: none;
             border-color: var(--brand-orange);
-            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
         }
         .hub-counter {
             font-size: 12.5px;
@@ -2043,7 +2011,7 @@
                 const doc = new jsPDF('landscape');
                 
                 doc.setFontSize(22);
-                doc.setTextColor(234, 88, 12);
+                doc.setTextColor(16, 185, 129);
                 doc.text("SCITIC - INFORME TDT (V2)", 14, 20);
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
@@ -2073,7 +2041,7 @@
                                 data.cell.styles.fontStyle = 'bold';
                             }
                             if (td.style && td.style.color && td.style.color.includes('var(--brand-orange)')) {
-                                data.cell.styles.textColor = [234, 88, 12];
+                                data.cell.styles.textColor = [16, 185, 129];
                             }
                         }
                     }
@@ -2087,7 +2055,7 @@
                     html: document.querySelectorAll('#tab-informe table')[1],
                     theme: 'grid',
                     styles: { fontSize: 7, overflow: 'linebreak' },
-                    headStyles: { fillColor: [234, 88, 12] },
+                    headStyles: { fillColor: [16, 185, 129] },
                     columnStyles: {
                         4: { cellWidth: 25 },
                         5: { cellWidth: 40 }

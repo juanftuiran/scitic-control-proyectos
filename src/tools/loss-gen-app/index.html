@@ -20,54 +20,21 @@
         })();
     </script>
 
-    <!-- Integración con Base de Datos SCITIC y Design System -->
-    <link rel="stylesheet" href="../../css/design-system.css?v=11">
+    <!-- Integración con Base de Datos SCITIC y Tema Central (Single Source of Truth) -->
+    <link rel="stylesheet" href="../../theme/theme.css?v=14">
+    <link rel="stylesheet" href="../../css/design-system.css?v=14">
+    <script src="../../theme/theme.js?v=14"></script>
+    <script src="../../theme/icons.js?v=14"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../js/services/api.js"></script>
     <script src="../../js/components/Toast.js?v=11"></script>
 
     <style>
-        :root {
-            --primary: #ea580c;
-            --primary-blue: #38bdf8;
-            --secondary: #0284c7;
-            --accent: #f59e0b;
-            --bg-dark: #020617;
-            --panel-bg: rgba(30, 41, 59, 0.72);
-            --card-bg: #1e293b;
-            --card-header-bg: #0f172a;
-            --border: rgba(255, 255, 255, 0.12);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --input-bg: #0f172a;
-            --bg-light: rgba(255, 255, 255, 0.03);
-            --ok: #10b981;
-            --warn: #f59e0b;
-            --bad: #ef4444;
-        }
-
-        html[data-theme="light"] {
-            --primary: #ea580c;
-            --primary-blue: #0284c7;
-            --secondary: #0284c7;
-            --accent: #d97706;
-            --bg-dark: #f8fafc;
-            --panel-bg: #ffffff;
-            --card-bg: #ffffff;
-            --card-header-bg: #f8fafc;
-            --border: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --input-bg: #ffffff;
-            --bg-light: #f8fafc;
-            --ok: #059669;
-            --warn: #d97706;
-            --bad: #dc2626;
-        }
+        /* Hereda tokens y paleta cromática centralizada desde ../../theme/theme.css */
         * { box-sizing: border-box; }
         body {
             font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
-            background: radial-gradient(circle at top left, #1e293b 0%, #020617 100%);
+            background: var(--bg-gradient);
             background-attachment: fixed;
             margin: 0; padding: 20px;
             color: var(--text-main); font-size: 12.5px;
@@ -211,8 +178,8 @@
             display: inline-flex; align-items: center; gap: 6px;
         }
         button:active { transform: scale(0.98); }
-        .btn-calc  { background: linear-gradient(135deg, #ea580c, #c2410c); box-shadow: 0 4px 12px rgba(234, 88, 12, 0.28); }
-        .btn-calc:hover  { background: linear-gradient(135deg, #f97316, #ea580c); transform: translateY(-1px); }
+        .btn-calc  { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28); }
+        .btn-calc:hover  { background: linear-gradient(135deg, #34d399, #059669); transform: translateY(-1px); }
         .btn-config { background: rgba(2, 132, 199, 0.2); border-color: rgba(56, 189, 248, 0.35); color: #7dd3fc; }
         .btn-config:hover { background: rgba(2, 132, 199, 0.35); color: #fff; }
         .btn-save  { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d; }
@@ -386,7 +353,7 @@
             color: var(--text-muted);
         }
         .btn-hub-new {
-            background: linear-gradient(135deg, var(--primary), #f97316);
+            background: linear-gradient(135deg, var(--primary), #34d399);
             color: #fff;
             padding: 12px 22px;
             border-radius: 8px;
@@ -394,7 +361,7 @@
             font-weight: 700;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -402,7 +369,7 @@
         }
         .btn-hub-new:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.6);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
         }
         .hub-toolbar {
             display: flex;
@@ -425,7 +392,7 @@
         .hub-search-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
         }
         .hub-counter {
             font-size: 12.5px;

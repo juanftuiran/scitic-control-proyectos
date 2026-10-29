@@ -1,0 +1,296 @@
+/* =========================================================================
+   SCITIC S.A.S. — ARCHIVO MAESTRO DE IDENTIDAD VISUAL, ESTÉTICA Y COLORES
+   ARCHIVO ÚNICO DE CONFIGURACIÓN CROMÁTICA (SINGLE SOURCE OF TRUTH)
+   =========================================================================
+   Modificar ÚNICAMENTE este archivo para cambiar colores, gradientes, 
+   superficies, desenfoques o fuentes de TODA la plataforma y sus herramientas.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&family=Syne:wght@700;800&display=swap');
+
+:root {
+    /* -------------------------------------------------------------
+       1. PALETA DE COLOR PRINCIPAL: CYBERPUNK TECH (NEÓN #00FF66)
+       ------------------------------------------------------------- */
+    --primary: #00FF66;
+    --primary-hover: #33ff85;
+    --primary-active: #00cc52;
+    --primary-contrast: #040805;
+    --primary-soft: rgba(0, 255, 102, 0.12);
+    --primary-border: rgba(0, 255, 102, 0.35);
+    --primary-gradient: linear-gradient(135deg, #00e65c 0%, #00FF66 50%, #33ff85 100%);
+    --primary-glow: 0 0 20px rgba(0, 255, 102, 0.38), 0 0 45px rgba(0, 255, 102, 0.15);
+    --primary-glow-hover: 0 0 25px rgba(0, 255, 102, 0.55), 0 0 55px rgba(0, 255, 102, 0.25);
+
+    /* Acento Secundario / Menta Tecnológica */
+    --mint-accent: #00FF66;
+    --mint-soft: rgba(0, 255, 102, 0.12);
+    --mint-gradient: linear-gradient(135deg, #00cc52 0%, #00FF66 100%);
+
+    /* Compatibilidad retroactiva con aliases históricos (vinculados al primary) */
+    --scitic-orange: var(--primary);
+    --scitic-orange-hover: var(--primary-hover);
+    --scitic-orange-soft: var(--primary-soft);
+    --scitic-orange-border: var(--primary-border);
+    --scitic-gradient: var(--primary-gradient);
+    --brand-orange: var(--primary);
+    --brand-orange-hover: var(--primary-hover);
+    --primary-blue: #00e5ff;
+    --secondary: #00b4d8;
+
+    /* -------------------------------------------------------------
+       2. FONDOS Y SUPERFICIES (CYBERPUNK NEGRO PROFUNDO #050806 / #000000)
+       ------------------------------------------------------------- */
+    --bg-main: #060907;
+    --bg-dark: #060907;
+    --bg-darker: #020403;
+    --bg-light: rgba(0, 255, 102, 0.03);
+    --ds-bg-canvas: #060907;
+
+    /* Resplandor radial de alta tecnología con micro-aura verde neón */
+    --bg-gradient: radial-gradient(ellipse 95% 70% at 50% -12%, rgba(0, 255, 102, 0.14) 0%, #060907 72%),
+                   radial-gradient(ellipse 70% 45% at 90% 15%, rgba(0, 255, 102, 0.05) 0%, transparent 65%);
+    --ds-bg-gradient: radial-gradient(ellipse 85% 60% at 50% -10%, rgba(0, 255, 102, 0.1) 0%, #060907 75%),
+                      radial-gradient(ellipse 60% 50% at 90% 10%, rgba(0, 255, 102, 0.05) 0%, transparent 70%);
+
+    /* Superficies Glassmorphism Cyberpunk en Capas */
+    --card-bg: rgba(10, 15, 12, 0.78);
+    --card-header-bg: #070b08;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-border-glow: rgba(0, 255, 102, 0.35);
+    --panel-bg: rgba(13, 19, 15, 0.65);
+    --panel-subtle: rgba(10, 15, 12, 0.85);
+    --ds-surface-1: rgba(10, 15, 12, 0.85);
+    --ds-surface-2: rgba(14, 22, 17, 0.6);
+    --ds-surface-elevated: #0b110d;
+    --ds-surface-input: rgba(6, 10, 8, 0.9);
+
+    /* Inputs y Formularios */
+    --input-bg: rgba(6, 10, 8, 0.88);
+    --input-border: rgba(255, 255, 255, 0.12);
+    --input-focus: rgba(0, 255, 102, 0.38);
+    --input-focus-bg: rgba(8, 14, 10, 0.98);
+
+    /* Barras de Navegación y Tablas */
+    --header-bg: rgba(6, 9, 7, 0.88);
+    --nav-container-bg: rgba(10, 15, 12, 0.85);
+    --mode-selector-bg: rgba(7, 11, 8, 0.8);
+    --floating-bar-bg: rgba(6, 10, 7, 0.96);
+    --table-header-bg: rgba(10, 15, 12, 0.92);
+    --table-header-text: #ffffff;
+    --table-row-hover: rgba(0, 255, 102, 0.06);
+    --table-row-hover-text: #ffffff;
+
+    /* Botones Secundarios */
+    --btn-secondary-bg: rgba(255, 255, 255, 0.05);
+    --btn-secondary-border: rgba(255, 255, 255, 0.1);
+    --btn-secondary-color: #f0f4f1;
+    --btn-secondary-hover: rgba(0, 255, 102, 0.08);
+
+    /* Bordes y Resplandores */
+    --border: rgba(255, 255, 255, 0.09);
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-solid: #16221a;
+    --ds-border: rgba(255, 255, 255, 0.08);
+    --ds-border-strong: rgba(0, 255, 102, 0.25);
+    --ds-border-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+
+    /* -------------------------------------------------------------
+       3. TIPOGRAFÍA Y TEXTOS (CYBERPUNK HIGH CONTRAST)
+       ------------------------------------------------------------- */
+    --font-heading: 'Space Grotesk', 'Syne', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --text-main: #f0f4f1;
+    --text-heading: #ffffff;
+    --text-muted: #a0a8a2;   /* Gris claro para párrafos y descripciones */
+    --text-subtle: #6d7770;
+    --scitic-dark: #ffffff;
+    --scitic-gray: #7d8880;
+    --ds-text-primary: #f0f4f1;
+    --ds-text-secondary: #cbd5ce;
+    --ds-text-muted: #a0a8a2;
+    --ds-text-subtle: #6d7770;
+    --stat-number-color: #00FF66; /* Contadores en verde neón brillante */
+
+    /* -------------------------------------------------------------
+       4. SEMÁNTICA DE ESTADOS Y NOVEDADES LABORALES
+       ------------------------------------------------------------- */
+    --success: #00FF66;
+    --success-soft: rgba(0, 255, 102, 0.14);
+    --accent: #ffb703;
+    --accent-soft: rgba(255, 183, 3, 0.14);
+    --accent-gradient: linear-gradient(135deg, #d97706, #ffb703);
+    --danger: #ff0055;
+    --danger-bg: rgba(255, 0, 85, 0.12);
+    --danger-soft: rgba(255, 0, 85, 0.14);
+    --info: #00e5ff;
+    --info-soft: rgba(0, 229, 255, 0.14);
+
+    --ds-success: var(--success);
+    --ds-success-soft: var(--success-soft);
+    --ds-warning: var(--accent);
+    --ds-warning-soft: var(--accent-soft);
+    --ds-danger: var(--danger);
+    --ds-danger-soft: var(--danger-soft);
+    --ds-info: var(--info);
+    --ds-info-soft: var(--info-soft);
+
+    /* Semántica extendida para herramientas y reportes técnicos */
+    --purple: #b5179e;
+    --orange: var(--primary);
+    --ok: var(--success);
+    --warn: var(--accent);
+    --bad: var(--danger);
+    --badge-gray: #6b756e;
+    --badge-warning: var(--accent);
+    --badge-success: var(--success);
+    --badge-danger: var(--danger);
+
+    /* Códigos por tipo de novedad */
+    --permiso-color: #00e5ff;
+    --incapacidad-color: #ff0055;
+    --vacaciones-color: #b5179e;
+    --novedad-color: #f72585;
+
+    /* -------------------------------------------------------------
+       5. SOMBRAS, ELEVACIONES Y EFECTOS CYBERPUNK / GLASSMORPHISM
+       ------------------------------------------------------------- */
+    --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.6), var(--ds-border-highlight);
+    --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.75), var(--ds-border-highlight);
+    --shadow-lg: 0 20px 45px -10px rgba(0, 0, 0, 0.85), var(--ds-border-highlight);
+    --ds-shadow-sm: var(--shadow-sm);
+    --ds-shadow-md: var(--shadow-md);
+    --ds-shadow-lg: var(--shadow-lg);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-full: 9999px;
+    --ds-radius-sm: var(--radius-sm);
+    --ds-radius-md: var(--radius-md);
+    --ds-radius-lg: var(--radius-lg);
+    --ds-radius-xl: var(--radius-xl);
+
+    --ios-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ios-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ios-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ds-ease: var(--ios-ease);
+    --ios-blur: blur(20px);
+    --ios-blur-subtle: blur(12px);
+}
+
+/* =========================================================================
+   MODO CLARO (html[data-theme="light"])
+   Esquema de alto contraste, alta legibilidad para campo / oficina diurna
+   ========================================================================= */
+html[data-theme="light"] {
+    --primary: #059669;
+    --primary-hover: #047857;
+    --primary-contrast: #ffffff;
+    --primary-soft: rgba(16, 185, 129, 0.1);
+    --primary-border: rgba(16, 185, 129, 0.28);
+    --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --primary-glow: 0 4px 14px rgba(5, 150, 105, 0.25);
+
+    --mint-accent: #0d9488;
+    --mint-soft: rgba(13, 148, 136, 0.12);
+
+    --scitic-orange: var(--primary);
+    --scitic-orange-hover: var(--primary-hover);
+    --scitic-orange-soft: var(--primary-soft);
+    --scitic-orange-border: var(--primary-border);
+    --scitic-gradient: var(--primary-gradient);
+    --brand-orange: var(--primary);
+    --brand-orange-hover: var(--primary-hover);
+
+    /* Superficies y Fondos Claras */
+    --bg-main: #f8fafc;
+    --bg-dark: #f8fafc;
+    --bg-darker: #f1f5f9;
+    --bg-light: #ffffff;
+    --ds-bg-canvas: #f8fafc;
+
+    --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%),
+                      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(16, 185, 129, 0.04) 0%, transparent 65%);
+    --ds-bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
+
+    --card-bg: #ffffff;
+    --card-header-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --panel-bg: #ffffff;
+    --panel-subtle: #f8fafc;
+    --ds-surface-1: #ffffff;
+    --ds-surface-2: #f8fafc;
+    --ds-surface-elevated: #ffffff;
+    --ds-surface-input: #ffffff;
+
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-focus: rgba(16, 185, 129, 0.2);
+    --input-focus-bg: #ffffff;
+
+    --header-bg: rgba(255, 255, 255, 0.92);
+    --nav-container-bg: #f1f5f9;
+    --mode-selector-bg: #f1f5f9;
+    --floating-bar-bg: rgba(255, 255, 255, 0.96);
+    --table-header-bg: #f1f5f9;
+    --table-header-text: #0f172a;
+    --table-row-hover: rgba(16, 185, 129, 0.04);
+    --table-row-hover-text: #0f172a;
+
+    --btn-secondary-bg: #ffffff;
+    --btn-secondary-border: #cbd5e1;
+    --btn-secondary-color: #0f172a;
+    --btn-secondary-hover: #f8fafc;
+
+    --border: #e2e8f0;
+    --border-subtle: #f1f5f9;
+    --border-solid: #cbd5e1;
+    --ds-border: #e2e8f0;
+    --ds-border-strong: #cbd5e1;
+
+    /* Textos en Claro */
+    --text-main: #0f172a;
+    --text-heading: #0f172a;
+    --text-muted: #475569;
+    --text-subtle: #64748b;
+    --scitic-dark: #0f172a;
+    --scitic-gray: #64748b;
+    --ds-text-primary: #0f172a;
+    --ds-text-secondary: #334155;
+    --ds-text-muted: #475569;
+    --ds-text-subtle: #64748b;
+    --stat-number-color: #059669;
+
+    /* Semántica en Claro */
+    --success: #059669;
+    --accent: #d97706;
+    --danger: #dc2626;
+    --danger-bg: rgba(220, 38, 38, 0.08);
+    --info: #0284c7;
+
+    --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 6px 18px -3px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 20px 35px -8px rgba(15, 23, 42, 0.12), 0 8px 12px -3px rgba(15, 23, 42, 0.04);
+}
+
+/* =========================================================================
+   6. CLASES DE UTILIDAD ESTÉTICA GLOBALES (APLICABLES EN CUALQUIER HTML)
+   ========================================================================= */
+.text-primary   { color: var(--primary) !important; }
+.text-muted     { color: var(--text-muted) !important; }
+.text-heading   { color: var(--text-heading) !important; }
+.text-success   { color: var(--success) !important; }
+.text-accent    { color: var(--accent) !important; }
+.text-danger    { color: var(--danger) !important; }
+.text-info      { color: var(--info) !important; }
+
+.bg-primary-soft { background: var(--primary-soft) !important; }
+.bg-success-soft { background: var(--success-soft) !important; }
+.bg-accent-soft  { background: var(--accent-soft) !important; }
+.bg-danger-soft  { background: var(--danger-bg) !important; }
+
+.border-primary { border-color: var(--primary-border) !important; }
+.gradient-primary { background: var(--primary-gradient) !important; }

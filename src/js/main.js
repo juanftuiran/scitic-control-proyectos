@@ -842,7 +842,8 @@ function mostrar(lista) {
     });
 
     if (listaOrdenada.length === 0) {
-        htmlTabla = `<tr><td colspan="${esAdmin ? 8 : 6}"><div class="scitic-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h4>Sin registros para los filtros seleccionados</h4><p>Ajusta los filtros superiores o registra una nueva actividad laboral.</p></div></td></tr>`;
+        const iconSearch = window.SCITIC_ICONS ? window.SCITIC_ICONS.get('search', { size: 38, strokeWidth: 1.8 }) : '';
+        htmlTabla = `<tr><td colspan="${esAdmin ? 8 : 6}"><div class="scitic-empty-state">${iconSearch}<h4>Sin registros para los filtros seleccionados</h4><p>Ajusta los filtros superiores o registra una nueva actividad laboral.</p></div></td></tr>`;
     }
 
     document.getElementById('tabla').innerHTML = htmlTabla;
@@ -969,23 +970,37 @@ function graficar(listaFiltrada) {
         }
     });
     const isThemeLight = document.documentElement.getAttribute('data-theme') === 'light';
-    Chart.defaults.color = isThemeLight ? '#475569' : '#94a3b8';
-    Chart.defaults.font.family = 'Inter';
+    Chart.defaults.color = isThemeLight ? '#475569' : '#A0A8A2';
+    Chart.defaults.font.family = "'Space Grotesk', 'Inter', sans-serif";
     if (window.chart) window.chart.destroy();
 
-    // Colores personalizados según la actividad seleccionada
-    let colorStart = '#ea580c', colorEnd = '#c2410c', hoverColor = '#f97316';
+    // Colores dinámicos centralizados desde SCITICTheme / theme.css
+    const primaryToken = (window.SCITICTheme && window.SCITICTheme.getColor('--primary')) || '#00FF66';
+    const primaryHoverToken = (window.SCITICTheme && window.SCITICTheme.getColor('--primary-hover')) || '#33ff85';
+
+    // Paleta Cyberpunk según la actividad seleccionada
+    let colorStart = primaryToken, colorMid = 'rgba(0, 255, 102, 0.45)', colorEnd = 'rgba(0, 255, 102, 0.03)', hoverColor = primaryHoverToken;
+    let borderColor = 'rgba(0, 255, 102, 0.85)';
+
     if (actividadGraficoHoras === 'OBRAS') {
-        colorStart = '#10b981'; colorEnd = '#059669'; hoverColor = '#34d399';
+        colorStart = '#00e5ff'; colorMid = 'rgba(0, 229, 255, 0.45)'; colorEnd = 'rgba(0, 229, 255, 0.03)'; hoverColor = '#33ecff'; borderColor = 'rgba(0, 229, 255, 0.85)';
     } else if (actividadGraficoHoras === 'RRHH') {
-        colorStart = '#8b5cf6'; colorEnd = '#6d28d9'; hoverColor = '#a78bfa';
+        colorStart = '#f72585'; colorMid = 'rgba(247, 37, 133, 0.45)'; colorEnd = 'rgba(247, 37, 133, 0.03)'; hoverColor = '#ff4d9e'; borderColor = 'rgba(247, 37, 133, 0.85)';
     } else if (actividadGraficoHoras === 'TODAS') {
-        colorStart = '#3b82f6'; colorEnd = '#1d4ed8'; hoverColor = '#60a5fa';
+        colorStart = '#38bdf8'; colorMid = 'rgba(56, 189, 248, 0.45)'; colorEnd = 'rgba(56, 189, 248, 0.03)'; hoverColor = '#60a5fa'; borderColor = 'rgba(56, 189, 248, 0.85)';
     }
 
-    let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, colorStart);
-    gradient.addColorStop(1, colorEnd);
+    const canvasH = ctx.clientHeight || 280;
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, canvasH);
+    if (isThemeLight) {
+        gradient.addColorStop(0, colorStart);
+        gradient.addColorStop(1, '#059669');
+    } else {
+        gradient.addColorStop(0, colorStart);
+        gradient.addColorStop(0.35, colorMid);
+        gradient.addColorStop(0.85, colorEnd);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    }
 
     // Ordenar de mayor a menor horas para una mejor visualización ejecutiva
     const sortedEntries = Object.entries(resumen).sort((a, b) => b[1] - a[1]);
@@ -1005,9 +1020,15 @@ function graficar(listaFiltrada) {
                 label: `Horas (${actNombreDisplay})`,
                 data: dataValues,
                 backgroundColor: gradient,
-                hoverBackgroundColor: hoverColor,
-                borderRadius: 6,
-                borderSkipped: false
+                borderColor: isThemeLight ? 'transparent' : borderColor,
+                borderWidth: isThemeLight ? 0 : { top: 2, right: 1, bottom: 0, left: 1 },
+                hoverBackgroundColor: colorStart,
+                hoverBorderColor: '#ffffff',
+                hoverBorderWidth: 2,
+                borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 2, bottomRight: 2 },
+                borderSkipped: false,
+                barPercentage: 0.65,
+                categoryPercentage: 0.75
             }]
         },
         options: {
@@ -1016,27 +1037,48 @@ function graficar(listaFiltrada) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: isThemeLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(15, 23, 42, 0.95)',
-                    titleColor: isThemeLight ? '#0f172a' : '#fff',
-                    bodyColor: isThemeLight ? '#475569' : '#94a3b8',
-                    padding: 12,
+                    backgroundColor: isThemeLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(6, 10, 7, 0.96)',
+                    titleColor: isThemeLight ? '#0f172a' : '#ffffff',
+                    titleFont: { family: "'Space Grotesk', sans-serif", size: 13, weight: '700' },
+                    bodyColor: isThemeLight ? '#475569' : colorStart,
+                    bodyFont: { family: "'JetBrains Mono', monospace", size: 13, weight: '600' },
+                    borderColor: isThemeLight ? '#e2e8f0' : (isThemeLight ? '#cbd5e1' : colorStart),
+                    borderWidth: 1.5,
+                    padding: { top: 10, bottom: 10, left: 14, right: 14 },
                     cornerRadius: 8,
-                    borderColor: isThemeLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)',
-                    borderWidth: 1,
+                    displayColors: true,
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    usePointStyle: true,
                     callbacks: {
                         label: function(context) {
-                            return ` ${context.parsed.y || 0} horas`;
+                            return ` ${context.parsed.y || 0} horas registradas`;
                         }
                     }
                 }
             },
             scales: {
                 y: {
-                    grid: { color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255,255,255,0.05)' },
+                    grid: { 
+                        color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(0, 255, 102, 0.07)',
+                        borderDash: [4, 4],
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: isThemeLight ? '#475569' : '#A0A8A2',
+                        font: { family: "'JetBrains Mono', monospace", size: 11, weight: '500' },
+                        callback: function(v) { return v + ' h'; }
+                    },
                     beginAtZero: true
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: {
+                        color: isThemeLight ? '#0f172a' : '#A0A8A2',
+                        font: { family: "'Space Grotesk', 'Inter', sans-serif", size: 11.5, weight: '600' },
+                        maxRotation: 25,
+                        minRotation: 0
+                    }
                 }
             },
             onClick: (e, items) => {
@@ -1517,7 +1559,7 @@ function generarTablaPendientesGastos(lista) {
     proyectosOrdenados.forEach(([proy, total]) => {
         html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
             <span style="color: var(--text-main); font-weight: 500;">${proy}</span>
-            <span style="color: #f97316; font-weight: 700;">$${total.toLocaleString('es-CO')}</span>
+            <span style="color: var(--accent); font-weight: 700;">$${total.toLocaleString('es-CO')}</span>
         </div>`;
     });
     
@@ -1999,7 +2041,8 @@ function mostrarGastos(lista) {
     });
 
     if (lista.length === 0) {
-        html = `<tr><td colspan="11"><div class="scitic-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><h4>Sin gastos para los filtros seleccionados</h4><p>Cambia los criterios de búsqueda o registra un nuevo gasto operativo.</p></div></td></tr>`;
+        const iconEmpty = window.SCITIC_ICONS ? window.SCITIC_ICONS.get('credit-card', { size: 38, strokeWidth: 1.8 }) : '';
+        html = `<tr><td colspan="11"><div class="scitic-empty-state">${iconEmpty}<h4>Sin gastos para los filtros seleccionados</h4><p>Cambia los criterios de búsqueda o registra un nuevo gasto operativo.</p></div></td></tr>`;
     }
 
     const tablaGastos = document.getElementById('tablaGastos');
@@ -2012,18 +2055,6 @@ function mostrarGastos(lista) {
     animarNumero('stat-gastos-pendiente', totalPendiente, "$", true);
 
     actualizarTarjetaSaldoFavor();
-
-    const countPendientes = gastosDatos.filter(g => g.estado === 'PENDIENTE').length;
-    const badgeP = document.getElementById('badgeGastosPendientes');
-    if (badgeP) {
-        if (countPendientes > 0) {
-            badgeP.innerText = countPendientes;
-            badgeP.style.display = 'inline-block';
-        } else {
-            badgeP.style.display = 'none';
-        }
-    }
-
     actualizarBarraSeleccion();
     aplicarPermisos();
 }
@@ -2118,60 +2149,110 @@ function graficarGastos(lista) {
     });
 
     const isLightGastos = document.documentElement.getAttribute('data-theme') === 'light';
-    Chart.defaults.color = isLightGastos ? '#475569' : '#94a3b8';
-    Chart.defaults.font.family = 'Inter';
+    Chart.defaults.color = isLightGastos ? '#475569' : '#A0A8A2';
+    Chart.defaults.font.family = "'Space Grotesk', 'Inter', sans-serif";
     if (window.chartGastos) window.chartGastos.destroy();
 
-    let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, '#10b981'); gradient.addColorStop(1, '#059669');
+    const canvasH = ctx.clientHeight || 260;
+    let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, canvasH);
+    if (isLightGastos) {
+        gradient.addColorStop(0, '#059669');
+        gradient.addColorStop(1, '#10b981');
+    } else {
+        gradient.addColorStop(0, '#00FF66');
+        gradient.addColorStop(0.35, 'rgba(0, 255, 102, 0.45)');
+        gradient.addColorStop(0.85, 'rgba(0, 255, 102, 0.03)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    }
 
     const typeChart = tipoGraficoGastos === 'proyecto' ? 'bar' : 'doughnut';
+    const cyberColors = ['#00FF66', '#00e5ff', '#ffb703', '#ff0055', '#b5179e', '#f72585', '#38bdf8'];
+    const cyberHoverColors = ['#33ff85', '#33ecff', '#ffc433', '#ff3377', '#c433b0', '#f94f9d', '#60a5fa'];
+
+    let datasetConfig = {
+        label: 'Gastos ($)',
+        data: Object.values(resumen),
+        backgroundColor: tipoGraficoGastos === 'proyecto' ? gradient : cyberColors,
+        hoverBackgroundColor: tipoGraficoGastos === 'proyecto' ? '#00FF66' : cyberHoverColors,
+        borderWidth: tipoGraficoGastos === 'proyecto' ? (isLightGastos ? 0 : { top: 2, right: 1, bottom: 0, left: 1 }) : 3,
+        borderColor: tipoGraficoGastos === 'proyecto' ? (isLightGastos ? 'transparent' : 'rgba(0, 255, 102, 0.85)') : (isLightGastos ? '#ffffff' : '#060907'),
+        borderRadius: tipoGraficoGastos === 'proyecto' ? { topLeft: 6, topRight: 6, bottomLeft: 2, bottomRight: 2 } : 0,
+        borderSkipped: false,
+        barPercentage: 0.65,
+        categoryPercentage: 0.75,
+        hoverOffset: tipoGraficoGastos === 'item' ? 7 : 0
+    };
 
     let config = {
         type: typeChart, 
         data: { 
             labels: Object.keys(resumen), 
-            datasets: [{ 
-                label: 'Gastos ($)', 
-                data: Object.values(resumen), 
-                backgroundColor: tipoGraficoGastos === 'proyecto' ? gradient : ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'], 
-                hoverBackgroundColor: tipoGraficoGastos === 'proyecto' ? '#34d399' : undefined, 
-                borderRadius: tipoGraficoGastos === 'proyecto' ? 6 : 0,
-                borderWidth: tipoGraficoGastos === 'proyecto' ? 0 : 2,
-                borderColor: isLightGastos ? '#ffffff' : '#020617'
-            }] 
+            datasets: [datasetConfig] 
         },
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
+            cutout: tipoGraficoGastos === 'item' ? '76%' : undefined,
             plugins: { 
                 legend: { 
                     display: tipoGraficoGastos === 'item',
                     position: 'right',
-                    labels: { color: isLightGastos ? '#0f172a' : '#f8fafc', font: { family: 'Inter' } }
+                    labels: { 
+                        color: isLightGastos ? '#0f172a' : '#A0A8A2', 
+                        font: { family: "'Space Grotesk', 'Inter', sans-serif", size: 11.5, weight: '600' },
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        padding: 12
+                    }
                 }, 
                 tooltip: { 
-                    callbacks: { label: function(context) { return '$' + context.raw.toLocaleString('es-CO'); } },
-                    backgroundColor: isLightGastos ? 'rgba(255, 255, 255, 0.98)' : 'rgba(15, 23, 42, 0.95)',
-                    titleColor: isLightGastos ? '#0f172a' : '#fff',
-                    bodyColor: isLightGastos ? '#475569' : '#94a3b8',
-                    borderColor: isLightGastos ? '#e2e8f0' : 'rgba(255,255,255,0.1)',
-                    borderWidth: 1,
-                    padding: 12,
-                    cornerRadius: 8 
+                    backgroundColor: isLightGastos ? 'rgba(255, 255, 255, 0.98)' : 'rgba(6, 10, 7, 0.96)',
+                    titleColor: isLightGastos ? '#0f172a' : '#ffffff',
+                    titleFont: { family: "'Space Grotesk', sans-serif", size: 13, weight: '700' },
+                    bodyColor: isLightGastos ? '#475569' : '#00FF66',
+                    bodyFont: { family: "'JetBrains Mono', monospace", size: 13, weight: '600' },
+                    borderColor: isLightGastos ? '#e2e8f0' : 'rgba(0, 255, 102, 0.5)',
+                    borderWidth: 1.5,
+                    padding: { top: 10, bottom: 10, left: 14, right: 14 },
+                    cornerRadius: 8,
+                    displayColors: true,
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    usePointStyle: true,
+                    callbacks: { 
+                        label: function(context) { 
+                            const val = context.raw || 0;
+                            return ' $' + val.toLocaleString('es-CO'); 
+                        } 
+                    }
                 } 
             }, 
             scales: tipoGraficoGastos === 'proyecto' ? { 
                 y: { 
-                    grid: { color: isLightGastos ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255,255,255,0.05)' }, 
+                    grid: { 
+                        color: isLightGastos ? 'rgba(15, 23, 42, 0.06)' : 'rgba(0, 255, 102, 0.07)', 
+                        borderDash: [4, 4],
+                        drawBorder: false
+                    }, 
                     beginAtZero: true,
                     ticks: {
+                        color: isLightGastos ? '#475569' : '#A0A8A2',
+                        font: { family: "'JetBrains Mono', monospace", size: 11, weight: '500' },
                         callback: function(value) {
-                            return '$' + value.toLocaleString('es-CO');
+                            return '$' + (value >= 1000000 ? (value / 1000000).toFixed(1) + 'M' : value.toLocaleString('es-CO'));
                         }
                     }
                 }, 
-                x: { grid: { display: false } } 
+                x: { 
+                    grid: { display: false },
+                    ticks: {
+                        color: isLightGastos ? '#0f172a' : '#A0A8A2',
+                        font: { family: "'Space Grotesk', 'Inter', sans-serif", size: 11.5, weight: '600' },
+                        maxRotation: 25,
+                        minRotation: 0
+                    }
+                } 
             } : undefined,
             onClick: (e, items) => { 
                 if (items.length > 0 && tipoGraficoGastos === 'proyecto') { 
@@ -2539,7 +2620,7 @@ function generarComprobantePago(datosPago) {
             <div>
                 <h2 style="margin:0; font-size:1.5rem; color:#0f172a; font-weight:800;">SCITIC S.A.S</h2>
                 <div style="font-size:0.85rem; color:#64748b; margin-top:3px;">NIT: 901.458.120-1 | Control de Proyectos y Viáticos</div>
-                <div style="margin-top:10px; font-size:0.9rem; font-weight:700; color:#ea580c;">COMPROBANTE DE PAGO DE GASTOS</div>
+                <div style="margin-top:10px; font-size:0.9rem; font-weight:700; color:var(--primary);">COMPROBANTE DE PAGO DE GASTOS</div>
             </div>
             <div style="text-align:right;">
                 <div style="font-size:1.1rem; font-weight:800; color:#0f172a;">${datosPago.numero}</div>

@@ -4,34 +4,44 @@
 
 ---
 
+> [!IMPORTANT]
+> **Arquitectura de Archivo Único (Single Source of Truth):**
+> Toda la estética, colores, fondos, bordes y fuentes están centralizados en un único archivo maestro: [`src/theme/theme.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/theme/theme.css).  
+> Todos los iconos vectoriales del sistema están centralizados en [`src/theme/icons.js`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/theme/icons.js).  
+> Modificar únicamente estos archivos afecta automáticamente a toda la plataforma, dashboards, modales y micro-herramientas.
+
+---
+
 ## 🎨 1. Paleta de Colores Corporativa (Color Palette)
 
-El sistema visual utiliza una arquitectura dual **Dark Theme Pro** y **Light Theme (Modo Campo / Oficina)** con acabados *Glassmorphism* (fondos translúcidos con desenfoque de fondo y bordes de cristal reflectante), centrada en el color corporativo naranja de **SCITIC S.A.S.**
+El sistema visual utiliza una arquitectura dual **Cyberpunk Tech Neo-Green** y **Light Theme (Modo Campo / Oficina)** con acabados *Glassmorphism* (fondos translúcidos con desenfoque de fondo y bordes de cristal reflectante), basada en la estética **Cyberpunk Technology & Digital Revolution**:
 
 ```
-🟧 #EA580C  Primary SCITIC       🟩 #10B981 / #059669  Success / Pagado    🟦 #06B6D4 / #0284C7  Permiso / Info
-🟧 #F97316  Primary Hover        🟨 #F59E0B / #D97706  Accent / Pendiente  🟪 #8B5CF6 / #7C3AED  Vacaciones
-⬛ #020617  Canvas Dark Slate    🟥 #EF4444 / #DC2626  Danger / Alerta     🌸 #EC4899 / #DB2777  Novedades
-⬜ #F8FAFC  Canvas Light Pure    🩶 #94A3B8 / #475569  Text Muted          🌹 #F43F5E / #E11D48  Incapacidad
+🟩 #00FF66  Neon Green Primary   🟩 #059669  Primary Hover / Light AAA   🟦 #00E5FF  Permiso / Info
+🌿 #33FF85  Neon Bright Hover    🟨 #FFB703  Accent / Pendiente          🟪 #B5179E  Vacaciones
+⬛ #060907  Carbon Deep Black    🟥 #FF0055  Danger / Alerta             🌸 #F72585  Novedades
+⬜ #F8FAFC  Canvas Light Pure    🩶 #A0A8A2  Text Muted (#CCCCCC)        🌹 #FF0055  Incapacidad
 ```
 
-### 1.1. Tabla de Tokens de Color ([`src/css/styles.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/css/styles.css) y [`src/css/design-system.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/css/design-system.css))
+### 1.1. Tabla de Tokens de Color ([`src/theme/theme.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/theme/theme.css))
 
-| Token CSS | Modo Oscuro Pro | Modo Claro / Campo | Uso / Significado Semántico |
+| Token CSS | Modo Cyberpunk Tech | Modo Claro / Campo | Uso / Significado Semántico |
 |---|---|---|---|
-| `--primary` | `#ea580c` / `#f97316` | `#ea580c` | Naranja corporativo SCITIC. Botones primarios, acentos activos y logo. |
-| `--primary-hover` | `#f97316` | `#c2410c` | Estado hover y foco en botones y enlaces principales. |
-| `--primary-gradient`| `linear-gradient(135deg, #ea580c, #f97316)` | `linear-gradient(135deg, #ea580c, #f97316)` | Botones de acción clave, loaders destacados y barras de progreso activas. |
-| `--bg-main` | `#020617` (Slate 950) | `#f8fafc` (Slate 50) | Fondo base de la aplicación. |
-| `--bg-gradient` | Radial Slate 950/900 con aura naranja | Radial Blanco/Slate 50 con aura cálida | Fondo general con profundidad tridimensional de alta gama. |
-| `--card-bg` | `rgba(15, 23, 42, 0.72)` | `#ffffff` | Superficie de tarjetas y paneles (*Glassmorphism*). |
+| `--primary` | `#00FF66` | `#059669` | Verde Neón de Alta Intensidad. Botones primarios, llamadas a la acción, títulos destacados y contadores. |
+| `--primary-hover` | `#33ff85` | `#047857` | Estado hover y foco en botones y enlaces principales. |
+| `--primary-contrast` | `#040805` | `#ffffff` | Texto oscuro de alto contraste en botones y pastillas verdes. |
+| `--primary-gradient`| `linear-gradient(135deg, #00e65c, #00FF66, #33ff85)` | `linear-gradient(135deg, #059669, #10b981)` | Botones de acción clave, loaders destacados y barras de progreso activas. |
+| `--bg-main` | `#060907` (Negro carbón profundo) | `#f8fafc` (Slate 50) | Fondo base de la aplicación. |
+| `--bg-gradient` | Radial Negro/Carbón con aura neón verde | Radial Blanco/Slate 50 con aura suave | Fondo general con profundidad tridimensional de alta tecnología. |
+| `--card-bg` | `rgba(10, 15, 12, 0.78)` | `#ffffff` | Superficie de tarjetas y paneles (*Glassmorphism* semitransparente). |
 | `--card-border` | `rgba(255, 255, 255, 0.08)` | `#e2e8f0` | Borde de tarjetas y paneles. |
-| `--text-main` | `#f8fafc` | `#0f172a` (Slate 900) | Texto principal en cuerpos, tablas e inputs. |
-| `--text-heading` | `#ffffff` | `#0f172a` | Encabezados de alto contraste y títulos de tarjetas. |
-| `--text-muted` | `#94a3b8` | `#475569` (Slate 600) | Subtítulos, labels secundarios y texto complementario (WCAG AAA). |
-| `--input-bg` | `rgba(9, 14, 28, 0.75)` | `#ffffff` | Fondo de campos de texto y selectores. |
+| `--text-main` | `#f0f4f1` | `#0f172a` (Slate 900) | Texto principal en cuerpos, tablas e inputs. |
+| `--text-heading` | `#ffffff` | `#0f172a` | Encabezados principales y títulos de alto impacto. |
+| `--text-muted` | `#a0a8a2` (#CCCCCC) | `#475569` (Slate 600) | Párrafos y descripciones suaves que no contrastan agresivamente. |
+| `--stat-number-color`| `#00FF66` | `#059669` | Contadores y KPIs destacados con resplandor neón. |
+| `--input-bg` | `rgba(6, 10, 8, 0.88)` | `#ffffff` | Fondo de campos de texto y selectores. |
 | `--input-border` | `rgba(255, 255, 255, 0.12)` | `#cbd5e1` | Bordes de inputs en reposo. |
-| `--table-header-bg` | `rgba(15, 23, 42, 0.85)` | `#f1f5f9` | Encabezado fijo de tablas con datos. |
+| `--table-header-bg` | `rgba(10, 15, 12, 0.92)` | `#f1f5f9` | Encabezado fijo de tablas con datos. |
 
 ---
 

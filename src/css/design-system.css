@@ -3,203 +3,8 @@
    Compartido entre el Shell Principal y las Micro-Herramientas de Ingeniería
    ========================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-:root {
-    /* Identidad Corporativa SCITIC (Modo Oscuro Pro por defecto) */
-    --scitic-orange: #ea580c;
-    --scitic-orange-hover: #f97316;
-    --scitic-orange-soft: rgba(234, 88, 12, 0.14);
-    --scitic-orange-border: rgba(234, 88, 12, 0.35);
-    --scitic-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-    --primary: #ea580c;
-    --primary-hover: #f97316;
-    --primary-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-
-    /* Superficies en Capas (Dark Engineering Theme) */
-    --bg-main: #020617;
-    --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #0f172a 0%, #020617 80%),
-                      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(234, 88, 12, 0.08) 0%, transparent 65%);
-    --ds-bg-canvas: #020617;
-    --ds-bg-gradient: radial-gradient(ellipse 80% 60% at 15% -10%, rgba(30, 41, 59, 0.9) 0%, #020617 75%),
-                      radial-gradient(ellipse 60% 50% at 90% 10%, rgba(234, 88, 12, 0.06) 0%, transparent 70%);
-    --card-bg: rgba(15, 23, 42, 0.75);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --panel-bg: rgba(30, 41, 59, 0.55);
-    --panel-subtle: rgba(15, 23, 42, 0.6);
-    --ds-surface-1: rgba(15, 23, 42, 0.78);
-    --ds-surface-2: rgba(30, 41, 59, 0.55);
-    --ds-surface-elevated: #0f172a;
-    --ds-surface-input: rgba(9, 14, 28, 0.75);
-    --input-bg: rgba(9, 14, 28, 0.75);
-    --input-border: rgba(255, 255, 255, 0.12);
-    --input-focus: rgba(234, 88, 12, 0.28);
-    --input-focus-bg: rgba(15, 23, 42, 0.95);
-    --header-bg: rgba(15, 23, 42, 0.8);
-    --table-header-bg: rgba(15, 23, 42, 0.85);
-    --table-header-text: #f8fafc;
-    --table-row-hover: rgba(255, 255, 255, 0.04);
-    --table-row-hover-text: #ffffff;
-    --nav-container-bg: rgba(15, 23, 42, 0.75);
-    --mode-selector-bg: rgba(15, 23, 42, 0.65);
-    --floating-bar-bg: rgba(15, 23, 42, 0.95);
-
-    /* Micro-herramientas variables de compatibilidad */
-    --bg-dark: #020617;
-    --bg-darker: #020617;
-    --bg-light: rgba(255, 255, 255, 0.03);
-    --border: rgba(255, 255, 255, 0.1);
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-solid: #1e293b;
-    --card-header-bg: #0f172a;
-
-    /* Bordes de Cristal y Sombras */
-    --ds-border: rgba(255, 255, 255, 0.08);
-    --ds-border-strong: rgba(255, 255, 255, 0.14);
-    --ds-border-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-    --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.4), var(--ds-border-highlight);
-    --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.5), var(--ds-border-highlight);
-    --shadow-lg: 0 20px 45px -10px rgba(0, 0, 0, 0.7), var(--ds-border-highlight);
-    --ds-shadow-sm: var(--shadow-sm);
-    --ds-shadow-md: var(--shadow-md);
-    --ds-shadow-lg: var(--shadow-lg);
-
-    /* Tipografía */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --text-main: #f8fafc;
-    --text-heading: #ffffff;
-    --text-muted: #94a3b8;
-    --text-subtle: #64748b;
-    --scitic-dark: #f8fafc;
-    --scitic-gray: #334155;
-    --ds-text-primary: #f8fafc;
-    --ds-text-secondary: #cbd5e1;
-    --ds-text-muted: #94a3b8;
-    --ds-text-subtle: #64748b;
-
-    /* Semántica de Ingeniería */
-    --success: #10b981;
-    --accent: #f59e0b;
-    --accent-gradient: linear-gradient(135deg, #d97706, #f59e0b);
-    --danger: #ef4444;
-    --danger-bg: rgba(239, 68, 68, 0.1);
-    --ds-success: #10b981;
-    --ds-success-soft: rgba(16, 185, 129, 0.14);
-    --ds-warning: #f59e0b;
-    --ds-warning-soft: rgba(245, 158, 11, 0.14);
-    --ds-danger: #ef4444;
-    --ds-danger-soft: rgba(239, 68, 68, 0.14);
-    --ds-info: #0ea5e9;
-    --ds-info-soft: rgba(14, 165, 233, 0.14);
-    --permiso-color: #06b6d4;
-    --incapacidad-color: #f43f5e;
-    --vacaciones-color: #8b5cf6;
-    --novedad-color: #ec4899;
-
-    /* Radios y curvas Apple */
-    --ds-radius-sm: 8px;
-    --ds-radius-md: 12px;
-    --ds-radius-lg: 16px;
-    --ds-radius-xl: 20px;
-    --ds-ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --ios-ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --ios-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ios-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-    --ios-blur: blur(20px);
-    --ios-blur-subtle: blur(12px);
-}
-
-/* =========================================================================
-   MODO CLARO / CAMPO SOLAR MODERNO ([data-theme="light"])
-   Esquema visual de alta legibilidad, estética enterprise limpia y pulida
-   ========================================================================= */
-html[data-theme="light"] {
-    /* Identidad Corporativa SCITIC adaptada para alto contraste en claro */
-    --scitic-orange: #ea580c;
-    --scitic-orange-hover: #c2410c;
-    --scitic-orange-soft: rgba(234, 88, 12, 0.1);
-    --scitic-orange-border: rgba(234, 88, 12, 0.28);
-    --scitic-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-    --primary: #ea580c;
-    --primary-hover: #c2410c;
-    --primary-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-
-    /* Fondos y Superficies Cristalinas Claras */
-    --bg-main: #f8fafc;
-    --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%),
-                      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(234, 88, 12, 0.04) 0%, transparent 65%);
-    --ds-bg-canvas: #f8fafc;
-    --ds-bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
-    --card-bg: #ffffff;
-    --panel-bg: #ffffff;
-    --panel-subtle: #f8fafc;
-    --ds-surface-1: #ffffff;
-    --ds-surface-2: #f8fafc;
-    --ds-surface-elevated: #ffffff;
-    --ds-surface-input: #ffffff;
-    --input-bg: #ffffff;
-    --input-border: #cbd5e1;
-    --input-focus: rgba(234, 88, 12, 0.18);
-    --input-focus-bg: #ffffff;
-    --header-bg: rgba(255, 255, 255, 0.92);
-    --card-border: #e2e8f0;
-    --border: #e2e8f0;
-    --border-subtle: #f1f5f9;
-    --border-solid: #cbd5e1;
-    --ds-border: #e2e8f0;
-    --ds-border-strong: #cbd5e1;
-    --table-header-bg: #f1f5f9;
-    --table-header-text: #0f172a;
-    --table-row-hover: rgba(234, 88, 12, 0.04);
-    --table-row-hover-text: #0f172a;
-    --nav-container-bg: #f1f5f9;
-    --mode-selector-bg: #f1f5f9;
-    --floating-bar-bg: rgba(255, 255, 255, 0.96);
-
-    /* Micro-herramientas variables de compatibilidad */
-    --bg-dark: #f8fafc;
-    --bg-darker: #f1f5f9;
-    --bg-light: #ffffff;
-    --card-header-bg: #f8fafc;
-
-    /* Tipografía de Alto Contraste */
-    --text-main: #0f172a;
-    --text-heading: #0f172a;
-    --scitic-dark: #0f172a;
-    --scitic-gray: #64748b;
-    --ds-text-primary: #0f172a;
-    --ds-text-secondary: #334155;
-    --ds-text-muted: #475569;
-    --ds-text-subtle: #64748b;
-
-    /* Semántica refinada para modo claro */
-    --success: #059669;
-    --accent: #d97706;
-    --accent-gradient: linear-gradient(135deg, #d97706, #f59e0b);
-    --danger: #dc2626;
-    --danger-bg: rgba(239, 68, 68, 0.08);
-    --ds-success: #059669;
-    --ds-success-soft: rgba(16, 185, 129, 0.1);
-    --ds-warning: #d97706;
-    --ds-warning-soft: rgba(245, 158, 11, 0.12);
-    --ds-danger: #dc2626;
-    --ds-danger-soft: rgba(239, 68, 68, 0.08);
-    --ds-info: #0284c7;
-    --ds-info-soft: rgba(2, 132, 199, 0.1);
-    --permiso-color: #0891b2;
-    --incapacidad-color: #e11d48;
-    --vacaciones-color: #7c3aed;
-    --novedad-color: #db2777;
-
-    /* Sombras suaves modernas para modo claro */
-    --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 6px 18px -3px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-    --shadow-lg: 0 20px 35px -8px rgba(15, 23, 42, 0.12), 0 8px 12px -3px rgba(15, 23, 42, 0.04);
-    --ds-shadow-sm: var(--shadow-sm);
-    --ds-shadow-md: var(--shadow-md);
-    --ds-shadow-lg: var(--shadow-lg);
-}
+/* Importación del Sistema Maestro de Identidad y Estética */
+@import '../theme/theme.css';
 
 /* =========================================================================
    REGLAS ESPECÍFICAS DE MODO CLARO PARA COMPONENTES COMPARTIDOS Y MICRO-TOOLS
@@ -252,7 +57,7 @@ html[data-theme="light"] textarea:focus {
     background: #ffffff !important;
     color: #0f172a !important;
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18), 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 2px 8px rgba(15, 23, 42, 0.05) !important;
 }
 
 html[data-theme="light"] input::placeholder,
@@ -288,7 +93,7 @@ html[data-theme="light"] tr:nth-child(even) {
 }
 
 html[data-theme="light"] tr:hover td {
-    background: rgba(234, 88, 12, 0.04) !important;
+    background: rgba(16, 185, 129, 0.04) !important;
     color: #0f172a !important;
 }
 
@@ -367,7 +172,7 @@ html[data-theme="light"] .nav-tab-btn:hover {
 html[data-theme="light"] .nav-tab-btn.active {
     background: var(--primary) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
 }
 
 html[data-theme="light"] .header-panel {
@@ -406,7 +211,7 @@ html[data-theme="light"] .tab-btn:hover {
 }
 
 html[data-theme="light"] .tab-btn.active {
-    color: #ea580c !important;
+    color: var(--primary) !important;
 }
 
 html[data-theme="light"] .btn-example,
@@ -553,12 +358,12 @@ td strong,
 .scitic-btn-primary {
     background: var(--scitic-gradient);
     color: #ffffff;
-    box-shadow: 0 3px 12px rgba(234, 88, 12, 0.3);
+    box-shadow: 0 3px 12px rgba(16, 185, 129, 0.3);
 }
 .scitic-btn-primary:hover {
     filter: brightness(1.08);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.42);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.42);
 }
 
 .scitic-btn-surface {
@@ -585,21 +390,21 @@ html[data-theme="light"] .scitic-btn-surface:hover {
 
 .scitic-btn-outline-orange {
     background: var(--scitic-orange-soft);
-    color: #fb923c;
+    color: #34d399;
     border-color: var(--scitic-orange-border);
 }
 .scitic-btn-outline-orange:hover {
-    background: rgba(234, 88, 12, 0.24);
+    background: rgba(16, 185, 129, 0.24);
     color: #ffffff;
 }
 
 html[data-theme="light"] .scitic-btn-outline-orange {
-    background: rgba(234, 88, 12, 0.08);
-    color: #ea580c;
-    border-color: rgba(234, 88, 12, 0.3);
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--primary);
+    border-color: rgba(16, 185, 129, 0.3);
 }
 html[data-theme="light"] .scitic-btn-outline-orange:hover {
-    background: #ea580c;
+    background: var(--primary);
     color: #ffffff;
 }
 
@@ -718,9 +523,9 @@ html[data-theme="light"] .scitic-dialog-box {
 }
 
 .scitic-dialog-icon.type-info {
-    background: rgba(234, 88, 12, 0.15);
-    color: #fb923c;
-    border: 1px solid rgba(234, 88, 12, 0.3);
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .scitic-dialog-title {
@@ -794,7 +599,7 @@ html[data-theme="light"] .scitic-dialog-btn-cancel:hover {
 .scitic-dialog-btn-confirm {
     background: var(--scitic-gradient);
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
 }
 .scitic-dialog-btn-confirm.is-danger {
     background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
@@ -845,13 +650,13 @@ html[data-theme="light"] .scitic-dialog-btn-cancel:hover {
     border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 600;
-    background: rgba(234, 88, 12, 0.12);
-    color: #fb923c;
-    border: 1px solid rgba(234, 88, 12, 0.25);
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 html[data-theme="light"] .filter-results-pill {
-    background: rgba(234, 88, 12, 0.08);
-    color: #ea580c;
-    border-color: rgba(234, 88, 12, 0.22);
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--primary);
+    border-color: rgba(16, 185, 129, 0.22);
 }

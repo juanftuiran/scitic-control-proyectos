@@ -23,9 +23,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./src/css/design-system.css?v=11">
-    <link rel="stylesheet" href="./src/css/styles.css?v=11">
-    <link rel="stylesheet" href="./src/css/toast.css?v=11">
+    <link rel="stylesheet" href="./src/theme/theme.css?v=14">
+    <link rel="stylesheet" href="./src/css/design-system.css?v=14">
+    <link rel="stylesheet" href="./src/css/styles.css?v=14">
+    <link rel="stylesheet" href="./src/css/toast.css?v=14">
+    <script src="./src/theme/theme.js?v=14"></script>
+    <script src="./src/theme/icons.js?v=14"></script>
 </head>
 
 <body>
@@ -48,7 +51,7 @@
         </div>
         <button class="btn-primary" onclick="iniciarSesion()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
             <span>Ingresar al Sistema</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <span data-icon="login" data-size="16"></span>
         </button>
         <p id="loginError" style="color: var(--danger); font-size: 0.85rem; display: none; margin-top: 1.5rem; font-weight: 500;">Credenciales incorrectas.</p>
     </div>
@@ -69,12 +72,12 @@
                 <span>SISTEMA ONLINE</span>
             </div>
             <button type="button" id="btnThemeToggle" onclick="window.SCITICTheme && window.SCITICTheme.toggle()" title="Alternar Modo Oscuro / Modo Claro" aria-label="Alternar Modo Oscuro / Modo Claro">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <span data-icon="theme" data-size="17"></span>
             </button>
             <span id="displayUserName">Cargando...</span>
             <span id="displayUserRole" class="badge bg-blue">ROL</span>
             <button class="btn-secondary" style="padding: 0.45rem 1.1rem; width: auto; font-size: 0.8rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;" onclick="cerrarSesion()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span data-icon="logout" data-size="14"></span>
                 <span>Cerrar Sesión</span>
             </button>
         </div>
@@ -84,16 +87,15 @@
         <!-- Navegación moderna entre módulos (Segmented Bar) -->
         <div class="module-nav-container">
             <button class="module-tab-btn active" id="tabHoras" onclick="switchModule('horas')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span data-icon="clock" data-size="18"></span>
                 <span>Módulo de Horas</span>
             </button>
             <button class="module-tab-btn" id="tabGastos" onclick="switchModule('gastos')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span data-icon="dollar" data-size="18"></span>
                 <span>Módulo de Gastos</span>
-                <span class="module-tab-badge" id="badgeGastosPendientes" style="display:none;">0</span>
             </button>
             <button class="module-tab-btn" id="tabHerramientas" onclick="switchModule('herramientas')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                <span data-icon="tools" data-size="18"></span>
                 <span>Herramientas</span>
             </button>
         </div>
@@ -103,21 +105,21 @@
                 <div class="stat-card glass-panel">
                     <div class="stat-card-top">
                         <h4>Horas Filtradas</h4>
-                        <span class="stat-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                        <span class="stat-kpi-icon" data-icon="clock" data-size="18"></span>
                     </div>
                     <p id="stat-horas">0</p>
                 </div>
                 <div class="stat-card glass-panel perm-financiero">
                     <div class="stat-card-top">
                         <h4>Ejecución Presupuesto</h4>
-                        <span class="stat-kpi-icon icon-emerald"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+                        <span class="stat-kpi-icon icon-emerald" data-icon="dollar" data-size="18"></span>
                     </div>
                     <p id="stat-presupuesto">$0</p>
                 </div>
                 <div class="stat-card glass-panel">
                     <div class="stat-card-top">
                         <h4>Proyectos Activos</h4>
-                        <span class="stat-kpi-icon icon-sky"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+                        <span class="stat-kpi-icon icon-sky" data-icon="folder" data-size="18"></span>
                     </div>
                     <p id="stat-proyectos">0</p>
                 </div>
@@ -153,11 +155,11 @@
                         <!-- Selector de Modo: Laboral vs Novedad/Ausencia -->
                         <div class="mode-selector">
                             <button type="button" class="mode-btn active" id="btnModoLaboral" onclick="cambiarModoRegistro('laboral')">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                <span data-icon="briefcase" data-size="15"></span>
                                 <span>Jornada Laboral</span>
                             </button>
                             <button type="button" class="mode-btn" id="btnModoNovedad" onclick="cambiarModoRegistro('novedad')">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <span data-icon="calendar" data-size="15"></span>
                                 <span>Novedad / Permiso</span>
                             </button>
                         </div>
@@ -253,11 +255,11 @@
 
                         <div class="btn-group">
                             <button class="btn-primary" id="btnGuardar" onclick="guardar()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <span data-icon="save" data-size="16"></span>
                                 <span>Guardar Actividad</span>
                             </button>
                             <button class="btn-secondary" id="btnLimpiar" onclick="limpiarFormulario()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <span data-icon="trash" data-size="15"></span>
                                 <span>Limpiar Campos</span>
                             </button>
                             <button class="btn-secondary" id="btnCancelar" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormulario()">Cancelar Edición</button>
@@ -269,15 +271,15 @@
                         <div class="btn-group">
                             <input type="file" id="excelFile" style="display:none" onchange="importarExcel()" accept=".xlsx, .xls">
                             <button class="btn-secondary" onclick="document.getElementById('excelFile').click()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <span data-icon="upload" data-size="15"></span>
                                 <span>Importar desde Excel</span>
                             </button>
                             <button class="btn-secondary" onclick="exportarExcel()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <span data-icon="download" data-size="15"></span>
                                 <span>Exportar Reporte (.xlsx)</span>
                             </button>
                             <button class="btn-secondary" style="color: var(--primary); display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onclick="descargarAuditoria()">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <span data-icon="file-text" data-size="15"></span>
                                 <span>Bitácora de Auditoría</span>
                             </button>
                         </div>
@@ -302,11 +304,11 @@
                         <section class="card glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column;">
                             <div class="widget-tabs" id="widgetTabs">
                                 <button class="widget-tab active" onclick="switchWidget('alertas')" id="tabAlertas" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    <span data-icon="alert" data-size="14"></span>
                                     <span>Alertas</span>
                                 </button>
                                 <button class="widget-tab" onclick="switchWidget('pendientes')" id="tabPendientes" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                                    <span data-icon="clipboard" data-size="14"></span>
                                     <span>Pendientes</span>
                                 </button>
                             </div>
@@ -358,21 +360,21 @@
                 <div class="stat-card glass-panel" style="border-left: 4px solid var(--primary);">
                     <div class="stat-card-top">
                         <h4>Total Gastos</h4>
-                        <span class="stat-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+                        <span class="stat-kpi-icon"><span data-icon="credit-card" data-size="18"></span></span>
                     </div>
                     <p id="stat-gastos-total">$0</p>
                 </div>
                 <div class="stat-card glass-panel" style="border-left: 4px solid var(--success);">
                     <div class="stat-card-top">
                         <h4>Total Reembolsado</h4>
-                        <span class="stat-kpi-icon icon-emerald"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+                        <span class="stat-kpi-icon icon-emerald"><span data-icon="check-circle" data-size="18"></span></span>
                     </div>
                     <p id="stat-gastos-pagado">$0</p>
                 </div>
-                <div class="stat-card glass-panel" style="border-left: 4px solid #f97316;">
+                <div class="stat-card glass-panel" style="border-left: 4px solid var(--accent);">
                     <div class="stat-card-top">
                         <h4>Pendiente por Pagar</h4>
-                        <span class="stat-kpi-icon icon-amber"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                        <span class="stat-kpi-icon icon-amber"><span data-icon="clock" data-size="18"></span></span>
                     </div>
                     <p id="stat-gastos-pendiente">$0</p>
                 </div>
@@ -383,7 +385,7 @@
                     </div>
                     <p id="stat-gastos-saldo-favor" style="color: #22d3ee;">$0</p>
                     <div id="stat-saldo-favor-persona" class="saldo-favor-badge-user" style="display: none;" title="">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span data-icon="user" data-size="13"></span>
                         <span id="txtNombreSaldoFavor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;"></span>
                     </div>
                 </div>
@@ -462,11 +464,11 @@
 
                         <div class="btn-group">
                             <button class="btn-primary" id="btnGuardarGasto" onclick="guardarGasto()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <span data-icon="save" data-size="16"></span>
                                 <span>Guardar Gasto</span>
                             </button>
                             <button class="btn-secondary" id="btnLimpiarGasto" onclick="limpiarFormularioGasto()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <span data-icon="trash" data-size="15"></span>
                                 <span>Limpiar</span>
                             </button>
                             <button class="btn-secondary" id="btnCancelarGasto" style="display:none; border-color: var(--danger); color: var(--danger);" onclick="limpiarFormularioGasto()">Cancelar Edición</button>
@@ -489,8 +491,8 @@
                                 <canvas id="graficoGastos" style="cursor: pointer; max-height: 250px;"></canvas>
                             </div>
                             <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.2rem; overflow-y: auto; max-height: 250px;" class="custom-scroll">
-                                <h4 style="margin-bottom: 15px; color: #f97316; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <h4 style="margin-bottom: 15px; color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    <span data-icon="alert-circle" data-size="14"></span>
                                     <span>Pendientes de Reembolso</span>
                                 </h4>
                                 <div id="tablaPendientesGastos"></div>
@@ -503,12 +505,12 @@
                             <h3 style="margin: 0; border: none; padding: 0;">Historial de Gastos y Viáticos</h3>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                 <button class="btn-primary perm-mod-admin" onclick="abrirModalLiquidacion('abono')" style="width:auto; padding: 0.55rem 1.2rem; font-size: 0.85rem; background: var(--success); border-color: var(--success); display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                    Liquidar / Registrar Pago
+                                    <span data-icon="dollar" data-size="16"></span>
+                                    <span>Liquidar / Registrar Pago</span>
                                 </button>
                                 <button class="btn-secondary" onclick="exportarGastosExcel()" style="width:auto; padding: 0.55rem 1.1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    Exportar Excel
+                                    <span data-icon="excel" data-size="15"></span>
+                                    <span>Exportar Excel</span>
                                 </button>
                             </div>
                         </div>
@@ -543,11 +545,11 @@
                             <div class="floating-selection-info">
                                 <span><strong id="cantGastosSeleccionados">0</strong> seleccionado(s)</span>
                                 <span style="color: var(--text-muted); opacity: 0.5;">|</span>
-                                <span class="num-mono" style="color: #f97316; font-weight: 800; font-size: 1.05rem;" id="totalMontoSeleccionado">$0</span>
+                                <span class="num-mono" style="color: var(--primary); font-weight: 800; font-size: 1.05rem;" id="totalMontoSeleccionado">$0</span>
                             </div>
                             <div class="floating-selection-actions">
                                 <button class="btn-primary" onclick="abrirModalLiquidacion('seleccion')" style="background: var(--success); border-color: var(--success); padding: 0.5rem 1.2rem; font-size: 0.85rem; width: auto; display: inline-flex; align-items: center; gap: 6px;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span data-icon="check" data-size="15"></span>
                                     <span>Pagar Seleccionados</span>
                                 </button>
                                 <button class="btn-secondary" onclick="deseleccionarTodosGastos()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: auto;">
@@ -569,7 +571,7 @@
                 <div class="card glass-panel" style="margin-bottom: 2rem; padding: 2rem 2.5rem; border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
                         <h3 style="border: none; padding: 0; margin: 0 0 0.5rem 0; font-size: 1.4rem; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            <span data-icon="layers" data-size="22" data-class="text-primary"></span>
                             <span>Centro de Herramientas de Ingeniería</span>
                         </h3>
                         <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem; line-height: 1.5;">Suite de cálculo normativo RITEL 2025, balance de radiofrecuencia TDT y bitácoras de obra con sincronización en la nube.</p>
@@ -591,12 +593,10 @@
 
                     <!-- Card: Calculadora de Tubos RITEL -->
                     <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/calculadora-tubos/index.html', 'Calculadora de Tubos RITEL')">
-                        <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #ea580c, #f97316);"></div>
+                        <div class="herramienta-card-accent" style="background: var(--primary-gradient);"></div>
                         <div class="herramienta-card-body">
-                            <div class="herramienta-card-icon" style="background: rgba(234, 88, 12, 0.12); border: 1px solid rgba(234, 88, 12, 0.25);">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="4"/>
-                                </svg>
+                            <div class="herramienta-card-icon" style="background: var(--primary-soft); border: 1px solid var(--primary-border);">
+                                <span data-icon="pipe" data-size="30" data-color="var(--primary)"></span>
                             </div>
                             <div class="herramienta-card-content">
                                 <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Tubos RITEL</h4>
@@ -604,11 +604,11 @@
                             </div>
                         </div>
                         <div class="herramienta-card-footer">
-                            <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">Torres &amp; Parcelaciones</span>
-                            <span class="herramienta-tag" style="background: rgba(234, 88, 12, 0.1); color: #f97316; border: 1px solid rgba(234, 88, 12, 0.2);">RITEL 2025</span>
+                            <span class="herramienta-tag" style="background: var(--primary-soft); color: var(--primary-hover); border: 1px solid var(--primary-border);">Torres &amp; Parcelaciones</span>
+                            <span class="herramienta-tag" style="background: var(--primary-soft); color: var(--primary-hover); border: 1px solid var(--primary-border);">RITEL 2025</span>
                             <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 Abrir
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                <span data-icon="arrow-right" data-size="14"></span>
                             </span>
                         </div>
                     </div>
@@ -618,9 +618,7 @@
                         <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #10b981, #34d399);"></div>
                         <div class="herramienta-card-body">
                             <div class="herramienta-card-icon" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 20h20"/><path d="M5 20V9l3-3"/><path d="M9 20V5l4-3"/><path d="M15 20V9l3-3"/><path d="M19 20v-7"/><circle cx="5" cy="9" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="15" cy="9" r="1"/>
-                                </svg>
+                                <span data-icon="antenna" data-size="30" data-color="#10b981"></span>
                             </div>
                             <div class="herramienta-card-content">
                                 <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Pérdidas TDT</h4>
@@ -632,7 +630,7 @@
                             <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">CRC 5405</span>
                             <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 Abrir
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                <span data-icon="arrow-right" data-size="14"></span>
                             </span>
                         </div>
                     </div>
@@ -642,9 +640,7 @@
                         <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);"></div>
                         <div class="herramienta-card-body">
                             <div class="herramienta-card-icon" style="background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.25);">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
+                                <span data-icon="file-text" data-size="30" data-color="#8b5cf6"></span>
                             </div>
                             <div class="herramienta-card-content">
                                 <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Registro de Instalación TDT</h4>
@@ -656,7 +652,7 @@
                             <span class="herramienta-tag" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2);">TDT</span>
                             <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 Abrir
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                <span data-icon="arrow-right" data-size="14"></span>
                             </span>
                         </div>
                     </div>
@@ -668,7 +664,7 @@
             <div id="herramientasVisor" style="display: none;">
                 <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <button class="btn-ios-back" onclick="cerrarHerramienta()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        <span data-icon="arrow-left" data-size="16"></span>
                         Volver al Catálogo
                     </button>
                     <div id="herramientaTituloActiva" class="herramienta-active-badge">
@@ -728,7 +724,7 @@
     <div class="modal-content" style="max-width: 620px; padding: 2.2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
             <h3 style="margin: 0; border: none; padding: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span data-icon="dollar" data-size="20" data-color="var(--primary)"></span>
                 <span>Liquidación y Registro de Pago</span>
             </h3>
             <button type="button" class="btn-secondary" onclick="cerrarModal('modalLiquidacion')" style="width: auto; padding: 4px 10px; font-size: 1rem; border-radius: 8px;">✕</button>
@@ -755,7 +751,7 @@
                 </div>
                 <div style="text-align: right;">
                     <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600;">Deuda Pendiente</small>
-                    <div id="liqDeudaTrabajador" class="num-mono" style="color: #f97316; font-size: 1.15rem; font-weight: 800;">$0</div>
+                    <div id="liqDeudaTrabajador" class="num-mono" style="color: var(--accent); font-size: 1.15rem; font-weight: 800;">$0</div>
                     <small id="liqSaldoFavorTag" class="num-mono" style="color: #22d3ee; font-size: 0.75rem; font-weight: 600; display: block;">Saldo a favor: $0</small>
                 </div>
             </div>
@@ -808,7 +804,7 @@
 
         <div class="btn-group" style="margin-top: 15px;">
             <button class="btn-primary" onclick="procesarLiquidacionPago()" style="background: var(--success); border-color: var(--success); padding: 0.9rem; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+                <span data-icon="check" data-size="16"></span>
                 <span>Confirmar y Registrar Pago</span>
             </button>
             <button class="btn-secondary" onclick="cerrarModal('modalLiquidacion')">Cancelar</button>
@@ -821,12 +817,12 @@
     <div class="modal-content" style="max-width: 680px; padding: 1.5rem; background: var(--card-bg);">
         <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h3 style="margin:0; border:none; padding:0; font-size:1.1rem; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span data-icon="file-text" data-size="18" data-color="var(--primary)"></span>
                 <span>Comprobante de Liquidación</span>
             </h3>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-primary" onclick="window.print()" style="width:auto; padding: 0.45rem 1.1rem; font-size: 0.82rem; background: #3b82f6; border-color: #3b82f6; display: inline-flex; align-items: center; gap: 6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    <span data-icon="printer" data-size="14"></span>
                     <span>Imprimir / Guardar PDF</span>
                 </button>
                 <button class="btn-secondary" onclick="cerrarModal('modalReciboPago')" style="width:auto; padding: 0.45rem 0.9rem; font-size: 0.82rem;">
