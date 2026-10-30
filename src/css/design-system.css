@@ -97,8 +97,37 @@ html[data-theme="light"] tr:hover td {
     color: #0f172a !important;
 }
 
-html[data-theme="light"] #tabla-calculo-torres tbody td:first-child {
+html[data-theme="light"] #tabla-calculo-torres tbody td:first-child,
+html[data-theme="light"] #tabla-bandeja-torres tbody td:first-child,
+html[data-theme="light"] #tabla-calculo-parcelaciones tbody td:first-child {
     background: #f8fafc !important;
+    color: #0f172a !important;
+    border-right: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] #tabla-calculo-torres tbody tr:hover td:first-child,
+html[data-theme="light"] #tabla-bandeja-torres tbody tr:hover td:first-child,
+html[data-theme="light"] #tabla-calculo-parcelaciones tbody tr:hover td:first-child {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+/* Celdas fijas de piso e identificadores en Calculadora de Pérdidas */
+html[data-theme="light"] .piso-cell,
+html[data-theme="light"] .piso-cfg-cell {
+    background-color: #f1f5f9 !important;
+    color: #0369a1 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] tr:hover .piso-cell,
+html[data-theme="light"] tr:hover .piso-cfg-cell {
+    background-color: #e2e8f0 !important;
+    color: #0284c7 !important;
+}
+
+html[data-theme="light"] .bold-cell {
     color: #0f172a !important;
 }
 
@@ -214,19 +243,315 @@ html[data-theme="light"] .tab-btn.active {
     color: var(--primary) !important;
 }
 
-html[data-theme="light"] .btn-example,
-html[data-theme="light"] .btn-server-load,
-html[data-theme="light"] .btn-import {
-    background: #f1f5f9 !important;
-    color: #334155 !important;
+/* Inputs y celdas editables dentro de tablas en modo claro */
+html[data-theme="light"] .cell-edit,
+html[data-theme="light"] .input-tramo,
+html[data-theme="light"] .floor-config-table .input-mini {
+    background: #ffffff !important;
+    color: #0f172a !important;
     border: 1px solid #cbd5e1 !important;
 }
 
+html[data-theme="light"] .cell-edit:focus,
+html[data-theme="light"] .input-tramo:focus,
+html[data-theme="light"] .floor-config-table .input-mini:focus {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+}
+
+html[data-theme="light"] .table-input {
+    color: #0f172a !important;
+    border-bottom: 1px solid #94a3b8 !important;
+    background: transparent !important;
+}
+
+html[data-theme="light"] .table-input:focus {
+    border-bottom-color: #ea580c !important;
+}
+
+html[data-theme="light"] .table-select {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .table-select option {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+
+/* Filas de RITEL, Señal y Resumen en Calculadora de Pérdidas (Modo Claro) */
+html[data-theme="light"] .ritel-row td {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-top: 2px solid #10b981 !important;
+    font-weight: bold !important;
+}
+
+html[data-theme="light"] .ritel-row.ritel-bad td {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+    border-top: 2px solid #ef4444 !important;
+    font-weight: bold !important;
+}
+
+html[data-theme="light"] .summary-row.max-row td {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    font-weight: bold !important;
+}
+
+html[data-theme="light"] .summary-row.min-row td {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+    font-weight: bold !important;
+}
+
+html[data-theme="light"] .summary-row.diff-row td {
+    background: #fffbeb !important;
+    color: #92400e !important;
+    font-weight: bold !important;
+}
+
+html[data-theme="light"] .summary-label {
+    color: #0369a1 !important;
+    font-weight: 700 !important;
+}
+
+html[data-theme="light"] .nivel-ok {
+    color: #059669 !important;
+    font-weight: 700 !important;
+}
+
+html[data-theme="light"] .nivel-warn {
+    color: #b45309 !important;
+    font-weight: 700 !important;
+}
+
+html[data-theme="light"] .nivel-bad {
+    color: #dc2626 !important;
+    background: #fee2e2 !important;
+    font-weight: 700 !important;
+}
+
+/* Botones de Barra de Herramientas y Acciones (Modo Claro - Alto Contraste) */
+html[data-theme="light"] .btn-config {
+    background: #e0f2fe !important;
+    border: 1px solid #7dd3fc !important;
+    color: #0369a1 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1) !important;
+}
+html[data-theme="light"] .btn-config:hover {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-calc {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    border: 1px solid #047857 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25) !important;
+}
+html[data-theme="light"] .btn-calc:hover {
+    background: linear-gradient(135deg, #047857, #059669) !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-server-save {
+    background: #0284c7 !important;
+    border: 1px solid #0369a1 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25) !important;
+}
+html[data-theme="light"] .btn-server-save:hover {
+    background: #0369a1 !important;
+    border-color: #0369a1 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-server-load {
+    background: #ede9fe !important;
+    border: 1px solid #c4b5fd !important;
+    color: #6d28d9 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(109, 40, 217, 0.1) !important;
+}
+html[data-theme="light"] .btn-server-load:hover {
+    background: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-json-save {
+    background: #f5f3ff !important;
+    border: 1px solid #c4b5fd !important;
+    color: #6d28d9 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(109, 40, 217, 0.1) !important;
+}
+html[data-theme="light"] .btn-json-save:hover {
+    background: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-json-load {
+    background: #f0fdfa !important;
+    border: 1px solid #5eead4 !important;
+    color: #0f766e !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(15, 118, 110, 0.1) !important;
+}
+html[data-theme="light"] .btn-json-load:hover {
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-save,
+html[data-theme="light"] .btn-backup {
+    background: #fffbeb !important;
+    border: 1px solid #fcd34d !important;
+    color: #b45309 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(180, 83, 9, 0.1) !important;
+}
+html[data-theme="light"] .btn-save:hover,
+html[data-theme="light"] .btn-backup:hover {
+    background: #d97706 !important;
+    border-color: #d97706 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-excel {
+    background: #f0fdf4 !important;
+    border: 1px solid #86efac !important;
+    color: #15803d !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(21, 128, 61, 0.1) !important;
+}
+html[data-theme="light"] .btn-excel:hover {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-pdf {
+    background: #fef2f2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(185, 28, 28, 0.1) !important;
+}
+html[data-theme="light"] .btn-pdf:hover {
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-add,
+html[data-theme="light"] .btn-copy {
+    background: #f0f9ff !important;
+    border: 1px solid #7dd3fc !important;
+    color: #0284c7 !important;
+    font-weight: 700 !important;
+}
+html[data-theme="light"] .btn-add:hover,
+html[data-theme="light"] .btn-copy:hover {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-toggle {
+    background: #e0f2fe !important;
+    border: 1px solid #7dd3fc !important;
+    color: #0369a1 !important;
+    font-weight: 700 !important;
+}
+html[data-theme="light"] .btn-toggle:hover {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .btn-example,
+html[data-theme="light"] .btn-import,
+html[data-theme="light"] .btn-secondary {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 600 !important;
+}
 html[data-theme="light"] .btn-example:hover,
-html[data-theme="light"] .btn-server-load:hover,
-html[data-theme="light"] .btn-import:hover {
+html[data-theme="light"] .btn-import:hover,
+html[data-theme="light"] .btn-secondary:hover {
     background: #e2e8f0 !important;
     color: #0f172a !important;
+}
+
+html[data-theme="light"] .btn-clear {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+}
+html[data-theme="light"] .btn-clear:hover {
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+    color: #dc2626 !important;
+}
+
+html[data-theme="light"] .btn-delete,
+html[data-theme="light"] .btn-danger {
+    background: #fef2f2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #dc2626 !important;
+    font-weight: 600 !important;
+}
+html[data-theme="light"] .btn-delete:hover,
+html[data-theme="light"] .btn-danger:hover {
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+/* Badges en herramientas (Modo Claro) */
+html[data-theme="light"] .badge-autor {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border-color: #bae6fd !important;
+}
+html[data-theme="light"] .badge-modo {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border-color: #fde68a !important;
+}
+html[data-theme="light"] .badge-gray {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+html[data-theme="light"] .badge-warning {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+}
+html[data-theme="light"] .badge-success {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border: 1px solid #a7f3d0 !important;
+}
+html[data-theme="light"] .badge-danger {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+    border: 1px solid #fecaca !important;
 }
 
 html[data-theme="light"] .toast-calc {
@@ -239,6 +564,127 @@ html[data-theme="light"] .toast-calc {
 html[data-theme="light"] .bandeja-resumen {
     background: #ffffff !important;
     border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* =========================================================================
+   HUB DE HERRAMIENTAS: BOTONES "CREAR NUEVO" Y "VOLVER AL LISTADO"
+   ========================================================================= */
+.btn-hub-new {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    color: #ffffff !important;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-hub-new:hover {
+    background: linear-gradient(135deg, #047857, #059669) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+.btn-hub-back {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: var(--text-main, #f1f5f9) !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.btn-hub-back:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+.btn-hub-secondary {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: var(--text-main, #f1f5f9) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+.btn-hub-secondary:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+/* Modo claro para Hub de Herramientas */
+html[data-theme="light"] .btn-hub-new {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    color: #ffffff !important;
+    border: 1px solid #047857 !important;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2) !important;
+}
+html[data-theme="light"] .btn-hub-new:hover {
+    background: linear-gradient(135deg, #047857, #059669) !important;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+}
+
+html[data-theme="light"] .btn-hub-secondary {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    text-shadow: none !important;
+}
+html[data-theme="light"] .btn-hub-secondary:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .btn-hub-back {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+html[data-theme="light"] .btn-hub-back:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Selector de calendario nativo */
+input[type="date"] {
+    color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.85) brightness(1.2);
+    cursor: pointer;
+    opacity: 0.85;
+    padding: 2px;
+    border-radius: 4px;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(1) brightness(1.5);
+    opacity: 1;
+}
+
+html[data-theme="light"] input[type="date"] {
+    color-scheme: light;
+}
+html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none;
+    opacity: 0.75;
 }
 
 /* =========================================================================

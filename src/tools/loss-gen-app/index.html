@@ -353,23 +353,25 @@
             color: var(--text-muted);
         }
         .btn-hub-new {
-            background: linear-gradient(135deg, var(--primary), #34d399);
-            color: #fff;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #ffffff;
             padding: 12px 22px;
-            border-radius: 8px;
-            font-size: 13.5px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 700;
-            border: none;
+            border: 1px solid rgba(16, 185, 129, 0.4);
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
         .btn-hub-new:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+            background: linear-gradient(135deg, #047857, #059669);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
         }
         .hub-toolbar {
             display: flex;
@@ -447,23 +449,141 @@
             flex-wrap: wrap;
         }
         .btn-hub-back {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid var(--border);
-            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main, #f1f5f9);
             padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: 0.2s ease;
+            transition: all 0.2s ease;
         }
         .btn-hub-back:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
             transform: translateY(-1px);
+        }
+        html[data-theme="light"] .btn-hub-new {
+            background: linear-gradient(135deg, #059669, #10b981) !important;
+            color: #ffffff !important;
+            border: 1px solid #047857 !important;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2) !important;
+        }
+        html[data-theme="light"] .btn-hub-new:hover {
+            background: linear-gradient(135deg, #047857, #059669) !important;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+        }
+        html[data-theme="light"] .btn-hub-back {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #1e293b !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+        }
+        html[data-theme="light"] .btn-hub-back:hover {
+            background: #f1f5f9 !important;
+            border-color: #94a3b8 !important;
+            color: #0f172a !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+        }
+        html[data-theme="light"] .piso-cell,
+        html[data-theme="light"] .piso-cfg-cell {
+            background-color: #f1f5f9 !important;
+            color: #0369a1 !important;
+            border-right: 1px solid #cbd5e1 !important;
+            border-bottom: 1px solid #cbd5e1 !important;
+        }
+        html[data-theme="light"] tr:hover .piso-cell,
+        html[data-theme="light"] tr:hover .piso-cfg-cell {
+            background-color: #e2e8f0 !important;
+            color: #0284c7 !important;
+        }
+        html[data-theme="light"] .btn-config {
+            background: #e0f2fe !important;
+            border: 1px solid #7dd3fc !important;
+            color: #0369a1 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-config:hover {
+            background: #0284c7 !important;
+            border-color: #0284c7 !important;
+            color: #ffffff !important;
+        }
+        html[data-theme="light"] .btn-json-save {
+            background: #f5f3ff !important;
+            border: 1px solid #c4b5fd !important;
+            color: #6d28d9 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(109, 40, 217, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-json-save:hover {
+            background: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: #ffffff !important;
+        }
+        html[data-theme="light"] .btn-json-load {
+            background: #f0fdfa !important;
+            border: 1px solid #5eead4 !important;
+            color: #0f766e !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(15, 118, 110, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-json-load:hover {
+            background: #0d9488 !important;
+            border-color: #0d9488 !important;
+            color: #ffffff !important;
+        }
+        html[data-theme="light"] .btn-save {
+            background: #fffbeb !important;
+            border: 1px solid #fcd34d !important;
+            color: #b45309 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(180, 83, 9, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-save:hover {
+            background: #d97706 !important;
+            border-color: #d97706 !important;
+            color: #ffffff !important;
+        }
+        html[data-theme="light"] .btn-excel {
+            background: #f0fdf4 !important;
+            border: 1px solid #86efac !important;
+            color: #15803d !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(21, 128, 61, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-excel:hover {
+            background: #16a34a !important;
+            border-color: #16a34a !important;
+            color: #ffffff !important;
+        }
+        html[data-theme="light"] .btn-pdf {
+            background: #fef2f2 !important;
+            border: 1px solid #fca5a5 !important;
+            color: #b91c1c !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(185, 28, 28, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-pdf:hover {
+            background: #dc2626 !important;
+            border-color: #dc2626 !important;
+            color: #ffffff !important;
+        }
+        html[data-theme="light"] .btn-server-load {
+            background: #ede9fe !important;
+            border: 1px solid #c4b5fd !important;
+            color: #6d28d9 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(109, 40, 217, 0.1) !important;
+        }
+        html[data-theme="light"] .btn-server-load:hover {
+            background: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: #ffffff !important;
         }
         .btn-server-save { background-color: #0284c7; color: #fff; }
         .btn-server-save:hover { background-color: #0369a1; }
@@ -568,7 +688,7 @@
                 <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
-                <button type="button" class="btn-hub-new" onclick="document.getElementById('input-cargar-json').click()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); box-shadow: none;">
+                <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('input-cargar-json').click()">
                     📂 Cargar Archivo Local (.json)
                 </button>
             </div>

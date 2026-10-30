@@ -139,6 +139,31 @@ input:focus, select:focus, textarea:focus {
     color: var(--text-main);
 }
 
+/* Selector nativo de fecha (icono de calendario visible en modo oscuro y claro) */
+input[type="date"] {
+    color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.85) brightness(1.2);
+    cursor: pointer;
+    opacity: 0.85;
+    padding: 2px;
+    border-radius: 4px;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(1) brightness(1.5);
+    opacity: 1;
+}
+
+html[data-theme="light"] input[type="date"] {
+    color-scheme: light;
+}
+html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none;
+    opacity: 0.75;
+}
+
 .btn-group { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem; }
 
 button { 
@@ -1016,11 +1041,11 @@ tr:hover td { background: var(--table-row-hover); color: var(--table-row-hover-t
 .mode-btn {
     padding: 0.6rem 0.8rem;
     border-radius: 9px;
-    background: transparent;
-    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
     font-size: 0.85rem;
     font-weight: 700;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer !important;
     transition: all 0.2s ease;
     text-align: center;
@@ -1032,21 +1057,23 @@ tr:hover td { background: var(--table-row-hover); color: var(--table-row-hover-t
 }
 
 .mode-btn:hover {
-    color: var(--text-main);
-    background: rgba(255, 255, 255, 0.04);
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .mode-btn.active {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .mode-btn.active.novedad {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(139, 92, 246, 0.25));
     color: #f472b6;
-    border-color: rgba(236, 72, 153, 0.4);
+    border-color: rgba(236, 72, 153, 0.5);
+    box-shadow: 0 2px 10px rgba(236, 72, 153, 0.2);
 }
 
 /* =========================================================
