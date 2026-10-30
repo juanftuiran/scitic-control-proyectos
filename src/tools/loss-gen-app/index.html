@@ -2758,7 +2758,7 @@
         if (!api) return;
 
         try {
-            await api.eliminarProyectoCalculadora(id);
+            await api.eliminarProyectoCalculadora(id, { nombre_proyecto: nombre, herramienta: 'loss-gen-app' });
             if (proyectoActivoId === id) {
                 proyectoActivoId = null;
                 proyectoActivoNombre = '';

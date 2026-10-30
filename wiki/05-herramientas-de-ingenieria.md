@@ -138,3 +138,5 @@ Cualquiera de las 3 herramientas guarda sus proyectos en PostgreSQL bajo este es
 
 > [!NOTE]
 > Al separar la columna `resumen` de `datos_json`, la lista de proyectos en la interfaz carga de forma ultra-rápida sin necesidad de descargar megabytes de matrices de cálculo detalladas hasta que el usuario efectivamente decide abrir el proyecto.
+>
+> **Trazabilidad y Auditoría:** Toda creación (`PROYECTO_CREAR`), actualización (`PROYECTO_EDITAR`) y eliminación (`PROYECTO_ELIMINAR`) de proyectos en cualquiera de las herramientas disponibles se registra automáticamente en la tabla inmutable `auditoria`, vinculando el usuario autenticado, su rol, la fecha/hora y el detalle del proyecto gestionado.

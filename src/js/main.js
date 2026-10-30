@@ -227,13 +227,247 @@ async function registrarAuditoria(accion, detalle) {
     auditoria.unshift(log);
 }
 
-function descargarAuditoria() {
-    if (auditoria.length === 0) return Toast.warning("No hay registros de auditoría aún.");
-    const ws = XLSX.utils.json_to_sheet(auditoria);
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+async function descargarAuditoria() {
+    if (!auditoria || auditoria.length === 0) {
+        try {
+            const auditDb = await window.API.getAuditoria();
+            if (auditDb && auditDb.length > 0) auditoria = auditDb;
+        } catch (e) {
+            console.warn("Error refrescando auditoría antes de exportar:", e);
+        }
+    }
+    if (!auditoria || auditoria.length === 0) return Toast.warning("No hay registros de auditoría aún.");
+
+    const datosExcel = auditoria.map(a => ({
+        "Fecha / Hora": a.fecha_hora || (a.created_at ? new Date(a.created_at).toLocaleString('es-CO') : ''),
+        "Usuario": a.usuario || '',
+        "Rol": (a.rol || '').toUpperCase(),
+        "Acción": a.accion || '',
+        "Detalle de Trazabilidad": a.detalle || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(datosExcel);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Auditoria_Eventos");
+    XLSX.utils.book_append_sheet(wb, ws, "Bitacora_Auditoria");
     XLSX.writeFile(wb, `SCITIC_Auditoria_${new Date().getTime()}.xlsx`);
     Toast.success("Auditoría descargada exitosamente.");
+}
+
+let filtroCategoriaAuditoria = 'TODOS';
+
+function getBadgeRolAuditoria(rol) {
+    const r = (rol || '').toLowerCase();
+    if (r === 'admin') {
+        return `<span style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.73rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">Admin</span>`;
+    } else if (r === 'moderador') {
+        return `<span style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); font-size: 0.73rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">Mod</span>`;
+    } else {
+        return `<span style="background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.25); font-size: 0.73rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">Colab</span>`;
+    }
+}
+
+function getBadgeAccionAuditoria(accion) {
+    const a = (accion || '').toUpperCase();
+    if (a === 'PROYECTO_CREAR') {
+        return `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">🛠️ Nuevo Proy.</span>`;
+    }
+    if (a === 'PROYECTO_EDITAR') {
+        return `<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">🔄 Editar Proy.</span>`;
+    }
+    if (a === 'PROYECTO_ELIMINAR') {
+        return `<span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">🗑️ Borrar Proy.</span>`;
+    }
+    if (a === 'CREACION') {
+        return `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">⏱️ Crear Horas</span>`;
+    }
+    if (a === 'EDICION') {
+        return `<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">✏️ Editar Horas</span>`;
+    }
+    if (a === 'ELIMINAR') {
+        return `<span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">🗑️ Borrar Horas</span>`;
+    }
+    if (a === 'NOVEDAD_RANGO') {
+        return `<span style="background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">📋 Novedad</span>`;
+    }
+    if (a === 'GASTO_CREAR') {
+        return `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">💰 Nuevo Gasto</span>`;
+    }
+    if (a === 'GASTO_EDITAR') {
+        return `<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">✏️ Editar Gasto</span>`;
+    }
+    if (a === 'GASTO_ELIMINAR') {
+        return `<span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">🗑️ Borrar Gasto</span>`;
+    }
+    if (a === 'LIQUIDACION_PAGO') {
+        return `<span style="background: rgba(20, 184, 166, 0.15); color: #14b8a6; border: 1px solid rgba(20, 184, 166, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">💵 Liquidación</span>`;
+    }
+    if (a === 'LOGIN') {
+        return `<span style="background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">🔐 Login</span>`;
+    }
+    if (a === 'IMPORTAR' || a === 'EXPORTAR' || a === 'EXPORTAR_GASTOS') {
+        return `<span style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">📊 ${a}</span>`;
+    }
+    return `<span style="background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block;">${escapeHTML(accion)}</span>`;
+}
+
+function actualizarContadoresAuditoria() {
+    const list = Array.isArray(auditoria) ? auditoria : [];
+    const countTodos = list.length;
+    let countProy = 0;
+    let countHoras = 0;
+    let countGastos = 0;
+    let countSistema = 0;
+
+    list.forEach(a => {
+        const acc = (a.accion || '').toUpperCase();
+        if (acc.startsWith('PROYECTO_')) countProy++;
+        else if (['CREACION', 'EDICION', 'ELIMINAR', 'NOVEDAD_RANGO'].includes(acc)) countHoras++;
+        else if (acc.startsWith('GASTO_') || acc === 'LIQUIDACION_PAGO' || acc === 'EXPORTAR_GASTOS') countGastos++;
+        else countSistema++;
+    });
+
+    const elTodos = document.getElementById('countAuditTodos');
+    const elProy = document.getElementById('countAuditProy');
+    const elHoras = document.getElementById('countAuditHoras');
+    const elGastos = document.getElementById('countAuditGastos');
+    const elSistema = document.getElementById('countAuditSistema');
+
+    if (elTodos) elTodos.textContent = countTodos;
+    if (elProy) elProy.textContent = countProy;
+    if (elHoras) elHoras.textContent = countHoras;
+    if (elGastos) elGastos.textContent = countGastos;
+    if (elSistema) elSistema.textContent = countSistema;
+}
+
+function cambiarFiltroAuditoria(cat) {
+    filtroCategoriaAuditoria = cat || 'TODOS';
+    document.querySelectorAll('#auditoriaTabs .widget-tab').forEach(btn => {
+        if (btn.getAttribute('data-cat') === filtroCategoriaAuditoria) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    renderizarTablaAuditoria();
+}
+
+function filtrarAuditoriaModal() {
+    renderizarTablaAuditoria();
+}
+
+function renderizarTablaAuditoria() {
+    const tbody = document.getElementById('tbodyAuditoria');
+    const lblResumen = document.getElementById('lblAuditoriaResumen');
+    if (!tbody) return;
+
+    const list = Array.isArray(auditoria) ? auditoria : [];
+    const searchVal = (document.getElementById('buscarAuditoriaInput')?.value || '').toLowerCase().trim();
+
+    const filtrados = list.filter(item => {
+        const acc = (item.accion || '').toUpperCase();
+        // Filtro por categoría
+        if (filtroCategoriaAuditoria === 'PROYECTOS' && !acc.startsWith('PROYECTO_')) return false;
+        if (filtroCategoriaAuditoria === 'HORAS' && !['CREACION', 'EDICION', 'ELIMINAR', 'NOVEDAD_RANGO'].includes(acc)) return false;
+        if (filtroCategoriaAuditoria === 'GASTOS' && !(acc.startsWith('GASTO_') || acc === 'LIQUIDACION_PAGO' || acc === 'EXPORTAR_GASTOS')) return false;
+        if (filtroCategoriaAuditoria === 'SISTEMA' && (acc.startsWith('PROYECTO_') || ['CREACION', 'EDICION', 'ELIMINAR', 'NOVEDAD_RANGO'].includes(acc) || acc.startsWith('GASTO_') || acc === 'LIQUIDACION_PAGO' || acc === 'EXPORTAR_GASTOS')) return false;
+
+        // Filtro por texto de búsqueda
+        if (searchVal) {
+            const txt = `${item.fecha_hora || ''} ${item.usuario || ''} ${item.rol || ''} ${item.accion || ''} ${item.detalle || ''}`.toLowerCase();
+            if (!txt.includes(searchVal)) return false;
+        }
+
+        return true;
+    });
+
+    if (lblResumen) {
+        lblResumen.textContent = `Mostrando ${filtrados.length} de ${list.length} eventos de auditoría registrados.`;
+    }
+
+    if (filtrados.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;">📋</div>
+                    <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">No se encontraron registros de auditoría</div>
+                    <div style="font-size: 0.82rem;">Prueba cambiando de categoría o ajustando el término de búsqueda.</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = filtrados.map(item => {
+        const fecha = item.fecha_hora || (item.created_at ? new Date(item.created_at).toLocaleString('es-CO') : '-');
+        const usuario = escapeHTML(item.usuario || 'Sistema');
+        const badgeRol = getBadgeRolAuditoria(item.rol);
+        const badgeAccion = getBadgeAccionAuditoria(item.accion);
+        const detalle = escapeHTML(item.detalle || '');
+
+        return `
+            <tr style="border-bottom: 1px solid var(--card-border); transition: background 0.15s ease;" onmouseover="this.style.background='var(--panel-hover)'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 10px 12px; font-size: 0.82rem; color: var(--text-muted); font-family: monospace; white-space: nowrap;">${fecha}</td>
+                <td style="padding: 10px 12px; font-weight: 600; color: var(--text-heading); white-space: nowrap;">${usuario}</td>
+                <td style="padding: 10px 12px; text-align: center;">${badgeRol}</td>
+                <td style="padding: 10px 12px; text-align: center; white-space: nowrap;">${badgeAccion}</td>
+                <td style="padding: 10px 12px; line-height: 1.45; color: var(--text-main); font-size: 0.85rem;">${detalle}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function abrirModalAuditoria() {
+    if (!auditoria || auditoria.length === 0) {
+        try {
+            showLoader("Cargando bitácora de auditoría...");
+            const auditDb = await window.API.getAuditoria();
+            if (auditDb) auditoria = auditDb;
+        } catch (e) {
+            console.error("Error al cargar auditoría:", e);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    filtroCategoriaAuditoria = 'TODOS';
+    const inBusq = document.getElementById('buscarAuditoriaInput');
+    if (inBusq) inBusq.value = '';
+
+    document.querySelectorAll('#auditoriaTabs .widget-tab').forEach(btn => {
+        if (btn.getAttribute('data-cat') === 'TODOS') btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    actualizarContadoresAuditoria();
+    renderizarTablaAuditoria();
+
+    const modal = document.getElementById('modalAuditoria');
+    if (modal) modal.classList.add('show');
+}
+
+async function refrescarAuditoriaModal() {
+    try {
+        const auditDb = await window.API.getAuditoria();
+        if (auditDb) {
+            auditoria = auditDb;
+            actualizarContadoresAuditoria();
+            renderizarTablaAuditoria();
+            Toast.success("Bitácora actualizada con el servidor.");
+        }
+    } catch (e) {
+        console.error("Error refrescando auditoría:", e);
+        Toast.error("No se pudo refrescar la auditoría.");
+    }
 }
 
 let cargandoApp = false;
@@ -2736,13 +2970,17 @@ async function eliminarGasto(id) {
         : confirm("¿Seguro que deseas eliminar permanentemente este gasto?");
     if (ok) {
         showLoader("Eliminando gasto...");
+        const gastoPrevio = (gastosDatos || []).find(g => g.id === id);
         const success = await window.API.eliminarGasto(id);
         if (success) {
             gastosDatos = gastosDatos.filter(g => g.id !== id);
             gastosSeleccionadosIds.delete(id);
             filtrarGastos();
             Toast.success("Gasto eliminado exitosamente.");
-            registrarAuditoria("GASTO_ELIMINAR", `Se eliminó un registro de gasto.`);
+            const detalleGasto = gastoPrevio
+                ? `Se eliminó gasto de ${gastoPrevio.item} por $${Number(gastoPrevio.total || 0).toLocaleString('es-CO')} de ${gastoPrevio.trabajador} en proy. ${gastoPrevio.proyecto || 'General'}.`
+                : `Se eliminó un registro de gasto.`;
+            registrarAuditoria("GASTO_ELIMINAR", detalleGasto);
         }
         hideLoader();
     }

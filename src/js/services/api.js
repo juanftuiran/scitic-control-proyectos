@@ -196,11 +196,71 @@ class APIService {
         }
     }
 
-    async registrarAuditoria(log) {
+    getNombreHerramientaLegible(herramienta) {
+        const mapa = {
+            'calculadora-tubos': 'Calculadora de Tubos RITEL',
+            'loss-gen-app': 'Calculadora de Pérdidas TDT',
+            'informes-obra': 'Registro de Instalación TDT'
+        };
+        return mapa[herramienta] || herramienta || 'Herramienta de Ingeniería';
+    }
+
+    getModoHerramientaLegible(modo) {
+        if (!modo) return '';
+        const mapa = {
+            'torres': 'Torres / Edificios',
+            'parcelaciones': 'Parcelaciones / Urbanizaciones'
+        };
+        return mapa[modo.toLowerCase()] || modo;
+    }
+
+    async registrarAuditoria(logOrAccion, maybeDetalle = null) {
         try {
+            if (typeof logOrAccion === 'string') {
+                return await this.registrarEventoAuditoria(logOrAccion, maybeDetalle);
+            }
+            const log = logOrAccion;
             await this.db.from('auditoria').insert([log]);
+            return log;
         } catch (error) {
             console.error("Error registrando auditoria:", error);
+        }
+    }
+
+    async registrarEventoAuditoria(accion, detalle, session = null) {
+        try {
+            const userSession = session || (await this.getSession()) || this.getCachedSession();
+            const log = {
+                fecha_hora: new Date().toLocaleString(),
+                usuario: userSession?.name || userSession?.usuario || 'Usuario',
+                rol: userSession?.role || 'colaborador',
+                accion: accion,
+                detalle: detalle
+            };
+
+            await this.db.from('auditoria').insert([log]);
+
+            // Sincronizar en memoria en los contextos disponibles (ventana principal y/o iframe parent)
+            const contextos = [];
+            if (typeof window !== 'undefined') contextos.push(window);
+            if (typeof window !== 'undefined' && window.parent && window.parent !== window) contextos.push(window.parent);
+
+            for (const ctx of contextos) {
+                try {
+                    if (ctx.Store && typeof ctx.Store.setState === 'function') {
+                        const lista = ctx.Store.state.auditoria || [];
+                        ctx.Store.setState({ auditoria: [log, ...lista] });
+                    } else if (Array.isArray(ctx.auditoria)) {
+                        ctx.auditoria.unshift(log);
+                    }
+                } catch (eCtx) {
+                    console.warn("Error sincronizando auditoria en memoria:", eCtx);
+                }
+            }
+
+            return log;
+        } catch (error) {
+            console.error("Error en registrarEventoAuditoria:", error);
         }
     }
 
@@ -340,6 +400,21 @@ class APIService {
                 if (resUpdate.error) throw resUpdate.error;
                 if (typeof Toast !== 'undefined') Toast.success("Proyecto actualizado correctamente.");
                 const saved = resUpdate.data || {};
+
+                // Registrar auditoría de edición de proyecto para trazabilidad
+                try {
+                    const nomHerr = this.getNombreHerramientaLegible(herramienta);
+                    const modoLegible = this.getModoHerramientaLegible(modo);
+                    const modoTxt = modoLegible ? ` (Modo: ${modoLegible})` : '';
+                    await this.registrarEventoAuditoria(
+                        "PROYECTO_EDITAR",
+                        `Actualizó proyecto "${nombreProyecto}" en ${nomHerr}${modoTxt}.`,
+                        session
+                    );
+                } catch (auditErr) {
+                    console.warn("Error registrando auditoría en actualización de proyecto:", auditErr);
+                }
+
                 return { exito: true, data: saved, ...saved };
             } else {
                 // Insertar nuevo proyecto
@@ -371,6 +446,21 @@ class APIService {
                 if (resInsert.error) throw resInsert.error;
                 if (typeof Toast !== 'undefined') Toast.success("Proyecto guardado en el servidor.");
                 const saved = resInsert.data || {};
+
+                // Registrar auditoría de creación de proyecto para trazabilidad
+                try {
+                    const nomHerr = this.getNombreHerramientaLegible(herramienta);
+                    const modoLegible = this.getModoHerramientaLegible(modo);
+                    const modoTxt = modoLegible ? ` (Modo: ${modoLegible})` : '';
+                    await this.registrarEventoAuditoria(
+                        "PROYECTO_CREAR",
+                        `Creó nuevo proyecto "${nombreProyecto}" en ${nomHerr}${modoTxt}.`,
+                        session
+                    );
+                } catch (auditErr) {
+                    console.warn("Error registrando auditoría en creación de proyecto:", auditErr);
+                }
+
                 return { exito: true, data: saved, ...saved };
             }
         } catch (error) {
@@ -380,8 +470,29 @@ class APIService {
         }
     }
 
-    async eliminarProyectoCalculadora(id) {
+    async eliminarProyectoCalculadora(id, meta = null) {
         try {
+            const session = (await this.getSession()) || this.getCachedSession();
+            let nombreProyecto = meta?.nombre_proyecto || meta?.nombre;
+            let herramienta = meta?.herramienta;
+
+            // Si no vienen en meta, consultar datos del proyecto antes de eliminarlo para la trazabilidad
+            if (!nombreProyecto || !herramienta) {
+                try {
+                    const { data: previo } = await this.db
+                        .from('proyectos_calculadoras')
+                        .select('nombre_proyecto, herramienta')
+                        .eq('id', id)
+                        .maybeSingle();
+                    if (previo) {
+                        if (!nombreProyecto) nombreProyecto = previo.nombre_proyecto;
+                        if (!herramienta) herramienta = previo.herramienta;
+                    }
+                } catch (errPrev) {
+                    console.warn("No se pudo obtener datos previos del proyecto para auditoría:", errPrev);
+                }
+            }
+
             const { error } = await this.db
                 .from('proyectos_calculadoras')
                 .delete()
@@ -389,6 +500,19 @@ class APIService {
 
             if (error) throw error;
             if (typeof Toast !== 'undefined') Toast.success("Proyecto eliminado.");
+
+            // Registrar auditoría de eliminación de proyecto para trazabilidad
+            try {
+                const nomHerr = this.getNombreHerramientaLegible(herramienta);
+                await this.registrarEventoAuditoria(
+                    "PROYECTO_ELIMINAR",
+                    `Eliminó el proyecto "${nombreProyecto || id}" de ${nomHerr}.`,
+                    session
+                );
+            } catch (auditErr) {
+                console.warn("Error registrando auditoría en eliminación de proyecto:", auditErr);
+            }
+
             return true;
         } catch (error) {
             console.error("Error al eliminar proyecto:", error);

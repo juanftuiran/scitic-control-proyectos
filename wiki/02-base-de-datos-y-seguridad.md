@@ -160,7 +160,7 @@ Log inmutable de auditoría para trazabilidad de acciones operativas sensibles.
 | `fecha_hora` | `TEXT` | Fecha y hora legible formateada en hora colombiana. |
 | `usuario` | `TEXT` | Identificador del usuario que realizó la acción. |
 | `rol` | `TEXT` | Rol que ostentaba el usuario. |
-| `accion` | `TEXT` | Código de acción (`LOGIN`, `CREAR`, `EDITAR`, `ELIMINAR`, `LIQUIDACION_PAGO`). |
+| `accion` | `TEXT` | Código de acción (`LOGIN`, `CREACION`, `EDICION`, `ELIMINAR`, `NOVEDAD_RANGO`, `GASTO_CREAR`, `GASTO_EDITAR`, `GASTO_ELIMINAR`, `LIQUIDACION_PAGO`, `PROYECTO_CREAR`, `PROYECTO_EDITAR`, `PROYECTO_ELIMINAR`). |
 | `detalle` | `TEXT` | Explicación detallada del cambio o valores modificados. |
 | `created_at` | `TIMESTAMPTZ` | Timestamp generado por el servidor. |
 

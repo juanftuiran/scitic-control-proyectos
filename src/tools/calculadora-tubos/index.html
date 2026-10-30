@@ -1993,7 +1993,7 @@
             const api = getAPIService();
             if (!api) return;
 
-            const ok = await api.eliminarProyectoCalculadora(id);
+            const ok = await api.eliminarProyectoCalculadora(id, { nombre_proyecto: nombre, herramienta: 'calculadora-tubos' });
             if (ok) {
                 if (proyectoActivoId === id) {
                     desvincularProyectoActivo();

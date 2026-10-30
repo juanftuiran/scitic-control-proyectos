@@ -284,7 +284,7 @@
                                 <span data-icon="download" data-size="15"></span>
                                 <span>Exportar Reporte (.xlsx)</span>
                             </button>
-                            <button class="btn-secondary" style="color: var(--primary); display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onclick="descargarAuditoria()">
+                            <button class="btn-secondary" style="color: var(--primary); display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onclick="abrirModalAuditoria()" title="Ver historial de auditoría y trazabilidad del sistema">
                                 <span data-icon="file-text" data-size="15"></span>
                                 <span>Bitácora de Auditoría</span>
                             </button>
@@ -733,6 +733,70 @@
     </div>
 </div>
 
+<!-- Modal: Bitácora de Auditoría y Trazabilidad -->
+<div id="modalAuditoria" class="modal">
+    <div class="modal-content" style="max-width: 1020px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 1.8rem; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3 style="margin: 0; border: none; padding: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; color: var(--text-heading);">
+                    <span data-icon="file-text" data-size="20" data-color="var(--primary)"></span>
+                    <span>Bitácora de Auditoría y Trazabilidad</span>
+                </h3>
+                <small style="color: var(--text-muted); font-size: 0.8rem;">Registro de eventos de creación y eliminación de proyectos en herramientas, horas trabajadas y gastos.</small>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn-primary" onclick="descargarAuditoria()" style="width: auto; padding: 0.45rem 0.9rem; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;">
+                    <span data-icon="download" data-size="14"></span>
+                    <span>Descargar Excel</span>
+                </button>
+                <button type="button" class="btn-secondary" onclick="refrescarAuditoriaModal()" title="Recargar eventos del servidor" style="width: auto; padding: 0.45rem 0.8rem; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;">
+                    <span data-icon="refresh-cw" data-size="14"></span>
+                    <span>Actualizar</span>
+                </button>
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalAuditoria')" style="width: auto; padding: 4px 10px; font-size: 1rem; border-radius: 8px;">✕</button>
+            </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="widget-tabs" id="auditoriaTabs" style="margin-bottom: 0; width: auto; max-width: 100%;">
+                <button type="button" class="widget-tab active" data-cat="TODOS" onclick="cambiarFiltroAuditoria('TODOS')">Todos (<span id="countAuditTodos">0</span>)</button>
+                <button type="button" class="widget-tab" data-cat="PROYECTOS" onclick="cambiarFiltroAuditoria('PROYECTOS')">🛠️ Proyectos (<span id="countAuditProy">0</span>)</button>
+                <button type="button" class="widget-tab" data-cat="HORAS" onclick="cambiarFiltroAuditoria('HORAS')">⏱️ Horas (<span id="countAuditHoras">0</span>)</button>
+                <button type="button" class="widget-tab" data-cat="GASTOS" onclick="cambiarFiltroAuditoria('GASTOS')">💰 Gastos (<span id="countAuditGastos">0</span>)</button>
+                <button type="button" class="widget-tab" data-cat="SISTEMA" onclick="cambiarFiltroAuditoria('SISTEMA')">🔐 Sistema (<span id="countAuditSistema">0</span>)</button>
+            </div>
+
+            <div style="flex: 1; min-width: 220px; max-width: 320px;">
+                <input type="text" id="buscarAuditoriaInput" oninput="filtrarAuditoriaModal()" placeholder="Buscar por proyecto, usuario, acción..." style="padding: 0.45rem 0.8rem; font-size: 0.85rem; border-radius: 8px; width: 100%;">
+            </div>
+        </div>
+
+        <!-- Contenedor con scroll para la tabla -->
+        <div style="flex: 1; overflow-y: auto; overflow-x: auto; min-height: 260px; max-height: calc(90vh - 220px); border: 1px solid var(--card-border); border-radius: 10px; background: var(--panel-subtle);">
+            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                <thead style="position: sticky; top: 0; background: var(--card-bg); z-index: 10; border-bottom: 2px solid var(--card-border);">
+                    <tr>
+                        <th style="padding: 10px 12px; text-align: left; width: 155px; white-space: nowrap;">Fecha / Hora</th>
+                        <th style="padding: 10px 12px; text-align: left; width: 140px;">Usuario</th>
+                        <th style="padding: 10px 12px; text-align: center; width: 85px;">Rol</th>
+                        <th style="padding: 10px 12px; text-align: center; width: 155px; white-space: nowrap;">Acción</th>
+                        <th style="padding: 10px 12px; text-align: left;">Detalle de Trazabilidad</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyAuditoria">
+                    <!-- Registros inyectados dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 10px;">
+            <small id="lblAuditoriaResumen" style="color: var(--text-muted); font-size: 0.8rem;">Cargando bitácora...</small>
+            <button type="button" class="btn-secondary" onclick="cerrarModal('modalAuditoria')" style="padding: 0.5rem 1.2rem; font-size: 0.85rem; border-radius: 8px;">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Liquidación y Registro de Pago -->
 <div id="modalLiquidacion" class="modal">
     <div class="modal-content" style="max-width: 620px; padding: 2.2rem;">
@@ -852,9 +916,9 @@
     </div>
 </div>
 
-<script src="./src/js/components/Toast.js?v=16"></script>
-<script src="./src/js/store/appState.js?v=16"></script>
-<script src="./src/js/services/api.js?v=16"></script>
-<script src="./src/js/main.js?v=16"></script>
+<script src="./src/js/components/Toast.js?v=17"></script>
+<script src="./src/js/store/appState.js?v=17"></script>
+<script src="./src/js/services/api.js?v=17"></script>
+<script src="./src/js/main.js?v=17"></script>
 </body>
 </html>
