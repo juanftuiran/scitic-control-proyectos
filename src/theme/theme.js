@@ -103,7 +103,7 @@
     /**
      * Lee un token o variable CSS calculada directamente de theme.css
      * @param {string} varName - Nombre de la variable (ej: '--primary', '--card-bg')
-     * @returns {string} Valor computado (ej: '#00FF66', 'rgba(6, 10, 7, 0.75)')
+     * @returns {string} Valor computado (ej: '#10b981', 'rgba(6, 10, 7, 0.75)')
      */
     function getColor(varName) {
         if (!varName) return '';

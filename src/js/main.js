@@ -1239,12 +1239,12 @@ function graficar(listaFiltrada) {
         }
 
         // Colores dinámicos centralizados desde SCITICTheme / theme.css
-        const primaryToken = (window.SCITICTheme && typeof window.SCITICTheme.getColor === 'function' ? window.SCITICTheme.getColor('--primary') : '') || '#00FF66';
-        const primaryHoverToken = (window.SCITICTheme && typeof window.SCITICTheme.getColor === 'function' ? window.SCITICTheme.getColor('--primary-hover') : '') || '#33ff85';
+        const primaryToken = (window.SCITICTheme && typeof window.SCITICTheme.getColor === 'function' ? window.SCITICTheme.getColor('--primary') : '') || '#10b981';
+        const primaryHoverToken = (window.SCITICTheme && typeof window.SCITICTheme.getColor === 'function' ? window.SCITICTheme.getColor('--primary-hover') : '') || '#059669';
 
         // Paleta Cyberpunk según la actividad seleccionada
-        let colorStart = primaryToken, colorMid = 'rgba(0, 255, 102, 0.45)', colorEnd = 'rgba(0, 255, 102, 0.03)', hoverColor = primaryHoverToken;
-        let borderColor = 'rgba(0, 255, 102, 0.85)';
+        let colorStart = primaryToken, colorMid = 'rgba(16, 185, 129, 0.45)', colorEnd = 'rgba(16, 185, 129, 0.03)', hoverColor = primaryHoverToken;
+        let borderColor = 'rgba(16, 185, 129, 0.85)';
 
         if (actividadGraficoHoras === 'OBRAS') {
             colorStart = '#00e5ff'; colorMid = 'rgba(0, 229, 255, 0.45)'; colorEnd = 'rgba(0, 229, 255, 0.03)'; hoverColor = '#33ecff'; borderColor = 'rgba(0, 229, 255, 0.85)';
@@ -1324,7 +1324,7 @@ function graficar(listaFiltrada) {
                 scales: {
                     y: {
                         grid: { 
-                            color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(0, 255, 102, 0.07)',
+                            color: isThemeLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(16, 185, 129, 0.07)',
                             borderDash: [4, 4],
                             drawBorder: false
                         },
@@ -2427,23 +2427,23 @@ function graficarGastos(lista) {
         gradient.addColorStop(0, '#059669');
         gradient.addColorStop(1, '#10b981');
     } else {
-        gradient.addColorStop(0, '#00FF66');
-        gradient.addColorStop(0.35, 'rgba(0, 255, 102, 0.45)');
-        gradient.addColorStop(0.85, 'rgba(0, 255, 102, 0.03)');
+        gradient.addColorStop(0, '#10b981');
+        gradient.addColorStop(0.35, 'rgba(16, 185, 129, 0.45)');
+        gradient.addColorStop(0.85, 'rgba(16, 185, 129, 0.03)');
         gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     }
 
     const typeChart = tipoGraficoGastos === 'proyecto' ? 'bar' : 'doughnut';
-    const cyberColors = ['#00FF66', '#00e5ff', '#ffb703', '#ff0055', '#b5179e', '#f72585', '#38bdf8'];
-    const cyberHoverColors = ['#33ff85', '#33ecff', '#ffc433', '#ff3377', '#c433b0', '#f94f9d', '#60a5fa'];
+    const cyberColors = ['#10b981', '#00e5ff', '#ffb703', '#ff0055', '#b5179e', '#f72585', '#38bdf8'];
+    const cyberHoverColors = ['#059669', '#33ecff', '#ffc433', '#ff3377', '#c433b0', '#f94f9d', '#60a5fa'];
 
     let datasetConfig = {
         label: 'Gastos ($)',
         data: Object.values(resumen),
         backgroundColor: tipoGraficoGastos === 'proyecto' ? gradient : cyberColors,
-        hoverBackgroundColor: tipoGraficoGastos === 'proyecto' ? '#00FF66' : cyberHoverColors,
+        hoverBackgroundColor: tipoGraficoGastos === 'proyecto' ? '#10b981' : cyberHoverColors,
         borderWidth: tipoGraficoGastos === 'proyecto' ? (isLightGastos ? 0 : { top: 2, right: 1, bottom: 0, left: 1 }) : 3,
-        borderColor: tipoGraficoGastos === 'proyecto' ? (isLightGastos ? 'transparent' : 'rgba(0, 255, 102, 0.85)') : (isLightGastos ? '#ffffff' : '#060907'),
+        borderColor: tipoGraficoGastos === 'proyecto' ? (isLightGastos ? 'transparent' : 'rgba(16, 185, 129, 0.85)') : (isLightGastos ? '#ffffff' : '#060907'),
         borderRadius: tipoGraficoGastos === 'proyecto' ? { topLeft: 6, topRight: 6, bottomLeft: 2, bottomRight: 2 } : 0,
         borderSkipped: false,
         barPercentage: 0.65,
@@ -2478,9 +2478,9 @@ function graficarGastos(lista) {
                     backgroundColor: isLightGastos ? 'rgba(255, 255, 255, 0.98)' : 'rgba(6, 10, 7, 0.96)',
                     titleColor: isLightGastos ? '#0f172a' : '#ffffff',
                     titleFont: { family: "'Space Grotesk', sans-serif", size: 13, weight: '700' },
-                    bodyColor: isLightGastos ? '#475569' : '#00FF66',
+                    bodyColor: isLightGastos ? '#475569' : '#10b981',
                     bodyFont: { family: "'JetBrains Mono', monospace", size: 13, weight: '600' },
-                    borderColor: isLightGastos ? '#e2e8f0' : 'rgba(0, 255, 102, 0.5)',
+                    borderColor: isLightGastos ? '#e2e8f0' : 'rgba(16, 185, 129, 0.5)',
                     borderWidth: 1.5,
                     padding: { top: 10, bottom: 10, left: 14, right: 14 },
                     cornerRadius: 8,
@@ -2499,7 +2499,7 @@ function graficarGastos(lista) {
             scales: tipoGraficoGastos === 'proyecto' ? { 
                 y: { 
                     grid: { 
-                        color: isLightGastos ? 'rgba(15, 23, 42, 0.06)' : 'rgba(0, 255, 102, 0.07)', 
+                        color: isLightGastos ? 'rgba(15, 23, 42, 0.06)' : 'rgba(16, 185, 129, 0.07)', 
                         borderDash: [4, 4],
                         drawBorder: false
                     }, 

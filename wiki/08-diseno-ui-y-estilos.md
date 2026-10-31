@@ -17,28 +17,28 @@
 El sistema visual utiliza una arquitectura dual **Cyberpunk Tech Neo-Green** y **Light Theme (Modo Campo / Oficina)** con acabados *Glassmorphism* (fondos translúcidos con desenfoque de fondo y bordes de cristal reflectante), basada en la estética **Cyberpunk Technology & Digital Revolution**:
 
 ```
-🟩 #00FF66  Neon Green Primary   🟩 #059669  Primary Hover / Light AAA   🟦 #00E5FF  Permiso / Info
-🌿 #33FF85  Neon Bright Hover    🟨 #FFB703  Accent / Pendiente          🟪 #B5179E  Vacaciones
+🟩 #10B981  Emerald Primary      🟩 #059669  Primary Hover / Light AAA   🟦 #00E5FF  Permiso / Info
+🌿 #059669  Emerald Hover        🟨 #FFB703  Accent / Pendiente          🟪 #B5179E  Vacaciones
 ⬛ #060907  Carbon Deep Black    🟥 #FF0055  Danger / Alerta             🌸 #F72585  Novedades
 ⬜ #F8FAFC  Canvas Light Pure    🩶 #A0A8A2  Text Muted (#CCCCCC)        🌹 #FF0055  Incapacidad
 ```
 
-### 1.1. Tabla de Tokens de Color ([`src/theme/theme.css`](file:///d:/SCITIC/SOFTWARE/scitic-app/src/theme/theme.css))
+### 1.1. Tabla de Tokens de Color ([`src/theme/theme.css`](file:///d:/SCITIC/SOFTWARE\scitic-app\src\theme\theme.css))
 
 | Token CSS | Modo Cyberpunk Tech | Modo Claro / Campo | Uso / Significado Semántico |
 |---|---|---|---|
-| `--primary` | `#00FF66` | `#059669` | Verde Neón de Alta Intensidad. Botones primarios, llamadas a la acción, títulos destacados y contadores. |
-| `--primary-hover` | `#33ff85` | `#047857` | Estado hover y foco en botones y enlaces principales. |
-| `--primary-contrast` | `#040805` | `#ffffff` | Texto oscuro de alto contraste en botones y pastillas verdes. |
-| `--primary-gradient`| `linear-gradient(135deg, #00e65c, #00FF66, #33ff85)` | `linear-gradient(135deg, #059669, #10b981)` | Botones de acción clave, loaders destacados y barras de progreso activas. |
+| `--primary` | `#10b981` | `#059669` | Verde Esmeralda Profesional (#10b981). Botones primarios, pestañas activas, llamadas a la acción y contadores. |
+| `--primary-hover` | `#059669` | `#047857` | Estado hover y foco en botones y enlaces principales. |
+| `--primary-contrast` | `#ffffff` | `#ffffff` | Texto blanco de alto contraste en botones y pastillas verdes. |
+| `--primary-gradient`| `linear-gradient(135deg, #059669, #10b981)` | `linear-gradient(135deg, #059669, #10b981)` | Botones de acción clave, loaders destacados y barras de progreso activas. |
 | `--bg-main` | `#060907` (Negro carbón profundo) | `#f8fafc` (Slate 50) | Fondo base de la aplicación. |
-| `--bg-gradient` | Radial Negro/Carbón con aura neón verde | Radial Blanco/Slate 50 con aura suave | Fondo general con profundidad tridimensional de alta tecnología. |
+| `--bg-gradient` | Radial Negro/Carbón con aura esmeralda suave | Radial Blanco/Slate 50 con aura suave | Fondo general con profundidad tridimensional de alta tecnología. |
 | `--card-bg` | `rgba(10, 15, 12, 0.78)` | `#ffffff` | Superficie de tarjetas y paneles (*Glassmorphism* semitransparente). |
 | `--card-border` | `rgba(255, 255, 255, 0.08)` | `#e2e8f0` | Borde de tarjetas y paneles. |
 | `--text-main` | `#f0f4f1` | `#0f172a` (Slate 900) | Texto principal en cuerpos, tablas e inputs. |
 | `--text-heading` | `#ffffff` | `#0f172a` | Encabezados principales y títulos de alto impacto. |
 | `--text-muted` | `#a0a8a2` (#CCCCCC) | `#475569` (Slate 600) | Párrafos y descripciones suaves que no contrastan agresivamente. |
-| `--stat-number-color`| `#00FF66` | `#059669` | Contadores y KPIs destacados con resplandor neón. |
+| `--stat-number-color`| `#10b981` | `#059669` | Contadores y KPIs destacados. |
 | `--input-bg` | `rgba(6, 10, 8, 0.88)` | `#ffffff` | Fondo de campos de texto y selectores. |
 | `--input-border` | `rgba(255, 255, 255, 0.12)` | `#cbd5e1` | Bordes de inputs en reposo. |
 | `--table-header-bg` | `rgba(10, 15, 12, 0.92)` | `#f1f5f9` | Encabezado fijo de tablas con datos. |

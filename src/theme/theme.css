@@ -10,22 +10,22 @@
 
 :root {
     /* -------------------------------------------------------------
-       1. PALETA DE COLOR PRINCIPAL: CYBERPUNK TECH (NEÓN #00FF66)
+       1. PALETA DE COLOR PRINCIPAL: EMERALD TECH (#10b981)
        ------------------------------------------------------------- */
-    --primary: #00FF66;
-    --primary-hover: #33ff85;
-    --primary-active: #00cc52;
-    --primary-contrast: #040805;
-    --primary-soft: rgba(0, 255, 102, 0.12);
-    --primary-border: rgba(0, 255, 102, 0.35);
-    --primary-gradient: linear-gradient(135deg, #00e65c 0%, #00FF66 50%, #33ff85 100%);
-    --primary-glow: 0 0 20px rgba(0, 255, 102, 0.38), 0 0 45px rgba(0, 255, 102, 0.15);
-    --primary-glow-hover: 0 0 25px rgba(0, 255, 102, 0.55), 0 0 55px rgba(0, 255, 102, 0.25);
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --primary-active: #047857;
+    --primary-contrast: #ffffff;
+    --primary-soft: rgba(16, 185, 129, 0.12);
+    --primary-border: rgba(16, 185, 129, 0.35);
+    --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --primary-glow: 0 0 20px rgba(16, 185, 129, 0.35), 0 0 45px rgba(16, 185, 129, 0.15);
+    --primary-glow-hover: 0 0 25px rgba(16, 185, 129, 0.5), 0 0 55px rgba(16, 185, 129, 0.2);
 
     /* Acento Secundario / Menta Tecnológica */
-    --mint-accent: #00FF66;
-    --mint-soft: rgba(0, 255, 102, 0.12);
-    --mint-gradient: linear-gradient(135deg, #00cc52 0%, #00FF66 100%);
+    --mint-accent: #10b981;
+    --mint-soft: rgba(16, 185, 129, 0.12);
+    --mint-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
 
     /* Compatibilidad retroactiva con aliases históricos (vinculados al primary) */
     --scitic-orange: var(--primary);
@@ -44,20 +44,20 @@
     --bg-main: #060907;
     --bg-dark: #060907;
     --bg-darker: #020403;
-    --bg-light: rgba(0, 255, 102, 0.03);
+    --bg-light: rgba(16, 185, 129, 0.03);
     --ds-bg-canvas: #060907;
 
-    /* Resplandor radial de alta tecnología con micro-aura verde neón */
-    --bg-gradient: radial-gradient(ellipse 95% 70% at 50% -12%, rgba(0, 255, 102, 0.14) 0%, #060907 72%),
-                   radial-gradient(ellipse 70% 45% at 90% 15%, rgba(0, 255, 102, 0.05) 0%, transparent 65%);
-    --ds-bg-gradient: radial-gradient(ellipse 85% 60% at 50% -10%, rgba(0, 255, 102, 0.1) 0%, #060907 75%),
-                      radial-gradient(ellipse 60% 50% at 90% 10%, rgba(0, 255, 102, 0.05) 0%, transparent 70%);
+    /* Resplandor radial de alta tecnología con micro-aura verde esmeralda */
+    --bg-gradient: radial-gradient(ellipse 95% 70% at 50% -12%, rgba(16, 185, 129, 0.14) 0%, #060907 72%),
+                   radial-gradient(ellipse 70% 45% at 90% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 65%);
+    --ds-bg-gradient: radial-gradient(ellipse 85% 60% at 50% -10%, rgba(16, 185, 129, 0.1) 0%, #060907 75%),
+                      radial-gradient(ellipse 60% 50% at 90% 10%, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
 
     /* Superficies Glassmorphism Cyberpunk en Capas */
     --card-bg: rgba(10, 15, 12, 0.78);
     --card-header-bg: #070b08;
     --card-border: rgba(255, 255, 255, 0.08);
-    --card-border-glow: rgba(0, 255, 102, 0.35);
+    --card-border-glow: rgba(16, 185, 129, 0.35);
     --panel-bg: rgba(13, 19, 15, 0.65);
     --panel-subtle: rgba(10, 15, 12, 0.85);
     --ds-surface-1: rgba(10, 15, 12, 0.85);
@@ -68,7 +68,7 @@
     /* Inputs y Formularios */
     --input-bg: rgba(6, 10, 8, 0.88);
     --input-border: rgba(255, 255, 255, 0.12);
-    --input-focus: rgba(0, 255, 102, 0.38);
+    --input-focus: rgba(16, 185, 129, 0.38);
     --input-focus-bg: rgba(8, 14, 10, 0.98);
 
     /* Barras de Navegación y Tablas */
@@ -78,21 +78,21 @@
     --floating-bar-bg: rgba(6, 10, 7, 0.96);
     --table-header-bg: rgba(10, 15, 12, 0.92);
     --table-header-text: #ffffff;
-    --table-row-hover: rgba(0, 255, 102, 0.06);
+    --table-row-hover: rgba(16, 185, 129, 0.06);
     --table-row-hover-text: #ffffff;
 
     /* Botones Secundarios */
     --btn-secondary-bg: rgba(255, 255, 255, 0.05);
     --btn-secondary-border: rgba(255, 255, 255, 0.1);
     --btn-secondary-color: #f0f4f1;
-    --btn-secondary-hover: rgba(0, 255, 102, 0.08);
+    --btn-secondary-hover: rgba(16, 185, 129, 0.08);
 
     /* Bordes y Resplandores */
     --border: rgba(255, 255, 255, 0.09);
     --border-subtle: rgba(255, 255, 255, 0.06);
     --border-solid: #16221a;
     --ds-border: rgba(255, 255, 255, 0.08);
-    --ds-border-strong: rgba(0, 255, 102, 0.25);
+    --ds-border-strong: rgba(16, 185, 129, 0.25);
     --ds-border-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 
     /* -------------------------------------------------------------
@@ -111,13 +111,13 @@
     --ds-text-secondary: #cbd5ce;
     --ds-text-muted: #a0a8a2;
     --ds-text-subtle: #6d7770;
-    --stat-number-color: #00FF66; /* Contadores en verde neón brillante */
+    --stat-number-color: #10b981; /* Contadores en verde esmeralda */
 
     /* -------------------------------------------------------------
        4. SEMÁNTICA DE ESTADOS Y NOVEDADES LABORALES
        ------------------------------------------------------------- */
-    --success: #00FF66;
-    --success-soft: rgba(0, 255, 102, 0.14);
+    --success: #10b981;
+    --success-soft: rgba(16, 185, 129, 0.14);
     --accent: #ffb703;
     --accent-soft: rgba(255, 183, 3, 0.14);
     --accent-gradient: linear-gradient(135deg, #d97706, #ffb703);
@@ -314,11 +314,11 @@ html[data-theme="light"] {
     gap: 9px;
     padding: 7px 18px;
     background: rgba(6, 12, 8, 0.65);
-    border: 1px solid rgba(0, 255, 102, 0.18);
+    border: 1px solid rgba(16, 185, 129, 0.18);
     border-radius: 9999px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(0, 255, 102, 0.04);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(16, 185, 129, 0.04);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     opacity: 0.72;
     cursor: default;
@@ -326,8 +326,8 @@ html[data-theme="light"] {
 
 .creator-watermark-pill:hover {
     opacity: 1;
-    border-color: rgba(0, 255, 102, 0.45);
-    box-shadow: 0 0 20px rgba(0, 255, 102, 0.22), 0 6px 26px rgba(0, 0, 0, 0.5);
+    border-color: rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.22), 0 6px 26px rgba(0, 0, 0, 0.5);
     transform: translateY(-2px);
 }
 
@@ -335,14 +335,14 @@ html[data-theme="light"] {
     width: 6.5px;
     height: 6.5px;
     border-radius: 50%;
-    background: var(--primary, #00FF66);
-    box-shadow: 0 0 8px var(--primary, #00FF66);
+    background: var(--primary, #10b981);
+    box-shadow: 0 0 8px var(--primary, #10b981);
     animation: watermarkPulse 2.8s infinite ease-in-out;
 }
 
 @keyframes watermarkPulse {
     0%, 100% { opacity: 0.55; transform: scale(0.95); }
-    50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--primary, #00FF66); }
+    50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--primary, #10b981); }
 }
 
 .watermark-text {
@@ -356,14 +356,14 @@ html[data-theme="light"] {
 
 .watermark-name {
     font-weight: 800;
-    color: var(--primary, #00FF66);
+    color: var(--primary, #10b981);
     letter-spacing: 0.16em;
-    text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
     transition: text-shadow 0.3s ease;
 }
 
 .creator-watermark-pill:hover .watermark-name {
-    text-shadow: 0 0 16px rgba(0, 255, 102, 0.75);
+    text-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
 }
 
 .creator-watermark-login {
@@ -376,7 +376,7 @@ html[data-theme="light"] {
     gap: 9px;
     padding: 6px 16px;
     background: rgba(6, 12, 8, 0.5);
-    border: 1px solid rgba(0, 255, 102, 0.14);
+    border: 1px solid rgba(16, 185, 129, 0.14);
     border-radius: 9999px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -387,8 +387,8 @@ html[data-theme="light"] {
 
 .creator-watermark-login:hover {
     opacity: 1;
-    border-color: rgba(0, 255, 102, 0.4);
-    box-shadow: 0 0 16px rgba(0, 255, 102, 0.2);
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
 }
 
 /* Adaptación a Modo Claro */
