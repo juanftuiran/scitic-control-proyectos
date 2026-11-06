@@ -135,12 +135,26 @@ class APIService {
 
     async crearGasto(gasto) {
         try {
-            const { error } = await this.db.from('gastos').insert([gasto]);
+            const payload = Array.isArray(gasto) ? gasto : [gasto];
+            const { error } = await this.db.from('gastos').insert(payload);
             if (error) throw error;
             return true;
         } catch (error) {
             console.error("Error creating gasto:", error);
             Toast.error("Error al registrar el gasto: " + error.message);
+            return false;
+        }
+    }
+
+    async crearGastosMultiples(gastos) {
+        try {
+            if (!Array.isArray(gastos) || gastos.length === 0) return true;
+            const { error } = await this.db.from('gastos').insert(gastos);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("Error creating multiple gastos:", error);
+            Toast.error("Error al registrar los gastos en lote: " + error.message);
             return false;
         }
     }

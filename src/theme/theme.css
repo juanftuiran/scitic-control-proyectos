@@ -204,6 +204,8 @@ html[data-theme="light"] {
     --scitic-gradient: var(--primary-gradient);
     --brand-orange: var(--primary);
     --brand-orange-hover: var(--primary-hover);
+    --primary-blue: #0284c7;
+    --secondary: #0284c7;
 
     /* Superficies y Fondos Claras */
     --bg-main: #f8fafc;

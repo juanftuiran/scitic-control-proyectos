@@ -312,6 +312,62 @@
             .project-title { font-size: 22px; }
             .header-panel { padding: 12px; gap: 8px; }
         }
+        @media (max-width: 768px) {
+            body { padding: 8px !important; margin: 0 !important; }
+            .project-title { font-size: 19px !important; }
+            .header-panel {
+                padding: 12px !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+            .header-panel .input-group {
+                width: 100% !important;
+            }
+            .header-panel input,
+            .header-panel select {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .header-panel button {
+                flex: 1 1 calc(50% - 6px) !important;
+                justify-content: center !important;
+                min-height: 38px !important;
+                font-size: 12px !important;
+            }
+            .header-panel .btn-calc {
+                flex: 1 1 100% !important;
+                padding: 11px 16px !important;
+                font-size: 13.5px !important;
+            }
+            .info-panel {
+                padding: 10px 14px !important;
+                gap: 10px !important;
+                justify-content: space-around !important;
+            }
+            .info-item {
+                flex: 1 1 calc(50% - 10px) !important;
+            }
+            .table-container {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            #badge-proyecto-activo {
+                flex-direction: column !important;
+                gap: 6px !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .header-panel button {
+                flex: 1 1 100% !important;
+            }
+            .info-item {
+                flex: 1 1 100% !important;
+            }
+            .project-title {
+                font-size: 16.5px !important;
+            }
+        }
         @media print {
             button, .header-panel, .floor-config-section { display: none !important; }
             .table-container { box-shadow: none; }
@@ -342,7 +398,7 @@
             font-size: 22px;
             font-weight: 800;
             margin: 0 0 6px 0;
-            color: #f8fafc;
+            color: var(--text-heading, #f8fafc);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -388,7 +444,7 @@
             background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
-            color: #fff;
+            color: var(--text-main);
             font-size: 13px;
         }
         .hub-search-input:focus {
@@ -421,12 +477,12 @@
         .hub-card:hover {
             border-color: rgba(56, 189, 248, 0.4);
             transform: translateX(4px);
-            background: rgba(30, 41, 59, 0.9);
+            background: var(--panel-subtle, rgba(30, 41, 59, 0.9));
         }
         .hub-card-info h4 {
             margin: 0 0 6px 0;
             font-size: 16px;
-            color: #f8fafc;
+            color: var(--text-heading, #f8fafc);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -585,10 +641,122 @@
             border-color: #7c3aed !important;
             color: #ffffff !important;
         }
+        html[data-theme="light"] .hub-title-group h1 {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .hub-search-input {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .hub-card {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+        }
+        html[data-theme="light"] .hub-card:hover {
+            background: #f8fafc !important;
+            border-color: #059669 !important;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+        }
+        html[data-theme="light"] .hub-card-info h4 {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .hub-card-metrics {
+            color: #0284c7 !important;
+        }
+        html[data-theme="light"] .hub-card-meta {
+            color: #64748b !important;
+        }
+        html[data-theme="light"] .badge-autor {
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] .badge-modo {
+            background: #fef3c7 !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+        }
+        html[data-theme="light"] th {
+            background-color: #f1f5f9 !important;
+            color: #0284c7 !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] th.sub-th {
+            background-color: #e2e8f0 !important;
+            color: #334155 !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] th.th-accent {
+            background-color: #fef3c7 !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+        }
+        html[data-theme="light"] th.th-result {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] .modal-content-calc {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15) !important;
+        }
+        html[data-theme="light"] .modal-header-calc {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        html[data-theme="light"] .modal-header-calc h3 {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .modal-footer-calc {
+            background: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+        html[data-theme="light"] #modal-in-nombre-proyecto,
+        html[data-theme="light"] #filtro-proyectos-servidor {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] #box-proyecto-existente {
+            background: #f0f9ff !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] #box-proyecto-existente p {
+            color: #0369a1 !important;
+        }
+        html[data-theme="light"] #lbl-nombre-existente-modal {
+            color: #0f172a !important;
+        }
         .btn-server-save { background-color: #0284c7; color: #fff; }
         .btn-server-save:hover { background-color: #0369a1; }
         .btn-server-load { background-color: #7c3aed; color: #fff; }
         .btn-server-load:hover { background-color: #6d28d9; }
+        .btn-clear {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-clear:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--text-heading);
+        }
+        html[data-theme="light"] .btn-clear {
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #475569 !important;
+            font-weight: 600 !important;
+        }
+        html[data-theme="light"] .btn-clear:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
         .badge-autor {
             background: rgba(56, 189, 248, 0.15);
             color: #38bdf8;
@@ -642,7 +810,7 @@
             align-items: center;
         }
         .modal-header-calc h3 {
-            margin: 0; font-size: 16px; color: #f8fafc;
+            margin: 0; font-size: 16px; color: var(--text-heading, #f8fafc);
             display: flex; align-items: center; gap: 8px;
         }
         .modal-close-btn {
@@ -722,8 +890,8 @@
         <div id="badge-proyecto-activo" style="display: none; align-items: center; justify-content: space-between; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 8px 14px; margin-bottom: 15px;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 16px;">☁️</span>
-                <span style="font-size: 12.5px; font-weight: 600; color: #7dd3fc;">Proyecto vinculado al servidor:</span>
-                <strong id="lbl-nombre-proyecto-activo" style="color: #fff; font-size: 13px;">-</strong>
+                <span style="font-size: 12.5px; font-weight: 600; color: var(--primary-blue, #0284c7);">Proyecto vinculado al servidor:</span>
+                <strong id="lbl-nombre-proyecto-activo" style="color: var(--text-heading); font-size: 13px;">-</strong>
             </div>
             <div style="display: flex; gap: 8px;">
                 <button type="button" class="btn-server-save" onclick="guardarProyectoEnServidor(false)" style="padding: 4px 10px; font-size: 11px;">Actualizar (Sobrescribir)</button>
@@ -2629,14 +2797,14 @@
             lblExistente.textContent = `${proyectoActivoNombre} (ID: ${proyectoActivoId.substring(0, 8)}...)`;
 
             footerAcciones.innerHTML = `
-                <button type="button" class="btn-clear" onclick="cerrarModalGuardar()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                <button type="button" class="btn-clear" onclick="cerrarModalGuardar()">Cancelar</button>
                 <button type="button" class="btn-secondary" onclick="guardarProyectoEnServidor(true)" style="background: #64748b; color: #fff; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer;">Guardar como Nuevo</button>
                 <button type="button" class="btn-server-save" onclick="guardarProyectoEnServidor(false)" style="background: #0284c7; color: #fff; padding: 8px 16px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Actualizar (Sobrescribir)</button>
             `;
         } else {
             boxExistente.style.display = 'none';
             footerAcciones.innerHTML = `
-                <button type="button" class="btn-clear" onclick="cerrarModalGuardar()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                <button type="button" class="btn-clear" onclick="cerrarModalGuardar()">Cancelar</button>
                 <button type="button" class="btn-server-save" onclick="guardarProyectoEnServidor(true)" style="background: #0284c7; color: #fff; padding: 8px 18px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;">Guardar en Servidor</button>
             `;
         }
@@ -3018,12 +3186,12 @@
             <div class="modal-body-calc">
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: var(--primary-blue); margin-bottom: 6px;">Nombre del Proyecto:</label>
-                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13.5px; font-weight: 600;" placeholder="Ej: Torre Los Rosales TDT">
+                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 13.5px; font-weight: 600;" placeholder="Ej: Torre Los Rosales TDT">
                 </div>
 
                 <div id="box-proyecto-existente" style="display: none; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
                     <p style="margin: 0 0 5px; font-size: 12px; color: #38bdf8; font-weight: 600;">ℹ️ Este cálculo está vinculado a un proyecto guardado:</p>
-                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: #fff; font-size: 13px;">-</div>
+                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: var(--text-heading); font-size: 13px;">-</div>
                 </div>
             </div>
             <div class="modal-footer-calc" id="footer-acciones-guardar">
@@ -3041,7 +3209,7 @@
             </div>
             <div class="modal-body-calc">
                 <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
-                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o modo..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13px;">
+                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o modo..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 13px;">
                     <div id="contador-proyectos-servidor" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">0 proyecto(s)</div>
                 </div>
 
@@ -3065,7 +3233,7 @@
                 </div>
             </div>
             <div class="modal-footer-calc">
-                <button type="button" onclick="cerrarModalProyectos()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cerrar</button>
+                <button type="button" class="btn-clear" onclick="cerrarModalProyectos()">Cerrar</button>
             </div>
         </div>
     </div>

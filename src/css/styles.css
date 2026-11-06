@@ -1695,3 +1695,326 @@ html[data-theme="light"] .login-box {
 html[data-theme="light"] .login-subtitle {
     color: #64748b !important;
 }
+
+/* =========================================================
+   18. SISTEMA INTEGRAL DE RESPONSIVIDAD MÓVIL Y FLUIDEZ UX
+   ========================================================= */
+
+/* Reglas universales de contención fluida */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Grilla de rango para gastos y novedades (Previene desbordamiento del input Hasta) */
+.gasto-rango-grid,
+.novedad-rango-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gasto-rango-col,
+.novedad-rango-grid > div {
+    min-width: 0;
+    width: 100%;
+}
+
+.input-date-compact {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 0.55rem 0.45rem !important;
+    font-size: 0.8rem !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+/* Asegurar que ningún hijo de grilla de formulario desborde el sidebar */
+aside div[style*="grid-template-columns: 1fr 1fr"] > div,
+.form-group {
+    min-width: 0;
+}
+
+/* Grilla fluida de herramientas en el catálogo */
+.herramientas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* TABLETS Y PANTALLAS COMPACTAS (<= 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        padding: 1.5rem 1.2rem;
+    }
+    .main-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    aside, main {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+/* MÓVILES Y PANTALLAS PEQUEÑAS (<= 768px) */
+@media (max-width: 768px) {
+    /* Header táctil y compacto */
+    header {
+        padding: 0.85rem 1rem;
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    .header-title {
+        font-size: 1.1rem;
+        justify-content: center;
+        width: 100%;
+    }
+    .user-info {
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 0.82rem;
+    }
+    .user-info .btn-secondary {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    /* Pestañas de módulos con scroll táctil sin barra molesta */
+    .module-nav-container {
+        padding: 4px;
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        width: 100%;
+        border-radius: 12px;
+    }
+    .module-nav-container::-webkit-scrollbar {
+        display: none;
+    }
+    .module-tab-btn {
+        flex: 1 0 auto;
+        min-width: auto;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.82rem;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    /* Tarjetas y Contenedores */
+    .container {
+        padding: 1rem 0.75rem;
+    }
+    .card {
+        padding: 1.25rem 1rem;
+        border-radius: 14px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Dashboard Grid en móvil: 2 columnas legibles */
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1.2rem;
+    }
+    .stat-card {
+        padding: 1rem;
+        border-radius: 14px;
+    }
+    .stat-card h4 {
+        font-size: 0.75rem;
+    }
+    .stat-card p {
+        font-size: 1.35rem;
+    }
+    .stat-kpi-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Prevención del auto-zoom invasivo en Safari/Chrome iOS */
+    input:not([type="checkbox"]):not([type="radio"]):not(.input-date-compact),
+    select,
+    textarea {
+        font-size: 16px !important;
+        padding: 0.7rem 0.85rem;
+    }
+
+    /* Tablas con scroll horizontal suave */
+    .table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    th, td {
+        padding: 0.65rem 0.6rem;
+        font-size: 0.78rem;
+    }
+    .action-btns {
+        display: flex;
+        gap: 4px;
+    }
+
+    /* Gráficos en móvil */
+    .chart-alert-container {
+        gap: 1rem;
+    }
+    canvas {
+        max-height: 220px;
+    }
+
+    /* Modales adaptados a pantallas táctiles */
+    .modal-overlay {
+        padding: 8px;
+        align-items: center;
+    }
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 92vh !important;
+        margin: 0 !important;
+        padding: 1.3rem 1rem !important;
+        border-radius: 16px !important;
+        overflow-y: auto !important;
+    }
+    .modal-content .btn-group {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .modal-content .btn-group button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Barra de selección flotante adaptable */
+    .floating-selection-bar {
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+        bottom: 12px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 14px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+    .floating-selection-info {
+        justify-content: space-between;
+        width: 100%;
+        font-size: 0.85rem;
+    }
+    .floating-selection-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+    .floating-selection-actions button {
+        flex: 1;
+        padding: 0.65rem 0.5rem;
+        font-size: 0.82rem;
+        justify-content: center;
+    }
+
+    /* Visor de Herramientas iFrame en móvil */
+    .iframe-card-wrapper {
+        height: calc(100vh - 160px);
+        border-radius: 12px;
+        margin: 0 -0.25rem;
+        width: calc(100% + 0.5rem);
+    }
+}
+
+/* SMARTPHONES PEQUEÑOS (<= 480px) */
+@media (max-width: 480px) {
+    header {
+        padding: 0.75rem 0.8rem;
+    }
+    .header-title {
+        font-size: 0.98rem;
+        gap: 8px;
+    }
+    .logo-header {
+        width: 30px;
+    }
+    .container {
+        padding: 0.85rem 0.5rem;
+    }
+
+    /* Dashboard: 1 columna en pantallas ultra compactas */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+    }
+
+    /* Fila de fecha y horas simples o 2 columnas en aside pasan a 1 col si es necesario */
+    aside div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+    #filaFechaHorasSimple {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    /* Grilla de rango colapsa a 1 columna si el espacio es muy reducido */
+    .gasto-rango-grid,
+    .novedad-rango-grid {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+
+    .filters-card {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .btn-group button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem;
+    }
+
+    .herramientas-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+    }
+
+    /* Tarjetas del catálogo de herramientas */
+    .herramienta-card {
+        padding: 1rem;
+    }
+    .herramienta-card-body {
+        gap: 12px;
+    }
+    .herramienta-card-icon {
+        width: 44px;
+        height: 44px;
+    }
+}

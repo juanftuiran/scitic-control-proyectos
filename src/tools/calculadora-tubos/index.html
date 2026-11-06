@@ -228,6 +228,9 @@
             z-index: 9999;
             padding: 15px;
         }
+        .modal-overlay.active {
+            display: flex !important;
+        }
         .modal-content-calc {
             background: #0f172a;
             border: 1px solid var(--border);
@@ -256,7 +259,7 @@
         .modal-header-calc h3 {
             margin: 0;
             font-size: 16.5px;
-            color: #f8fafc;
+            color: var(--text-heading, #f8fafc);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -512,7 +515,7 @@
             font-size: 22px;
             font-weight: 800;
             margin: 0 0 6px 0;
-            color: #f8fafc;
+            color: var(--text-heading, #f8fafc);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -558,7 +561,7 @@
             background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 10px;
-            color: #fff;
+            color: var(--text-main);
             font-size: 13.5px;
         }
         .hub-search-input:focus {
@@ -591,12 +594,12 @@
         .hub-card:hover {
             border-color: rgba(56, 189, 248, 0.4);
             transform: translateX(4px);
-            background: rgba(30, 41, 59, 0.9);
+            background: var(--panel-subtle, rgba(30, 41, 59, 0.9));
         }
         .hub-card-info h4 {
             margin: 0 0 6px 0;
             font-size: 16.5px;
-            color: #f8fafc;
+            color: var(--text-heading, #f8fafc);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -789,6 +792,99 @@
             border-color: #7c3aed !important;
             color: #ffffff !important;
         }
+        html[data-theme="light"] .hub-title-group h1 {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .hub-search-input {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .hub-card {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+        }
+        html[data-theme="light"] .hub-card:hover {
+            background: #f8fafc !important;
+            border-color: #059669 !important;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+        }
+        html[data-theme="light"] .hub-card-info h4 {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .hub-card-metrics {
+            color: #0284c7 !important;
+        }
+        html[data-theme="light"] .hub-card-meta {
+            color: #64748b !important;
+        }
+        html[data-theme="light"] .badge-autor {
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] .badge-modo {
+            background: #fef3c7 !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+        }
+        html[data-theme="light"] th {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] th.sub-th {
+            background-color: #e2e8f0 !important;
+            color: #0369a1 !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] #tabla-calculo-torres tbody td:first-child {
+            background: #ffffff !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] #tabla-calculo-torres tbody tr:hover td:first-child {
+            background: #f1f5f9 !important;
+        }
+        html[data-theme="light"] .modal-content-calc {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15) !important;
+        }
+        html[data-theme="light"] .modal-header-calc {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        html[data-theme="light"] .modal-header-calc h3 {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .modal-footer-calc {
+            background: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+        html[data-theme="light"] #modal-in-nombre-proyecto,
+        html[data-theme="light"] #filtro-proyectos-servidor,
+        html[data-theme="light"] #nuevo-proyecto-nombre {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] #box-proyecto-existente {
+            background: #f0f9ff !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] #box-proyecto-existente p {
+            color: #0369a1 !important;
+        }
+        html[data-theme="light"] #lbl-nombre-existente-modal {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .card-tipo-opcion {
+            background: #ffffff !important;
+        }
+        html[data-theme="light"] .card-tipo-opcion:hover {
+            background: #f8fafc !important;
+        }
         @keyframes iosViewIn {
             0% {
                 opacity: 0;
@@ -802,6 +898,108 @@
         .ios-view-in {
             animation: iosViewIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        /* =========================================================
+           RESPONSIVIDAD MÓVIL ESPECÍFICA CALCULADORA DE TUBOS
+           ========================================================= */
+        @media (max-width: 768px) {
+            body {
+                margin: 10px 8px !important;
+                padding-bottom: 24px !important;
+            }
+            .nav-app-bar {
+                width: 100% !important;
+                border-radius: 12px !important;
+                flex-direction: column !important;
+                gap: 6px !important;
+                padding: 6px !important;
+                box-sizing: border-box !important;
+            }
+            .nav-tab-btn {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 9px 12px !important;
+                font-size: 13px !important;
+                border-radius: 8px !important;
+            }
+            .project-title {
+                font-size: 20px !important;
+            }
+            .sub-header-info {
+                font-size: 11px !important;
+                line-height: 1.4 !important;
+                margin-bottom: 12px !important;
+            }
+            .header-panel {
+                padding: 12px !important;
+                gap: 10px !important;
+            }
+            .header-panel button {
+                flex: 1 1 calc(50% - 6px) !important;
+                justify-content: center !important;
+                min-height: 38px !important;
+                font-size: 12px !important;
+            }
+            .header-panel .btn-calc {
+                flex: 1 1 100% !important;
+                padding: 11px 16px !important;
+                font-size: 13.5px !important;
+            }
+            #panel-torre-estandar,
+            #panel-torre-atipica {
+                width: 100% !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+            #panel-torre-estandar .input-group,
+            #panel-torre-atipica .input-group {
+                width: 100% !important;
+            }
+            #panel-torre-estandar .input-group input,
+            #panel-torre-atipica .input-group input {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            #panel-torre-atipica #in-pisos-atipicos {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            #panel-torre-atipica #in-piso-seti-atipico,
+            #panel-torre-atipica #in-aptos-atipico {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+            .summary-cards .card {
+                padding: 10px !important;
+            }
+            .summary-cards .card-title {
+                font-size: 11px !important;
+            }
+            .summary-cards .card-value {
+                font-size: 18px !important;
+            }
+            #badge-proyecto-activo {
+                flex-direction: column !important;
+                gap: 6px !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .summary-cards {
+                grid-template-columns: 1fr !important;
+            }
+            .header-panel button {
+                flex: 1 1 100% !important;
+            }
+            .project-title {
+                font-size: 17px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -814,7 +1012,7 @@
                 <p>Gestión y dimensionamiento de canalizaciones para torres y parcelaciones.</p>
             </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
+                <button type="button" class="btn-hub-new" onclick="abrirModalNuevoProyecto()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
                 <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('hub-input-import-json').click()">
@@ -865,8 +1063,8 @@
 
     <!-- BADGE DE PROYECTO VINCULADO AL SERVIDOR -->
     <div id="badge-proyecto-activo" style="display: none; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 12px;">
-        <span style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.4); color: #38bdf8; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-            ☁️ Proyecto en Servidor: <strong id="lbl-proyecto-activo" style="color: #f8fafc;">-</strong>
+        <span style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.4); color: var(--primary-blue, #38bdf8); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            ☁️ Proyecto en Servidor: <strong id="lbl-proyecto-activo" style="color: var(--text-heading);">-</strong>
         </span>
         <button type="button" onclick="desvincularProyectoActivo()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer;">
             ✕ Desvincular (Guardar como Nuevo)
@@ -1116,8 +1314,11 @@
                 secTorres.classList.add('hidden');
                 secParc.classList.remove('hidden');
                 subHeader.textContent = "Normativa RITEL 2025 (CRC) — Canalización de Distribución Horizontal en Parcelaciones y Casas desde Salón SETU";
-                if (document.querySelectorAll('#tabla-body-parcelaciones tr').length === 0) {
-                    cargarEjemploParcelacion();
+                const numFilas = document.querySelectorAll('#tabla-body-parcelaciones tr').length;
+                const emptyState = document.getElementById('empty-state-parc');
+                if (emptyState) {
+                    if (numFilas === 0) emptyState.classList.remove('hidden');
+                    else emptyState.classList.add('hidden');
                 }
             }
         }
@@ -1148,8 +1349,7 @@
             }
         }
 
-        function cambiarTipoTorre() {
-            let tipo = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+        function actualizarPanelesTipoTorre(tipo) {
             let panelEstandar = document.getElementById('panel-torre-estandar');
             let panelAtipica = document.getElementById('panel-torre-atipica');
             if (tipo === 'estandar') {
@@ -1159,6 +1359,11 @@
                 if (panelEstandar) panelEstandar.classList.add('hidden');
                 if (panelAtipica) panelAtipica.classList.remove('hidden');
             }
+        }
+
+        function cambiarTipoTorre() {
+            let tipo = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+            actualizarPanelesTipoTorre(tipo);
             generarTablaTorres();
         }
 
@@ -1762,57 +1967,84 @@
         }
 
         /**
-         * Extrae el estado completo de Torres y Parcelaciones en un objeto JSON estándar
+         * Extrae el estado del proyecto en un objeto JSON estándar, guardando únicamente
+         * la vista / modo que se modificó (sin duplicar tablas no correspondientes).
          */
         function obtenerDatosProyecto() {
             let nombreProyecto = document.getElementById('in-proyecto').value.trim() || 'Proyecto_Calculo_RITEL';
             
-            // 1. Datos Torres
-            let torresData = {
-                tipoTorre: document.getElementById('sel-tipo-torre')?.value || 'estandar',
-                pisos: parseInt(document.getElementById('in-pisos').value) || 28,
-                pisoBase: parseInt(document.getElementById('in-piso-base').value) || 3,
-                aptosDefault: parseInt(document.getElementById('in-aptos').value) || 6,
-                pisosAtipicos: document.getElementById('in-pisos-atipicos')?.value || '',
-                pisoSetiAtipico: document.getElementById('in-piso-seti-atipico')?.value || '1',
-                aptosAtipico: parseInt(document.getElementById('in-aptos-atipico')?.value) || 8,
-                mostrarLineaExtra: document.getElementById('chk-linea-extra')?.checked || false,
-                altoBandeja: parseFloat(document.getElementById('in-alto-bandeja').value) || 80,
-                filas: []
-            };
-            
-            document.querySelectorAll('#tabla-body-torres tr').forEach(tr => {
-                torresData.filas.push({
-                    piso: tr.dataset.piso || '',
-                    tramo: tr.querySelector('.in-tramo-nombre')?.value || '',
-                    isSeti: tr.dataset.isSeti === 'true',
-                    directoSeti: tr.querySelector('.chk-directo-seti')?.checked || false,
-                    pau: parseInt(tr.querySelector('.in-pau-piso')?.value) || 0,
-                    material: tr.querySelector('.sel-mat')?.value || 'SCH40',
-                    diametro: tr.querySelector('.sel-dia')?.value || '2"',
-                    curvas: parseInt(tr.querySelector('.in-curvas')?.value) || 0
+            // 1. Datos Torres (solo si estamos en modo torres)
+            let torresData = null;
+            if (modoActivo === 'torres') {
+                const tipoTorre = document.getElementById('sel-tipo-torre')?.value || 'estandar';
+                let filas = [];
+                document.querySelectorAll('#tabla-body-torres tr').forEach(tr => {
+                    filas.push({
+                        piso: tr.dataset.piso || '',
+                        tramo: tr.querySelector('.in-tramo-nombre')?.value || '',
+                        isSeti: tr.dataset.isSeti === 'true',
+                        directoSeti: tr.querySelector('.chk-directo-seti')?.checked || false,
+                        pau: parseInt(tr.querySelector('.in-pau-piso')?.value) || 0,
+                        material: tr.querySelector('.sel-mat')?.value || 'SCH40',
+                        diametro: tr.querySelector('.sel-dia')?.value || '2"',
+                        curvas: parseInt(tr.querySelector('.in-curvas')?.value) || 0
+                    });
                 });
-            });
 
-            // 2. Datos Parcelaciones
-            let parcelacionesData = {
-                pauDefault: parseInt(document.getElementById('in-pau-default-parc')?.value) || 10,
-                tramos: []
-            };
-            
-            document.querySelectorAll('#tabla-body-parcelaciones tr').forEach(tr => {
-                parcelacionesData.tramos.push({
-                    desde: tr.querySelector('.in-desde')?.value || '',
-                    hasta: tr.querySelector('.in-hasta')?.value || '',
-                    pau: parseInt(tr.querySelector('.in-pau-parc')?.value) || 0,
-                    material: tr.querySelector('.sel-mat')?.value || 'PVC',
-                    diametro: tr.querySelector('.sel-dia')?.value || '2"',
-                    curvas: parseInt(tr.querySelector('.in-curvas')?.value) || 0
+                if (tipoTorre === 'atipica') {
+                    const aptosAtip = parseInt(document.getElementById('in-aptos-atipico')?.value) || 0;
+                    const setiAtip = String(document.getElementById('in-piso-seti-atipico')?.value || '1').trim();
+                    const pisosAtipStr = document.getElementById('in-pisos-atipicos')?.value || '';
+                    torresData = {
+                        tipoTorre: 'atipica',
+                        pisos: filas.length,
+                        pisoBase: setiAtip,
+                        aptosDefault: aptosAtip,
+                        pisosAtipicos: pisosAtipStr,
+                        pisoSetiAtipico: setiAtip,
+                        aptosAtipico: aptosAtip,
+                        mostrarLineaExtra: false,
+                        altoBandeja: parseFloat(document.getElementById('in-alto-bandeja')?.value) || 80,
+                        filas: filas
+                    };
+                } else {
+                    torresData = {
+                        tipoTorre: 'estandar',
+                        pisos: parseInt(document.getElementById('in-pisos')?.value) || filas.length,
+                        pisoBase: parseInt(document.getElementById('in-piso-base')?.value) || 1,
+                        aptosDefault: parseInt(document.getElementById('in-aptos')?.value) || 0,
+                        pisosAtipicos: '',
+                        pisoSetiAtipico: '1',
+                        aptosAtipico: 0,
+                        mostrarLineaExtra: document.getElementById('chk-linea-extra')?.checked || false,
+                        altoBandeja: parseFloat(document.getElementById('in-alto-bandeja')?.value) || 80,
+                        filas: filas
+                    };
+                }
+            }
+
+            // 2. Datos Parcelaciones (solo si estamos en modo parcelaciones)
+            let parcelacionesData = null;
+            if (modoActivo === 'parcelaciones') {
+                let tramos = [];
+                document.querySelectorAll('#tabla-body-parcelaciones tr').forEach(tr => {
+                    tramos.push({
+                        desde: tr.querySelector('.in-desde')?.value || '',
+                        hasta: tr.querySelector('.in-hasta')?.value || '',
+                        pau: parseInt(tr.querySelector('.in-pau-parc')?.value) || 0,
+                        material: tr.querySelector('.sel-mat')?.value || 'PVC',
+                        diametro: tr.querySelector('.sel-dia')?.value || '2"',
+                        curvas: parseInt(tr.querySelector('.in-curvas')?.value) || 0
+                    });
                 });
-            });
+                parcelacionesData = {
+                    pauDefault: parseInt(document.getElementById('in-pau-default-parc')?.value) || 10,
+                    tramos: tramos
+                };
+            }
 
             return {
-                version: "2.1",
+                version: "2.2",
                 formato: "SCITIC_RITEL_CALC_BACKUP",
                 norma: "RITEL 2025",
                 fechaExportacion: new Date().toISOString(),
@@ -1824,7 +2056,8 @@
         }
 
         /**
-         * Restaura el estado de la aplicación a partir de un objeto JSON estructurado
+         * Restaura el estado de la aplicación a partir de un objeto JSON estructurado,
+         * asegurando limpiar la tabla opuesta para no tener versiones duplicadas.
          */
         function restaurarDatosDesdeObjeto(data) {
             if (!data || (!data.torres && !data.parcelaciones && !data.tramos && !data.filas)) {
@@ -1835,22 +2068,60 @@
                 document.getElementById('in-proyecto').value = data.proyecto;
             }
 
-            // Restaurar Torres
-            if (data.torres) {
-                if (data.torres.tipoTorre) {
-                    let selTipo = document.getElementById('sel-tipo-torre');
-                    if (selTipo) {
-                        selTipo.value = data.torres.tipoTorre;
-                        cambiarTipoTorre();
-                    }
+            const modo = data.modoActivo || (data.parcelaciones && !data.torres ? 'parcelaciones' : 'torres');
+
+            if (modo === 'parcelaciones' && data.parcelaciones) {
+                // Limpiar torres para que no queden tablas dobles
+                const tbodyTubos = document.getElementById('tabla-body-torres');
+                const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+                if (tbodyTubos) tbodyTubos.innerHTML = '';
+                if (tbodyBandeja) tbodyBandeja.innerHTML = '';
+
+                cambiarModoApp('parcelaciones');
+
+                if (data.parcelaciones.pauDefault !== undefined) {
+                    document.getElementById('in-pau-default-parc').value = data.parcelaciones.pauDefault;
                 }
-                if (data.torres.pisos !== undefined) document.getElementById('in-pisos').value = data.torres.pisos;
-                if (data.torres.pisoBase !== undefined) document.getElementById('in-piso-base').value = data.torres.pisoBase;
-                if (data.torres.aptosDefault !== undefined) document.getElementById('in-aptos').value = data.torres.aptosDefault;
-                if (data.torres.pisosAtipicos !== undefined && document.getElementById('in-pisos-atipicos')) document.getElementById('in-pisos-atipicos').value = data.torres.pisosAtipicos;
-                if (data.torres.pisoSetiAtipico !== undefined && document.getElementById('in-piso-seti-atipico')) document.getElementById('in-piso-seti-atipico').value = data.torres.pisoSetiAtipico;
-                if (data.torres.aptosAtipico !== undefined && document.getElementById('in-aptos-atipico')) document.getElementById('in-aptos-atipico').value = data.torres.aptosAtipico;
-                if (data.torres.mostrarLineaExtra !== undefined) document.getElementById('chk-linea-extra').checked = !!data.torres.mostrarLineaExtra;
+
+                let tramosParc = data.parcelaciones.tramos || [];
+                const tbody = document.getElementById('tabla-body-parcelaciones');
+                tbody.innerHTML = '';
+                tramosParc.forEach(t => {
+                    agregarFilaParcelacion(t.desde, t.hasta, t.pau, t.material, t.diametro, t.curvas);
+                });
+            } else if (data.torres) {
+                // Limpiar parcelaciones para que no queden tablas dobles
+                const tbodyParc = document.getElementById('tabla-body-parcelaciones');
+                if (tbodyParc) tbodyParc.innerHTML = '';
+
+                cambiarModoApp('torres');
+
+                const tipoTorre = data.torres.tipoTorre || 
+                    ((data.torres.filas && data.torres.pisos && data.torres.filas.length !== data.torres.pisos) ? 'atipica' : 'estandar');
+
+                let selTipo = document.getElementById('sel-tipo-torre');
+                if (selTipo) {
+                    selTipo.value = tipoTorre;
+                    actualizarPanelesTipoTorre(tipoTorre);
+                }
+
+                if (tipoTorre === 'atipica') {
+                    if (data.torres.pisosAtipicos !== undefined && document.getElementById('in-pisos-atipicos')) {
+                        document.getElementById('in-pisos-atipicos').value = data.torres.pisosAtipicos;
+                    }
+                    if (data.torres.pisoSetiAtipico !== undefined && document.getElementById('in-piso-seti-atipico')) {
+                        document.getElementById('in-piso-seti-atipico').value = data.torres.pisoSetiAtipico;
+                    }
+                    if (data.torres.aptosAtipico !== undefined && document.getElementById('in-aptos-atipico')) {
+                        document.getElementById('in-aptos-atipico').value = data.torres.aptosAtipico;
+                    }
+                } else {
+                    if (data.torres.pisos !== undefined) document.getElementById('in-pisos').value = data.torres.pisos;
+                    if (data.torres.pisoBase !== undefined) document.getElementById('in-piso-base').value = data.torres.pisoBase;
+                    if (data.torres.aptosDefault !== undefined) document.getElementById('in-aptos').value = data.torres.aptosDefault;
+                    if (data.torres.mostrarLineaExtra !== undefined) document.getElementById('chk-linea-extra').checked = !!data.torres.mostrarLineaExtra;
+                }
+
                 if (data.torres.altoBandeja !== undefined) document.getElementById('in-alto-bandeja').value = data.torres.altoBandeja;
 
                 if (Array.isArray(data.torres.filas) && data.torres.filas.length > 0) {
@@ -1878,24 +2149,6 @@
                 } else {
                     generarTablaTorres();
                 }
-            }
-
-            // Restaurar Parcelaciones
-            if (data.parcelaciones?.pauDefault !== undefined) {
-                document.getElementById('in-pau-default-parc').value = data.parcelaciones.pauDefault;
-            }
-
-            let tramosParc = data.parcelaciones?.tramos || data.tramos;
-            if (Array.isArray(tramosParc) && tramosParc.length > 0) {
-                const tbody = document.getElementById('tabla-body-parcelaciones');
-                tbody.innerHTML = '';
-                tramosParc.forEach(t => {
-                    agregarFilaParcelacion(t.desde, t.hasta, t.pau, t.material, t.diametro, t.curvas);
-                });
-            }
-
-            if (data.modoActivo) {
-                cambiarModoApp(data.modoActivo);
             }
         }
 
@@ -2492,7 +2745,12 @@
 
         function generarResumenTubos(datos) {
             if (!datos) return { tipo: 'Torres', detalle: 'Sin datos', icono: '🏢' };
-            if (datos.modoActivo === 'parcelaciones' || (datos.parcelaciones && datos.parcelaciones.tramos && datos.parcelaciones.tramos.length > 0)) {
+
+            // Caso 1: Modo Parcelaciones (o contiene tramos de parcelaciones sin torres)
+            const esParcelacion = datos.modoActivo === 'parcelaciones' || (datos.parcelaciones && !datos.torres) ||
+                (datos.parcelaciones?.tramos?.length > 0 && (!datos.torres?.filas || datos.torres.filas.length === 0));
+
+            if (esParcelacion) {
                 const cantTramos = (datos.parcelaciones?.tramos || []).length;
                 const pauDef = datos.parcelaciones?.pauDefault || 10;
                 return {
@@ -2500,11 +2758,27 @@
                     detalle: `${cantTramos} Tramos • PAU Base: ${pauDef}`,
                     icono: '🏘️'
                 };
+            }
+
+            // Caso 2: Torres (Estándar o Atípica)
+            const torres = datos.torres || {};
+            const filas = torres.filas || [];
+            const cantFilas = filas.length;
+            const esAtipica = torres.tipoTorre === 'atipica' || (cantFilas > 0 && torres.pisos && cantFilas !== torres.pisos);
+
+            if (esAtipica) {
+                const niveles = cantFilas || (torres.pisosAtipicos ? torres.pisosAtipicos.split(',').length : (torres.pisos || 0));
+                const aptos = torres.aptosAtipico || torres.aptosDefault || 0;
+                const seti = torres.pisoSetiAtipico || torres.pisoBase || '1';
+                return {
+                    tipo: 'Torre Atípica',
+                    detalle: `${niveles} Pisos • ${aptos} Aptos/Piso • ${cantFilas} Tramos • SETI Piso ${seti}`,
+                    icono: '🏗️'
+                };
             } else {
-                const pisos = datos.torres?.pisos || 0;
-                const aptos = datos.torres?.aptosDefault || 0;
-                const cantFilas = (datos.torres?.filas || []).length;
-                const seti = datos.torres?.pisoBase || 1;
+                const pisos = torres.pisos || cantFilas || 0;
+                const aptos = torres.aptosDefault || 0;
+                const seti = torres.pisoBase || 1;
                 return {
                     tipo: 'Torres',
                     detalle: `${pisos} Pisos • ${aptos} Aptos/Piso • ${cantFilas} Tramos • SETI Piso ${seti}`,
@@ -2544,9 +2818,9 @@
             if (!proyectos || proyectos.length === 0) {
                 listaEl.innerHTML = `
                     <div style="background: var(--card-bg); border: 1px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center;">
-                        <p style="font-size: 16px; color: #f8fafc; font-weight: 600; margin-bottom: 8px;">No hay proyectos guardados todavía</p>
+                        <p style="font-size: 16px; color: var(--text-heading); font-weight: 600; margin-bottom: 8px;">No hay proyectos guardados todavía</p>
                         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Comienza creando un nuevo proyecto con una plantilla en blanco.</p>
-                        <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
+                        <button type="button" class="btn-hub-new" onclick="abrirModalNuevoProyecto()">
                             ➕ Crear Nueva Plantilla en Blanco
                         </button>
                     </div>
@@ -2630,13 +2904,87 @@
             mostrarHubProyectos();
         }
 
-        function crearNuevaPlantilla() {
+        function abrirModalNuevoProyecto() {
+            const inputNombre = document.getElementById('nuevo-proyecto-nombre');
+            if (inputNombre) inputNombre.value = 'Nuevo Proyecto RITEL';
+            const radios = document.getElementsByName('radio-tipo-edificio');
+            if (radios.length > 0) radios[0].checked = true;
+            actualizarEstilosRadioNuevoProyecto();
+            const modal = document.getElementById('modal-nuevo-proyecto');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+            }
+        }
+
+        function cerrarModalNuevoProyecto() {
+            const modal = document.getElementById('modal-nuevo-proyecto');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function actualizarEstilosRadioNuevoProyecto() {
+            const cards = document.querySelectorAll('#tipo-edificio-selector-cards .card-tipo-opcion');
+            cards.forEach(card => {
+                const radio = card.querySelector('input[type="radio"]');
+                if (radio && radio.checked) {
+                    card.style.borderColor = 'var(--primary)';
+                    card.style.borderWidth = '2px';
+                } else {
+                    card.style.borderColor = 'var(--border)';
+                    card.style.borderWidth = '1px';
+                }
+            });
+        }
+
+        function confirmarCrearNuevoProyecto() {
+            const nombre = document.getElementById('nuevo-proyecto-nombre')?.value.trim() || 'Nuevo Proyecto RITEL';
+            const opcion = document.querySelector('input[name="radio-tipo-edificio"]:checked')?.value || 'estandar';
+            
             proyectoActivoId = null;
             proyectoActivoNombre = '';
-            document.getElementById('in-proyecto').value = 'Nuevo Proyecto RITEL';
+            document.getElementById('in-proyecto').value = nombre;
             actualizarIndicadorProyecto();
+
+            if (opcion === 'estandar') {
+                // Modo Torres Estándar únicamente (limpiar parcelaciones)
+                const tbodyParc = document.getElementById('tabla-body-parcelaciones');
+                if (tbodyParc) tbodyParc.innerHTML = '';
+                cambiarModoApp('torres');
+                const selTipo = document.getElementById('sel-tipo-torre');
+                if (selTipo) selTipo.value = 'estandar';
+                actualizarPanelesTipoTorre('estandar');
+                generarTablaTorres();
+            } else if (opcion === 'atipica') {
+                // Modo Torres Atípica únicamente (limpiar parcelaciones)
+                const tbodyParc = document.getElementById('tabla-body-parcelaciones');
+                if (tbodyParc) tbodyParc.innerHTML = '';
+                cambiarModoApp('torres');
+                const selTipo = document.getElementById('sel-tipo-torre');
+                if (selTipo) selTipo.value = 'atipica';
+                actualizarPanelesTipoTorre('atipica');
+                generarTablaTorres();
+            } else if (opcion === 'parcelacion') {
+                // Modo Parcelación únicamente (limpiar torres)
+                const tbodyTubos = document.getElementById('tabla-body-torres');
+                const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+                if (tbodyTubos) tbodyTubos.innerHTML = '';
+                if (tbodyBandeja) tbodyBandeja.innerHTML = '';
+                cambiarModoApp('parcelaciones');
+                const tbody = document.getElementById('tabla-body-parcelaciones');
+                tbody.innerHTML = '';
+                agregarFilaParcelacion("SETU", "CD-01", 10, "PVC", '2"', 0);
+            }
+
+            cerrarModalNuevoProyecto();
             mostrarEditor();
-            notificarToast("Nueva plantilla en blanco cargada.", "info");
+            notificarToast(`Proyecto "${nombre}" iniciado con éxito.`, "success");
+        }
+
+        function crearNuevaPlantilla() {
+            abrirModalNuevoProyecto();
         }
 
         async function abrirProyectoHub(id) {
@@ -2653,20 +3001,81 @@
         // INICIALIZACIÓN AL CARGAR LA PÁGINA
         // ==========================================
         window.onload = function() {
-            // Inicializar estructuras de fondo
-            if(document.querySelectorAll('#tabla-body-torres tr').length === 0) {
-                generarTablaTorres();
-            } else {
-                recalcularTorres(); 
-            }
-
-            // Inicializar modo según memoria
-            cambiarModoApp(modoActivo);
+            // Inicializar modo según memoria sin pre-crear tablas no deseadas
+            const modoGuardado = localStorage.getItem('ritelCalculadoraModo') || 'torres';
+            modoActivo = modoGuardado;
 
             // Al abrir, lo primero que se muestra es el Hub de proyectos guardados
             mostrarHubProyectos();
         };
     </script>
+
+    <!-- MODAL NUEVO PROYECTO: SELECCIÓN DE TIPO DE EDIFICACIÓN / INFRAESTRUCTURA -->
+    <div id="modal-nuevo-proyecto" class="modal-overlay" onclick="if (event.target === this) cerrarModalNuevoProyecto()">
+        <div class="modal-content-calc" style="max-width: 580px;">
+            <div class="modal-header-calc">
+                <h3>✨ Crear Nuevo Proyecto RITEL</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalNuevoProyecto()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 16px 0;">
+                    Selecciona el tipo de edificación o infraestructura. Se creará <strong>únicamente la tabla y dimensionamiento de la opción que elijas</strong>:
+                </p>
+
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--primary-blue); margin-bottom: 6px;">Nombre del Proyecto:</label>
+                    <input type="text" id="nuevo-proyecto-nombre" class="hub-search-input" style="width: 100%;" placeholder="Ej: Torres del Parque T1" value="Nuevo Proyecto RITEL">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;" id="tipo-edificio-selector-cards">
+                    <!-- Opción 1: Edificio Estándar -->
+                    <label class="card-tipo-opcion" onclick="setTimeout(actualizarEstilosRadioNuevoProyecto, 10)" style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 2px solid var(--primary); border-radius: 10px; cursor: pointer; background: var(--card-bg); transition: all 0.2s ease;">
+                        <input type="radio" name="radio-tipo-edificio" value="estandar" checked onchange="actualizarEstilosRadioNuevoProyecto()" style="margin-top: 4px; accent-color: var(--primary);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 14.5px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
+                                🏢 Edificio / Torre Estándar (1 a N)
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4;">
+                                Distribución vertical continua desde el piso base hacia la cubierta. Incluye canalizaciones para cuartos SETI y SETS.
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Opción 2: Torre Atípica -->
+                    <label class="card-tipo-opcion" onclick="setTimeout(actualizarEstilosRadioNuevoProyecto, 10)" style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; background: var(--card-bg); transition: all 0.2s ease;">
+                        <input type="radio" name="radio-tipo-edificio" value="atipica" onchange="actualizarEstilosRadioNuevoProyecto()" style="margin-top: 4px; accent-color: var(--primary);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 14.5px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
+                                🏗️ Torre Atípica (Pisos Especiales)
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4;">
+                                Distribución vertical para torres con niveles atípicos (sótanos, mezanines, doble altura, secuencias de pisos discontinuas).
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Opción 3: Parcelación / Casas -->
+                    <label class="card-tipo-opcion" onclick="setTimeout(actualizarEstilosRadioNuevoProyecto, 10)" style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; background: var(--card-bg); transition: all 0.2s ease;">
+                        <input type="radio" name="radio-tipo-edificio" value="parcelacion" onchange="actualizarEstilosRadioNuevoProyecto()" style="margin-top: 4px; accent-color: var(--primary);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 14.5px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
+                                🏡 Parcelación / Casas (SETU)
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4;">
+                                Distribución horizontal de canalización subterránea entre cámaras de distribución hacia unidades inmobiliarias desde el Salón SETU.
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-calc" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-clear" onclick="cerrarModalNuevoProyecto()">Cancelar</button>
+                <button type="button" class="btn-hub-new" onclick="confirmarCrearNuevoProyecto()">
+                    ✨ Iniciar Proyecto con esta Tabla
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL 1: GUARDAR O ACTUALIZAR PROYECTO EN SERVIDOR -->
     <div id="modal-guardar-servidor" class="modal-overlay">
@@ -2678,12 +3087,12 @@
             <div class="modal-body-calc">
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: var(--primary-blue); margin-bottom: 6px;">Nombre del Proyecto:</label>
-                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13.5px; font-weight: 600;" placeholder="Ej: Edificio Torre Real">
+                    <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 13.5px; font-weight: 600;" placeholder="Ej: Edificio Torre Real">
                 </div>
 
                 <div id="box-proyecto-existente" style="display: none; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
                     <p style="margin: 0 0 5px; font-size: 12px; color: #38bdf8; font-weight: 600;">ℹ️ Este cálculo está vinculado a un proyecto guardado:</p>
-                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: #fff; font-size: 13px;">-</div>
+                    <div id="lbl-nombre-existente-modal" style="font-weight: 700; color: var(--text-heading); font-size: 13px;">-</div>
                 </div>
             </div>
             <div class="modal-footer-calc" id="footer-acciones-guardar">
@@ -2701,7 +3110,7 @@
             </div>
             <div class="modal-body-calc">
                 <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
-                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o modo..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 13px;">
+                    <input type="text" id="filtro-proyectos-servidor" onkeyup="filtrarProyectosGuardados()" placeholder="🔍 Buscar por nombre, autor o modo..." style="flex: 1; min-width: 220px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 13px;">
                     <div id="contador-proyectos-servidor" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">0 proyecto(s)</div>
                 </div>
 

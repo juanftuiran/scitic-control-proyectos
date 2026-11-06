@@ -1912,6 +1912,14 @@ function switchModule(moduleName) {
         if (gFecha && !gFecha.value) {
             gFecha.value = getFechaColombiaString();
         }
+        const gInicio = document.getElementById('gastoFechaInicio');
+        if (gInicio && !gInicio.value) {
+            gInicio.value = getFechaColombiaString();
+        }
+        const gFin = document.getElementById('gastoFechaFin');
+        if (gFin && !gFin.value) {
+            gFin.value = getFechaColombiaString();
+        }
         filtrarGastos();
     } else if (moduleName === 'horas') {
         setTimeout(() => {
@@ -2045,10 +2053,131 @@ function cerrarHerramienta() {
     }, 180);
 }
 
+function toggleGastoRango(activo) {
+    const contenedorRango = document.getElementById('contenedorGastoRango');
+    const contenedorFechaUnica = document.getElementById('contenedorGastoFechaUnica');
+    const lblSub = document.getElementById('lblGastoTotalSub');
+    const lblAcumulado = document.getElementById('lblGastoTotalAcumulado');
+
+    if (activo) {
+        if (contenedorRango) contenedorRango.style.display = 'block';
+        if (contenedorFechaUnica) contenedorFechaUnica.style.display = 'none';
+
+        const fechaActual = document.getElementById('gastoFecha')?.value || getFechaColombiaString();
+        const inInicio = document.getElementById('gastoFechaInicio');
+        const inFin = document.getElementById('gastoFechaFin');
+        if (inInicio && !inInicio.value) inInicio.value = fechaActual;
+        if (inFin && !inFin.value) inFin.value = fechaActual;
+
+        if (lblSub) lblSub.textContent = '(por día)';
+        if (lblAcumulado) lblAcumulado.style.display = 'inline-block';
+        calcularDiasGastoRango();
+    } else {
+        if (contenedorRango) contenedorRango.style.display = 'none';
+        if (contenedorFechaUnica) contenedorFechaUnica.style.display = 'block';
+        if (lblSub) lblSub.textContent = '';
+        if (lblAcumulado) lblAcumulado.style.display = 'none';
+        actualizarTextoBotonGuardarGasto();
+    }
+}
+
+function obtenerFechasGastoRango() {
+    const fInicio = document.getElementById('gastoFechaInicio')?.value;
+    const fFin = document.getElementById('gastoFechaFin')?.value;
+    const omitirDomingos = document.getElementById('chkGastoOmitirDomingos')?.checked ?? true;
+
+    if (!fInicio || !fFin) return [];
+    if (fInicio > fFin) return [];
+
+    const dInicio = new Date(fInicio + 'T00:00:00');
+    const dFin = new Date(fFin + 'T00:00:00');
+    let curr = new Date(dInicio);
+    const fechas = [];
+
+    while (curr <= dFin) {
+        if (!omitirDomingos || curr.getDay() !== 0) {
+            const y = curr.getFullYear();
+            const m = String(curr.getMonth() + 1).padStart(2, '0');
+            const d = String(curr.getDate()).padStart(2, '0');
+            fechas.push(`${y}-${m}-${d}`);
+        }
+        curr.setDate(curr.getDate() + 1);
+    }
+    return fechas;
+}
+
+function calcularDiasGastoRango() {
+    const chkRango = document.getElementById('chkGastoRango');
+    if (!chkRango || !chkRango.checked) return;
+
+    const fInicio = document.getElementById('gastoFechaInicio')?.value;
+    const fFin = document.getElementById('gastoFechaFin')?.value;
+    const lblDias = document.getElementById('lblGastoDiasInfo');
+    const lblAcumulado = document.getElementById('lblGastoTotalAcumulado');
+    const totalDiario = parseFloat(document.getElementById('gastoTotal')?.value) || 0;
+
+    if (!fInicio || !fFin) {
+        if (lblDias) lblDias.textContent = 'Seleccione fechas';
+        if (lblAcumulado) lblAcumulado.textContent = 'Acumulado: $0';
+        actualizarTextoBotonGuardarGasto();
+        return;
+    }
+
+    if (fInicio > fFin) {
+        if (lblDias) {
+            lblDias.textContent = '⚠️ Fecha inicial > final';
+            lblDias.style.color = 'var(--danger)';
+        }
+        if (lblAcumulado) lblAcumulado.textContent = 'Acumulado: $0';
+        actualizarTextoBotonGuardarGasto();
+        return;
+    }
+
+    const fechas = obtenerFechasGastoRango();
+    const count = fechas.length;
+
+    if (lblDias) {
+        lblDias.style.color = 'var(--primary)';
+        lblDias.textContent = count === 1 ? '1 día seleccionado' : `${count} días seleccionados`;
+    }
+
+    const totalAcumulado = count * totalDiario;
+    if (lblAcumulado) {
+        lblAcumulado.textContent = `Acumulado (${count}d): $${totalAcumulado.toLocaleString('es-CO')}`;
+    }
+
+    actualizarTextoBotonGuardarGasto(count);
+}
+
+function actualizarTextoBotonGuardarGasto(countDias = null) {
+    const btn = document.getElementById('btnGuardarGasto');
+    if (!btn) return;
+
+    if (editIdGasto !== null) {
+        btn.innerHTML = `<span data-icon="save" data-size="16"></span> <span>Actualizar Registro</span>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    const chkRango = document.getElementById('chkGastoRango');
+    if (chkRango && chkRango.checked) {
+        const count = countDias !== null ? countDias : obtenerFechasGastoRango().length;
+        if (count > 1) {
+            btn.innerHTML = `<span data-icon="save" data-size="16"></span> <span>Guardar Rango (${count} Días)</span>`;
+        } else {
+            btn.innerHTML = `<span data-icon="save" data-size="16"></span> <span>Guardar Gasto</span>`;
+        }
+    } else {
+        btn.innerHTML = `<span data-icon="save" data-size="16"></span> <span>Guardar Gasto</span>`;
+    }
+    if (window.lucide) lucide.createIcons();
+}
+
 function calcularTotalGasto() {
     const cantidad = parseFloat(document.getElementById('gastoCantidad').value) || 0;
     const valor = parseFloat(document.getElementById('gastoValor').value) || 0;
     document.getElementById('gastoTotal').value = cantidad * valor;
+    calcularDiasGastoRango();
 }
 
 function limpiarFormularioGasto() {
@@ -2056,7 +2185,26 @@ function limpiarFormularioGasto() {
         document.getElementById('gastoTrabajador').value = '';
     }
     document.getElementById('gastoProyecto').value = '';
-    document.getElementById('gastoFecha').value = getFechaColombiaString();
+    const fechaHoy = getFechaColombiaString();
+    document.getElementById('gastoFecha').value = fechaHoy;
+
+    // Reiniciar selector de rango
+    const chkRango = document.getElementById('chkGastoRango');
+    if (chkRango) {
+        chkRango.checked = false;
+        chkRango.disabled = false;
+    }
+    const lblWrap = document.getElementById('lblWrapGastoRango');
+    if (lblWrap) lblWrap.style.display = 'inline-flex';
+    toggleGastoRango(false);
+
+    const inInicio = document.getElementById('gastoFechaInicio');
+    const inFin = document.getElementById('gastoFechaFin');
+    if (inInicio) inInicio.value = fechaHoy;
+    if (inFin) inFin.value = fechaHoy;
+    const chkDom = document.getElementById('chkGastoOmitirDomingos');
+    if (chkDom) chkDom.checked = true;
+
     document.getElementById('gastoItem').selectedIndex = 0;
     document.getElementById('gastoCantidad').value = 1;
     document.getElementById('gastoValor').value = 0;
@@ -2065,7 +2213,7 @@ function limpiarFormularioGasto() {
 
     editIdGasto = null;
     document.getElementById('formTitleGasto').innerText = "Registrar Gasto";
-    document.getElementById('btnGuardarGasto').innerText = "💾 Guardar Gasto";
+    actualizarTextoBotonGuardarGasto();
     document.getElementById('btnLimpiarGasto').style.display = "block";
     document.getElementById('btnCancelarGasto').style.display = "none";
 }
@@ -2074,7 +2222,6 @@ async function guardarGasto() {
     let trabajador = document.getElementById('gastoTrabajador').value.trim();
     if (usuarioActual && usuarioActual.role === 'colaborador') trabajador = usuarioActual.name;
     const proyecto = document.getElementById('gastoProyecto').value.trim();
-    const fecha = document.getElementById('gastoFecha').value;
     const item = document.getElementById('gastoItem').value;
     const cantidad = parseFloat(document.getElementById('gastoCantidad').value) || 0;
     const valor_unitario = parseFloat(document.getElementById('gastoValor').value) || 0;
@@ -2085,6 +2232,88 @@ async function guardarGasto() {
     if (!item) return Toast.warning("Debe seleccionar un ítem.");
     if (total <= 0) return Toast.warning("El total debe ser mayor a 0.");
 
+    const chkRango = document.getElementById('chkGastoRango');
+    const esRango = chkRango && chkRango.checked && editIdGasto === null;
+
+    // ========================================================
+    // CASO 1: REGISTRO POR RANGO DE DÍAS (MÚLTIPLES REGISTROS)
+    // ========================================================
+    if (esRango) {
+        const fechaInicio = document.getElementById('gastoFechaInicio')?.value;
+        const fechaFin = document.getElementById('gastoFechaFin')?.value;
+
+        if (!fechaInicio || !fechaFin) {
+            return Toast.warning("Debe ingresar la fecha inicial y final del rango.");
+        }
+        if (fechaInicio > fechaFin) {
+            return Toast.warning("La fecha inicial no puede ser posterior a la fecha final.");
+        }
+
+        const listaFechas = obtenerFechasGastoRango();
+        if (listaFechas.length === 0) {
+            return Toast.warning("No hay días hábiles dentro del rango seleccionado (revisa si omitiste domingos).");
+        }
+
+        showLoader(`Registrando ${listaFechas.length} gastos para ${trabajador}...`);
+
+        // Compensación inteligente de Saldo a Favor si existe para el trabajador
+        const workerProfile = (window.usuariosGlobal || []).find(u => u.nombre && u.nombre.trim() === trabajador);
+        let sf = (workerProfile && workerProfile.saldo_favor > 0) ? Number(workerProfile.saldo_favor) : 0;
+        let totalSfAplicado = 0;
+
+        const nuevosGastos = listaFechas.map(f => {
+            const g = {
+                trabajador,
+                proyecto,
+                fecha: f,
+                item,
+                cantidad,
+                valor_unitario,
+                total,
+                observaciones,
+                estado: 'PENDIENTE',
+                monto_pagado: 0
+            };
+
+            if (sf > 0) {
+                if (sf >= total) {
+                    g.monto_pagado = total;
+                    g.estado = 'PAGO';
+                    g.fecha_pago = f;
+                    sf -= total;
+                    totalSfAplicado += total;
+                } else {
+                    g.monto_pagado = sf;
+                    totalSfAplicado += sf;
+                    sf = 0;
+                }
+            }
+            return g;
+        });
+
+        if (workerProfile && totalSfAplicado > 0) {
+            workerProfile.saldo_favor = sf;
+            await window.API.actualizarSaldoFavor(trabajador, sf);
+            Toast.info(`Se aplicó $${totalSfAplicado.toLocaleString('es-CO')} de Saldo a Favor disponible.`);
+        }
+
+        const success = await window.API.crearGasto(nuevosGastos);
+        if (success) {
+            Toast.success(`Se registraron exitosamente ${nuevosGastos.length} días de gasto para ${trabajador}.`);
+            const gastosDb = await window.API.getGastos();
+            if (gastosDb) gastosDatos = gastosDb;
+            filtrarGastos();
+            limpiarFormularioGasto();
+            registrarAuditoria("GASTO_RANGO", `Registró ${nuevosGastos.length} días de gasto de ${item} para ${trabajador} entre ${fechaInicio} y ${fechaFin} ($${total} c/u, total $${total * nuevosGastos.length}).`);
+        }
+        hideLoader();
+        return;
+    }
+
+    // ========================================================
+    // CASO 2: REGISTRO DE UN SOLO DÍA O EDICIÓN EXISTENTE
+    // ========================================================
+    const fecha = document.getElementById('gastoFecha').value || getFechaColombiaString();
     showLoader("Guardando gasto...");
 
     const gasto = {
@@ -2151,6 +2380,16 @@ function editarGasto(id) {
         return Toast.error("Permiso denegado.");
     }
 
+    // Ocultar y deshabilitar rango durante edición de registro específico
+    const chkRango = document.getElementById('chkGastoRango');
+    if (chkRango) {
+        chkRango.checked = false;
+        chkRango.disabled = true;
+    }
+    const lblWrap = document.getElementById('lblWrapGastoRango');
+    if (lblWrap) lblWrap.style.display = 'none';
+    toggleGastoRango(false);
+
     document.getElementById('gastoTrabajador').value = (g.trabajador || '').trim();
     document.getElementById('gastoProyecto').value = (g.proyecto || '').trim();
     document.getElementById('gastoFecha').value = g.fecha || getFechaColombiaString();
@@ -2162,7 +2401,7 @@ function editarGasto(id) {
 
     editIdGasto = id;
     document.getElementById('formTitleGasto').innerText = "Editando Gasto";
-    document.getElementById('btnGuardarGasto').innerText = "Actualizar Registro";
+    actualizarTextoBotonGuardarGasto();
     document.getElementById('btnLimpiarGasto').style.display = "none";
     document.getElementById('btnCancelarGasto').style.display = "block";
 

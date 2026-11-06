@@ -133,7 +133,7 @@
 
             <section class="card glass-panel" id="topWorkersContainer" style="display: none; margin-bottom: 2rem;">
                 <h3>Top Contribuidores del Mes</h3>
-                <div id="topWorkersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div id="topWorkersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 1rem;">
                     <!-- Dynamically populated -->
                 </div>
             </section>
@@ -202,10 +202,10 @@
                             </div>
 
                             <!-- Selector de rango de fechas si aplica -->
-                            <div id="campoRangoFechas" style="display: none; margin-top: 10px;">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div><label style="font-size:0.75rem;">Desde</label><input type="date" id="fechaNovedadDesde"></div>
-                                    <div><label style="font-size:0.75rem;">Hasta</label><input type="date" id="fechaNovedadHasta"></div>
+                            <div id="campoRangoFechas" style="display: none; margin-top: 10px; box-sizing: border-box; width: 100%;">
+                                <div class="gasto-rango-grid">
+                                    <div class="gasto-rango-col"><label style="font-size:0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Desde</label><input type="date" id="fechaNovedadDesde" class="input-date-compact"></div>
+                                    <div class="gasto-rango-col"><label style="font-size:0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Hasta</label><input type="date" id="fechaNovedadHasta" class="input-date-compact"></div>
                                 </div>
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                     <input type="checkbox" id="chkOmitirDomingos" checked style="width: 14px; height: 14px;"> Omitir domingos en el rango
@@ -429,9 +429,40 @@
                             <input id="gastoProyecto" list="proyectosList" placeholder="Ej. CASA LAGO">
                         </div>
 
-                        <div class="form-group">
-                            <label>Fecha</label>
-                            <input type="date" id="gastoFecha">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label style="margin: 0;">Fecha</label>
+                                <label id="lblWrapGastoRango" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; color: var(--primary);" title="Permite registrar el mismo gasto diario para varios días continuos">
+                                    <input type="checkbox" id="chkGastoRango" onchange="toggleGastoRango(this.checked)" style="accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer;">
+                                    <span>Rango de días</span>
+                                </label>
+                            </div>
+
+                            <!-- Fecha única -->
+                            <div id="contenedorGastoFechaUnica">
+                                <input type="date" id="gastoFecha">
+                            </div>
+
+                            <!-- Contenedor Rango de Fechas -->
+                            <div id="contenedorGastoRango" style="display: none; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 10px; margin-top: 4px; box-sizing: border-box; width: 100%;">
+                                <div class="gasto-rango-grid">
+                                    <div class="gasto-rango-col">
+                                        <label style="font-size: 0.74rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Desde</label>
+                                        <input type="date" id="gastoFechaInicio" onchange="calcularDiasGastoRango()" class="input-date-compact">
+                                    </div>
+                                    <div class="gasto-rango-col">
+                                        <label style="font-size: 0.74rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Hasta</label>
+                                        <input type="date" id="gastoFechaFin" onchange="calcularDiasGastoRango()" class="input-date-compact">
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 6px;">
+                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+                                        <input type="checkbox" id="chkGastoOmitirDomingos" checked onchange="calcularDiasGastoRango()" style="accent-color: var(--primary); width: 14px; height: 14px;">
+                                        <span>Omitir domingos</span>
+                                    </label>
+                                    <span id="lblGastoDiasInfo" style="font-size: 0.76rem; font-weight: 700; color: var(--primary); background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 6px;">1 día seleccionado</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -459,7 +490,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Total</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <label style="margin:0;">Total <span id="lblGastoTotalSub" style="font-size:0.75rem; color: var(--text-muted);">(por día)</span></label>
+                                <span id="lblGastoTotalAcumulado" style="display:none; font-size: 0.78rem; font-weight: 800; color: var(--primary);">Acumulado: $0</span>
+                            </div>
                             <input type="number" id="gastoTotal" value="0" readonly class="num-mono" style="background: var(--panel-subtle); font-weight: bold; color: var(--text-main);">
                         </div>
 
@@ -595,7 +629,7 @@
                 </div>
 
                 <!-- Grid de herramientas -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+                <div class="herramientas-grid">
 
                     <!-- Card: Calculadora de Tubos RITEL -->
                     <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/calculadora-tubos/index.html', 'Calculadora de Tubos RITEL')">
@@ -916,9 +950,9 @@
     </div>
 </div>
 
-<script src="./src/js/components/Toast.js?v=17"></script>
-<script src="./src/js/store/appState.js?v=17"></script>
-<script src="./src/js/services/api.js?v=17"></script>
-<script src="./src/js/main.js?v=17"></script>
+<script src="./src/js/components/Toast.js?v=18"></script>
+<script src="./src/js/store/appState.js?v=18"></script>
+<script src="./src/js/services/api.js?v=18"></script>
+<script src="./src/js/main.js?v=18"></script>
 </body>
 </html>
