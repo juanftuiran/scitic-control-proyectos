@@ -199,6 +199,12 @@
         .badge-warning { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
         .badge-success { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
         .badge-danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-na { background: rgba(148, 163, 184, 0.12); color: #94a3b8; border: 1px dashed rgba(148, 163, 184, 0.45); }
+        tr.row-no-aplica td:not(:has(.badge)):not(:has(select)):not(:has(button)) {
+            opacity: 0.55;
+            text-decoration: line-through;
+            text-decoration-color: rgba(148, 163, 184, 0.45);
+        }
 
         /* Flex Utils */
         .flex { display: flex; }
@@ -657,6 +663,11 @@
             background: #fef2f2 !important;
             color: #991b1b !important;
             border: 1px solid #fecaca !important;
+        }
+        html[data-theme="light"] .badge-na {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border: 1px dashed #cbd5e1 !important;
         }
         html[data-theme="light"] .table-input {
             color: #0f172a !important;
@@ -1336,11 +1347,48 @@
 
     <script>
         // --- CONSTANTS & STATE ---
-        const statusOpts = ['Pendiente', 'En Proceso', 'Instalado', 'Con Novedad'];
+        const statusOpts = ['Pendiente', 'En Proceso', 'Instalado', 'Con Novedad', 'No Aplica'];
         const statusColors = {
             'Pendiente': 'badge-gray', 'En Proceso': 'badge-warning', 
-            'Instalado': 'badge-success', 'Con Novedad': 'badge-danger'
+            'Instalado': 'badge-success', 'Con Novedad': 'badge-danger',
+            'No Aplica': 'badge-na'
         };
+
+        // Función centralizada para evaluar el estado consolidado de un apartamento omitiendo 'No Aplica'
+        function getAptoCalculatedStatus(row) {
+            if (!row) return 'Pendiente';
+            let tieneActivos = false;
+            let todosInstalados = true;
+
+            // Evaluar repartidor
+            if (row.repartidor && row.repartidor.tipo && row.repartidor.tipo !== 'Ninguno') {
+                if (row.repartidor.estado !== 'No Aplica') {
+                    tieneActivos = true;
+                    if (row.repartidor.estado !== 'Instalado') {
+                        todosInstalados = false;
+                    }
+                }
+            }
+
+            // Evaluar espacios individuales
+            if (row.espacios) {
+                Object.keys(row.espacios).forEach(esp => {
+                    const e = row.espacios[esp];
+                    if (e && e.estado !== 'No Aplica') {
+                        tieneActivos = true;
+                        if (e.estado !== 'Instalado') {
+                            todosInstalados = false;
+                        }
+                    }
+                });
+            }
+
+            // Si todos los elementos son 'No Aplica', el apartamento queda omitido como 'No Aplica'
+            if (!tieneActivos) {
+                return 'No Aplica';
+            }
+            return todosInstalados ? 'Instalado' : 'Pendiente';
+        }
 
         const cableTipos = ['RG-6 LSZH', 'RG-6', 'RG-11', 'Ninguno'];
         const verticalEquipos = ['Derivador 2D', 'Derivador 4D', 'Derivador 6D', 'Derivador 8D', 'Splitter 2D', 'Splitter 3D', 'Splitter 4D', 'Splitter 6D', 'Splitter 8D', 'Amplificador / Central', 'Cable Paso', 'Ninguno'];
@@ -1629,17 +1677,21 @@
         };
 
         window.updateVerticalSum = function() {
-            let tCab = 0, tCon = 0;
+            let tCab = 0, tCon = 0, tActivos = 0, tInst = 0;
             if (Array.isArray(state.vertical)) {
                 state.vertical.forEach(row => {
-                    tCab += parseFloat(row.cable || 0);
-                    tCon += parseInt(row.conectores || 0);
+                    if (row.estado !== 'No Aplica') {
+                        tActivos++;
+                        tCab += parseFloat(row.cable || 0);
+                        tCon += parseInt(row.conectores || 0);
+                        if (row.estado === 'Instalado') tInst++;
+                    }
                 });
             }
             const sumElem = document.getElementById('sum-vert-elementos');
             const sumCable = document.getElementById('sum-vert-cable');
             const sumCon = document.getElementById('sum-vert-con');
-            if (sumElem) sumElem.innerText = state.vertical.length;
+            if (sumElem) sumElem.innerText = `${tInst} / ${tActivos}`;
             if (sumCable) sumCable.innerText = tCab.toFixed(1) + ' m';
             if (sumCon) sumCon.innerText = tCon;
         };
@@ -1694,16 +1746,8 @@
 
             const card = document.getElementById(`card-${aptoId}`);
             if (card) {
-                // 2. Calcular estado general del apartamento
-                let aptoStatus = 'Instalado';
-                if (row.repartidor.tipo !== 'Ninguno' && row.repartidor.estado !== 'Instalado') {
-                    aptoStatus = 'Pendiente';
-                }
-                if (row.espacios) {
-                    Object.keys(row.espacios).forEach(esp => {
-                        if (row.espacios[esp].estado !== 'Instalado') aptoStatus = 'Pendiente';
-                    });
-                }
+                // 2. Calcular estado general del apartamento considerando 'No Aplica'
+                const aptoStatus = getAptoCalculatedStatus(row);
 
                 // 3. Actualizar badge general en la cabecera de la tarjeta
                 const headerBadge = card.querySelector('.apto-header .badge');
@@ -1761,8 +1805,9 @@
             tbody.innerHTML = '';
             Object.keys(state.sets).forEach(key => {
                 const row = state.sets[key];
+                const isNA = (row.estado === 'No Aplica');
                 tbody.innerHTML += `
-                    <tr>
+                    <tr class="${isNA ? 'row-no-aplica' : ''}">
                         <td class="font-bold">${row.equipo}</td>
                         <td><input type="text" class="table-input" value="${row.ref}" onchange="updateSet('${key}', 'ref', this.value)"></td>
                         <td>${buildSelect(cableTipos, row.cableTipo, `updateSet('${key}', 'cableTipo', this.value)`)}</td>
@@ -1816,14 +1861,19 @@
             // Sort vertical by piso desc
             state.vertical.sort((a, b) => b.piso - a.piso);
 
-            let tCab = 0, tCon = 0;
+            let tCab = 0, tCon = 0, tActivos = 0, tInst = 0;
 
             state.vertical.forEach(row => {
-                tCab += parseFloat(row.cable || 0);
-                tCon += parseInt(row.conectores || 0);
+                const isNA = (row.estado === 'No Aplica');
+                if (!isNA) {
+                    tActivos++;
+                    tCab += parseFloat(row.cable || 0);
+                    tCon += parseInt(row.conectores || 0);
+                    if (row.estado === 'Instalado') tInst++;
+                }
                 
                 tbody.innerHTML += `
-                    <tr>
+                    <tr class="${isNA ? 'row-no-aplica' : ''}">
                         <td><input type="number" class="table-input" value="${row.piso}" onchange="updateVertical(${row.id}, 'piso', this.value); renderVertical();" style="width: 60px; font-weight: bold;"></td>
                         <td>${buildSelect(verticalEquipos, row.equipo, `updateVertical(${row.id}, 'equipo', this.value)`)}</td>
                         <td><input type="text" class="table-input" value="${row.ref}" onchange="updateVertical(${row.id}, 'ref', this.value)"></td>
@@ -1848,7 +1898,7 @@
                 `;
             });
 
-            document.getElementById('sum-vert-elementos').innerText = state.vertical.length;
+            document.getElementById('sum-vert-elementos').innerText = `${tInst} / ${tActivos}`;
             document.getElementById('sum-vert-cable').innerText = tCab.toFixed(1) + ' m';
             document.getElementById('sum-vert-con').innerText = tCon;
         }
@@ -1873,13 +1923,16 @@
                     const row = state.dispersion[aptoId];
                     if(!row) return;
                     
-                    tAptos++;
-                    tCab += parseFloat(row.cable || 0);
-                    tCon += parseInt(row.conectores || 0);
-                    if(row.estado === 'Instalado') tInst++;
+                    const isNA = (row.estado === 'No Aplica');
+                    if (!isNA) {
+                        tAptos++;
+                        tCab += parseFloat(row.cable || 0);
+                        tCon += parseInt(row.conectores || 0);
+                        if(row.estado === 'Instalado') tInst++;
+                    }
 
                     tbody.innerHTML += `
-                        <tr>
+                        <tr class="${isNA ? 'row-no-aplica' : ''}">
                             <td>${p}</td>
                             <td class="font-bold">Apto ${aptoId}</td>
                             <td>${buildSelect(cableTipos, row.cableTipo, `updateDispersion('${aptoId}', 'cableTipo', this.value)`)}</td>
@@ -1903,10 +1956,23 @@
             }
 
             window.updateDispersionSum = function() {
-                let c=0, cn=0;
-                Object.values(state.dispersion).forEach(r => { c+=parseFloat(r.cable||0); cn+=parseInt(r.conectores||0); });
-                document.getElementById('sum-disp-cable').innerText = c.toFixed(1) + ' m';
-                document.getElementById('sum-disp-con').innerText = cn;
+                let c = 0, cn = 0, tInst = 0, tActivos = 0;
+                if (state.dispersion) {
+                    Object.values(state.dispersion).forEach(r => {
+                        if (r.estado !== 'No Aplica') {
+                            tActivos++;
+                            c += parseFloat(r.cable || 0);
+                            cn += parseInt(r.conectores || 0);
+                            if (r.estado === 'Instalado') tInst++;
+                        }
+                    });
+                }
+                const sumCable = document.getElementById('sum-disp-cable');
+                const sumCon = document.getElementById('sum-disp-con');
+                const sumAptos = document.getElementById('sum-disp-aptos');
+                if (sumCable) sumCable.innerText = c.toFixed(1) + ' m';
+                if (sumCon) sumCon.innerText = cn;
+                if (sumAptos) sumAptos.innerText = `${tInst} / ${tActivos}`;
             };
             
             document.getElementById('sum-disp-aptos').innerText = `${tInst} / ${tAptos}`;
@@ -1931,7 +1997,7 @@
             const maxP = Math.max(c.pisoInicial, c.pisoFinal);
             const minP = Math.min(c.pisoInicial, c.pisoFinal);
             
-            let tCab = 0, tCon = 0, tTom = 0, tAptos = 0;
+            let tCab = 0, tCon = 0, tTom = 0, tAptos = 0, tAptosInstalados = 0;
 
             for (let p = maxP; p >= minP; p--) {
                 c.sufijos.forEach(suf => {
@@ -1939,20 +2005,24 @@
                     const row = state.interior[aptoId];
                     if(!row) return;
                     
-                    tAptos++;
-                    let aptoStatus = 'Instalado';
-                    if(row.repartidor.tipo !== 'Ninguno' && row.repartidor.estado !== 'Instalado') aptoStatus = 'Pendiente';
+                    const aptoStatus = getAptoCalculatedStatus(row);
+                    if (aptoStatus !== 'No Aplica') {
+                        tAptos++;
+                        if (aptoStatus === 'Instalado') tAptosInstalados++;
+                    }
                     
                     let espaciosHtml = '';
                     Object.keys(row.espacios).forEach(esp => {
                         const rEsp = row.espacios[esp];
-                        tCab += parseFloat(rEsp.cable || 0);
-                        tCon += parseInt(rEsp.conectores || 0);
-                        if(rEsp.toma) tTom++;
-                        if(rEsp.estado !== 'Instalado') aptoStatus = 'Pendiente';
+                        const isEspNA = (rEsp.estado === 'No Aplica');
+                        if (!isEspNA) {
+                            tCab += parseFloat(rEsp.cable || 0);
+                            tCon += parseInt(rEsp.conectores || 0);
+                            if (rEsp.toma) tTom++;
+                        }
 
                         espaciosHtml += `
-                            <tr>
+                            <tr class="${isEspNA ? 'row-no-aplica' : ''}">
                                 <td>${esp}</td>
                                 <td>${buildSelect(['RG-6 LSZH', 'RG-6'], rEsp.cableTipo, `updateInteriorEsp('${aptoId}', '${esp}', 'cableTipo', this.value)`)}</td>
                                 <td><input type="number" step="0.1" class="table-input" value="${rEsp.cable}" onchange="updateInteriorEsp('${aptoId}', '${esp}', 'cable', this.value); updateIntSum();"></td>
@@ -2022,18 +2092,37 @@
             }
 
             window.updateIntSum = function() {
-                let c=0, cn=0, t=0;
-                Object.values(state.interior).forEach(r => {
-                    Object.values(r.espacios).forEach(e => {
-                        c += parseFloat(e.cable||0); cn += parseInt(e.conectores||0); if(e.toma) t++;
+                let c = 0, cn = 0, t = 0;
+                let tAptosActivos = 0, tAptosInstalados = 0;
+                if (state.interior) {
+                    Object.values(state.interior).forEach(r => {
+                        const aptoStatus = getAptoCalculatedStatus(r);
+                        if (aptoStatus !== 'No Aplica') {
+                            tAptosActivos++;
+                            if (aptoStatus === 'Instalado') tAptosInstalados++;
+                        }
+                        if (r.espacios) {
+                            Object.values(r.espacios).forEach(e => {
+                                if (e.estado !== 'No Aplica') {
+                                    c += parseFloat(e.cable || 0);
+                                    cn += parseInt(e.conectores || 0);
+                                    if (e.toma) t++;
+                                }
+                            });
+                        }
                     });
-                });
-                document.getElementById('sum-int-cable').innerText = c.toFixed(1) + ' m';
-                document.getElementById('sum-int-con').innerText = cn;
-                document.getElementById('sum-int-tomas').innerText = t;
+                }
+                const sumCable = document.getElementById('sum-int-cable');
+                const sumCon = document.getElementById('sum-int-con');
+                const sumTom = document.getElementById('sum-int-tomas');
+                const sumAptos = document.getElementById('sum-int-aptos');
+                if (sumCable) sumCable.innerText = c.toFixed(1) + ' m';
+                if (sumCon) sumCon.innerText = cn;
+                if (sumTom) sumTom.innerText = t;
+                if (sumAptos) sumAptos.innerText = `${tAptosInstalados} / ${tAptosActivos}`;
             };
 
-            document.getElementById('sum-int-aptos').innerText = tAptos;
+            document.getElementById('sum-int-aptos').innerText = `${tAptosInstalados} / ${tAptos}`;
             document.getElementById('sum-int-cable').innerText = tCab.toFixed(1) + ' m';
             document.getElementById('sum-int-con').innerText = tCon;
             document.getElementById('sum-int-tomas').innerText = tTom;
@@ -2084,17 +2173,19 @@
         window.marcarInteriorInstalado = async function() {
             const ok = await confirmarDialogoObra({
                 title: 'Marcar Red Interior Instalada',
-                message: '¿Marcar todos los repartidores y espacios de la red interior como INSTALADO?',
+                message: '¿Marcar todos los repartidores y espacios de la red interior como INSTALADO? (Los elementos marcados como "No Aplica" se conservarán intactos)',
                 confirmText: 'Sí, Marcar Instalado',
                 variant: 'primary'
             });
             if(!ok) return;
             Object.keys(state.interior).forEach(id => {
-                if (state.interior[id].repartidor.tipo !== 'Ninguno') {
+                if (state.interior[id].repartidor.tipo !== 'Ninguno' && state.interior[id].repartidor.estado !== 'No Aplica') {
                     state.interior[id].repartidor.estado = 'Instalado';
                 }
                 Object.keys(state.interior[id].espacios).forEach(esp => {
-                    state.interior[id].espacios[esp].estado = 'Instalado';
+                    if (state.interior[id].espacios[esp].estado !== 'No Aplica') {
+                        state.interior[id].espacios[esp].estado = 'Instalado';
+                    }
                 });
             });
             saveState();
@@ -2148,51 +2239,62 @@
                 `;
             };
 
-            // SETS
+            // SETS (Omitiendo elementos con estado 'No Aplica' de los cómputos de materiales)
             Object.keys(state.sets).forEach(key => {
                 const r = state.sets[key];
-                sCab += parseFloat(r.cable || 0);
-                const con = parseInt(r.conectores || 0);
-                sCon += con;
-                const eti = (r.etiq !== false && con > 0) ? con : 0;
-                sEti += eti;
-                sCar += parseInt(r.cargas || 0);
-                if (r.equipo && r.equipo !== 'Ninguno') {
-                    ensureEqData(r.equipo);
-                    eqData[r.equipo].totalS++;
-                    addEqRef(r.equipo, r.ref, 'S');
+                const isNA = (r.estado === 'No Aplica');
+                if (!isNA) {
+                    sCab += parseFloat(r.cable || 0);
+                    const con = parseInt(r.conectores || 0);
+                    sCon += con;
+                    const eti = (r.etiq !== false && con > 0) ? con : 0;
+                    sEti += eti;
+                    sCar += parseInt(r.cargas || 0);
+                    if (r.equipo && r.equipo !== 'Ninguno') {
+                        ensureEqData(r.equipo);
+                        eqData[r.equipo].totalS++;
+                        addEqRef(r.equipo, r.ref, 'S');
+                    }
                 }
-                appendMaestro('SETS', 'Cubierta', '-', '-', r.equipo, r.ref || '-', r.cableTipo, r.cable, r.conectores, eti, r.cargas, r.estado);
+                const eti = (!isNA && r.etiq !== false && parseInt(r.conectores || 0) > 0) ? parseInt(r.conectores || 0) : 0;
+                appendMaestro('SETS', 'Cubierta', '-', '-', r.equipo, r.ref || '-', r.cableTipo, isNA ? '0' : r.cable, isNA ? '0' : r.conectores, eti, isNA ? '0' : r.cargas, r.estado);
             });
 
-            // Vertical
+            // Vertical (Omitiendo elementos con estado 'No Aplica' de los cómputos de materiales y de la meta de avance)
             state.vertical.forEach(r => {
-                vTot++;
-                if(r.estado === 'Instalado') vInst++;
-                vCab += parseFloat(r.cable || 0);
-                const con = parseInt(r.conectores || 0);
-                vCon += con;
-                const eti = (r.etiq !== false && con > 0) ? con : 0;
-                vEti += eti;
-                vCar += parseInt(r.cargas || 0);
-                if (r.equipo && r.equipo !== 'Ninguno' && r.equipo !== 'Cable Paso') {
-                    ensureEqData(r.equipo);
-                    eqData[r.equipo].totalV++;
-                    addEqRef(r.equipo, r.ref, 'V');
+                const isNA = (r.estado === 'No Aplica');
+                if (!isNA) {
+                    vTot++;
+                    if(r.estado === 'Instalado') vInst++;
+                    vCab += parseFloat(r.cable || 0);
+                    const con = parseInt(r.conectores || 0);
+                    vCon += con;
+                    const eti = (r.etiq !== false && con > 0) ? con : 0;
+                    vEti += eti;
+                    vCar += parseInt(r.cargas || 0);
+                    if (r.equipo && r.equipo !== 'Ninguno' && r.equipo !== 'Cable Paso') {
+                        ensureEqData(r.equipo);
+                        eqData[r.equipo].totalV++;
+                        addEqRef(r.equipo, r.ref, 'V');
+                    }
                 }
-                appendMaestro('Vertical', r.piso, '-', '-', r.equipo, r.ref || '-', r.cableTipo, r.cable, r.conectores, eti, r.cargas, r.estado);
+                const eti = (!isNA && r.etiq !== false && parseInt(r.conectores || 0) > 0) ? parseInt(r.conectores || 0) : 0;
+                appendMaestro('Vertical', r.piso, '-', '-', r.equipo, r.ref || '-', r.cableTipo, isNA ? '0' : r.cable, isNA ? '0' : r.conectores, eti, isNA ? '0' : r.cargas, r.estado);
             });
 
-            // Dispersion
+            // Dispersión (Omitiendo apartamentos con estado 'No Aplica' de materiales y meta de avance)
             Object.keys(state.dispersion).forEach(id => {
                 const r = state.dispersion[id];
-                dTot++;
-                if(r.estado === 'Instalado') dInst++;
-                dCab += parseFloat(r.cable || 0);
-                const con = parseInt(r.conectores || 0);
-                dCon += con;
-                const eti = (r.etiq !== false && con > 0) ? con : 0;
-                dEti += eti;
+                const isNA = (r.estado === 'No Aplica');
+                if (!isNA) {
+                    dTot++;
+                    if(r.estado === 'Instalado') dInst++;
+                    dCab += parseFloat(r.cable || 0);
+                    const con = parseInt(r.conectores || 0);
+                    dCon += con;
+                    const eti = (r.etiq !== false && con > 0) ? con : 0;
+                    dEti += eti;
+                }
                 // Extract piso from aptoId
                 let pisoGuess = id;
                 for (let s of c.sufijos) {
@@ -2201,14 +2303,20 @@
                         break;
                     }
                 }
-                appendMaestro('Dispersión', pisoGuess, id, '-', '-', '-', r.cableTipo, r.cable, r.conectores, eti, '0', r.estado);
+                const eti = (!isNA && r.etiq !== false && parseInt(r.conectores || 0) > 0) ? parseInt(r.conectores || 0) : 0;
+                appendMaestro('Dispersión', pisoGuess, id, '-', '-', '-', r.cableTipo, isNA ? '0' : r.cable, isNA ? '0' : r.conectores, eti, '0', r.estado);
             });
 
-            // Interior
+            // Interior (Omitiendo espacios y repartidores 'No Aplica' de materiales y permitiendo que apartamentos alcancen 100% de avance)
             Object.keys(state.interior).forEach(id => {
                 const r = state.interior[id];
-                iTot++;
-                let aptoComplete = true;
+                const aptoStatus = getAptoCalculatedStatus(r);
+                const isAptoNA = (aptoStatus === 'No Aplica');
+
+                if (!isAptoNA) {
+                    iTot++;
+                    if (aptoStatus === 'Instalado') iInst++;
+                }
                 
                 let pisoGuess = id;
                 for (let s of c.sufijos) {
@@ -2218,27 +2326,31 @@
                     }
                 }
                 
-                if(r.repartidor.tipo !== 'Ninguno') {
-                    iCar += parseInt(r.repartidor.cargas || 0);
-                    ensureEqData(r.repartidor.tipo);
-                    eqData[r.repartidor.tipo].totalI++;
-                    addEqRef(r.repartidor.tipo, r.repartidor.ref, 'I');
-                    appendMaestro('Interior', pisoGuess, id, '-', r.repartidor.tipo, r.repartidor.ref || '-', '-', '0', '0', '0', r.repartidor.cargas, r.repartidor.estado);
+                if (r.repartidor.tipo !== 'Ninguno') {
+                    const isRepNA = (r.repartidor.estado === 'No Aplica');
+                    if (!isRepNA) {
+                        iCar += parseInt(r.repartidor.cargas || 0);
+                        ensureEqData(r.repartidor.tipo);
+                        eqData[r.repartidor.tipo].totalI++;
+                        addEqRef(r.repartidor.tipo, r.repartidor.ref, 'I');
+                    }
+                    appendMaestro('Interior', pisoGuess, id, '-', r.repartidor.tipo, r.repartidor.ref || '-', '-', '0', '0', 0, isRepNA ? '0' : r.repartidor.cargas, r.repartidor.estado);
                 }
 
                 Object.keys(r.espacios).forEach(esp => {
                     const e = r.espacios[esp];
-                    iCab += parseFloat(e.cable || 0);
-                    const con = parseInt(e.conectores || 0);
-                    iCon += con;
-                    const eti = (e.etiq !== false && con > 0) ? con : 0;
-                    iEti += eti;
-                    if(e.toma) iTom++;
-                    if(e.estado !== 'Instalado') aptoComplete = false;
-                    
-                    appendMaestro('Interior', pisoGuess, id, esp, 'Cableado/Toma', '-', e.cableTipo, e.cable, e.conectores, eti, '0', e.estado);
+                    const isEspNA = (e.estado === 'No Aplica');
+                    if (!isEspNA) {
+                        iCab += parseFloat(e.cable || 0);
+                        const con = parseInt(e.conectores || 0);
+                        iCon += con;
+                        const eti = (e.etiq !== false && con > 0) ? con : 0;
+                        iEti += eti;
+                        if(e.toma) iTom++;
+                    }
+                    const eti = (!isEspNA && e.etiq !== false && parseInt(e.conectores || 0) > 0) ? parseInt(e.conectores || 0) : 0;
+                    appendMaestro('Interior', pisoGuess, id, esp, 'Cableado/Toma', '-', e.cableTipo, isEspNA ? '0' : e.cable, isEspNA ? '0' : e.conectores, eti, '0', e.estado);
                 });
-                if(aptoComplete) iInst++;
             });
 
             // DOM Updates Consolidado
@@ -2305,10 +2417,10 @@
                 }
             });
 
-            // KPIs
-            const pV = vTot ? (vInst/vTot)*100 : 0;
-            const pD = dTot ? (dInst/dTot)*100 : 0;
-            const pI = iTot ? (iInst/iTot)*100 : 0;
+            // KPIs (Calculados con base únicamente en elementos y apartamentos activos, omitiendo los 'No Aplica')
+            const pV = vTot > 0 ? (vInst / vTot) * 100 : 100;
+            const pD = dTot > 0 ? (dInst / dTot) * 100 : 100;
+            const pI = iTot > 0 ? (iInst / iTot) * 100 : 100;
             const pG = (pV + pD + pI) / 3;
             
             document.getElementById('inf-kpi-vert').innerText = pV.toFixed(1) + '%';
