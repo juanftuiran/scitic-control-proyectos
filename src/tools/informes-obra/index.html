@@ -41,7 +41,7 @@
             background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
             color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 80px; /* space for export bar */
+            padding-bottom: 140px; /* Espacio de seguridad generoso para evitar corte por export-bar fija */
             overflow-x: hidden;
         }
 
@@ -108,7 +108,14 @@
         }
 
         /* Content Container */
-        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem 2rem 140px 2rem; }
+        .export-bar-spacer {
+            height: 120px;
+            width: 100%;
+            pointer-events: none;
+            flex-shrink: 0;
+            display: block;
+        }
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -266,10 +273,18 @@
         /* Export Bar */
         .export-bar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(2,6,23,0.9); backdrop-filter: blur(12px);
+            background: rgba(2, 6, 23, 0.94); backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid var(--border-subtle);
-            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center;
             z-index: 60;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+        }
+        .export-bar .btn {
+            padding: 0.55rem 1.15rem;
+            font-size: 0.82rem;
+            border-radius: 8px;
+            font-weight: 600;
         }
 
         /* Empty State */
@@ -312,8 +327,22 @@
         }
         td { user-select: text; }
 
+        @media (max-width: 1200px) {
+            body { padding-bottom: 180px !important; }
+            .container { padding-bottom: 180px !important; }
+            .export-bar-spacer { height: 160px !important; }
+            .export-bar {
+                padding: 0.75rem 1.25rem !important;
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }
+            .export-bar .flex {
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+            }
+        }
         @media (max-width: 768px) {
-            body { padding-bottom: 120px !important; }
+            body { padding-bottom: 240px !important; }
             .app-header {
                 padding: 0.75rem 1rem !important;
                 flex-wrap: wrap !important;
@@ -333,8 +362,11 @@
                 font-size: 0.8rem !important;
             }
             .container {
-                padding: 1rem 0.75rem !important;
+                padding: 1rem 0.75rem 240px 0.75rem !important;
                 max-width: 100% !important;
+            }
+            .export-bar-spacer {
+                height: 220px !important;
             }
             .grid-2, .grid-3, .grid-4 {
                 grid-template-columns: 1fr !important;
@@ -370,6 +402,9 @@
             }
         }
         @media (max-width: 480px) {
+            body { padding-bottom: 300px !important; }
+            .container { padding-bottom: 300px !important; }
+            .export-bar-spacer { height: 280px !important; }
             .export-bar .btn {
                 flex: 1 1 100% !important;
             }
@@ -1010,7 +1045,7 @@
                     <button class="btn btn-primary" onclick="addVerticalItem()">+ Agregar Elemento Vertical</button>
                 </div>
 
-                <div class="card">
+                <div class="card mb-4">
                     <h3 class="mb-4">Red Vertical (Distribución por Pisos)</h3>
                     <div class="table-responsive">
                         <table>
@@ -1061,7 +1096,7 @@
                     </div>
                 </div>
 
-                <div class="card">
+                <div class="card mb-4">
                     <h3 class="mb-4">Red de Dispersión (Gabinete de Piso → PAU Apartamento)</h3>
                     <div class="table-responsive">
                         <table>
@@ -1258,6 +1293,9 @@
 
             </div>
         </div>
+
+        <!-- ESPACIO DE SEGURIDAD PARA EVITAR QUE LA EXPORT-BAR MONTE/CORTE TABLAS -->
+        <div class="export-bar-spacer" aria-hidden="true"></div>
 
     </div>
 
