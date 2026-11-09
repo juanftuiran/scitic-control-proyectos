@@ -1392,7 +1392,7 @@
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
                 localStorage.setItem('scitic-informes-obra-v2', JSON.stringify(state));
-                showToast('Cambios guardados');
+                // Guardado silencioso y continuo en almacenamiento local para no interrumpir la edición
             }, 500);
         }
 
@@ -1614,26 +1614,128 @@
             renderInterior();
         }
 
-        // --- UPDATERS ---
-        window.updateSet = function(key, field, val) {
+        // --- UPDATERS EN MEMORIA (IN-PLACE DOM UPDATES) ---
+        window.updateSet = function(key, field, val, el) {
+            if (!state.sets[key]) return;
             state.sets[key][field] = val;
             saveState();
-        };
-
-        window.updateVertical = function(id, field, val) {
-            const item = state.vertical.find(i => i.id == id);
-            if(item) {
-                item[field] = val;
-                saveState();
+            if (field === 'estado' && el && el.parentElement) {
+                const badge = el.parentElement.querySelector('.badge');
+                if (badge) {
+                    badge.className = `badge ${getBadgeClass(val)}`;
+                    badge.textContent = val;
+                }
             }
         };
 
-        window.updateDispersion = function(aptoId, field, val) {
-            state.dispersion[aptoId][field] = val;
-            saveState();
+        window.updateVerticalSum = function() {
+            let tCab = 0, tCon = 0;
+            if (Array.isArray(state.vertical)) {
+                state.vertical.forEach(row => {
+                    tCab += parseFloat(row.cable || 0);
+                    tCon += parseInt(row.conectores || 0);
+                });
+            }
+            const sumElem = document.getElementById('sum-vert-elementos');
+            const sumCable = document.getElementById('sum-vert-cable');
+            const sumCon = document.getElementById('sum-vert-con');
+            if (sumElem) sumElem.innerText = state.vertical.length;
+            if (sumCable) sumCable.innerText = tCab.toFixed(1) + ' m';
+            if (sumCon) sumCon.innerText = tCon;
         };
 
-        window.updateInteriorRep = function(aptoId, field, val) {
+        window.updateVertical = function(id, field, val, el) {
+            const item = state.vertical.find(i => i.id == id);
+            if (!item) return;
+            item[field] = val;
+            saveState();
+            if (field === 'cable' || field === 'conectores') {
+                updateVerticalSum();
+            } else if (field === 'estado') {
+                if (el && el.parentElement) {
+                    const badge = el.parentElement.querySelector('.badge');
+                    if (badge) {
+                        badge.className = `badge ${getBadgeClass(val)}`;
+                        badge.textContent = val;
+                    }
+                }
+                updateVerticalSum();
+            }
+        };
+
+        window.updateDispersion = function(aptoId, field, val, el) {
+            if (!state.dispersion[aptoId]) return;
+            state.dispersion[aptoId][field] = val;
+            saveState();
+            if (field === 'estado') {
+                if (el && el.parentElement) {
+                    const badge = el.parentElement.querySelector('.badge');
+                    if (badge) {
+                        badge.className = `badge ${getBadgeClass(val)}`;
+                        badge.textContent = val;
+                    }
+                }
+                updateDispersionSum();
+            }
+        };
+
+        function actualizarAptoCardInPlace(aptoId, el) {
+            const row = state.interior[aptoId];
+            if (!row) return;
+
+            // 1. Actualizar el badge inmediatamente adyacente al selector modificado
+            if (el && el.parentElement) {
+                const badge = el.parentElement.querySelector('.badge');
+                if (badge) {
+                    badge.className = `badge ${getBadgeClass(el.value)}`;
+                    badge.textContent = el.value;
+                }
+            }
+
+            const card = document.getElementById(`card-${aptoId}`);
+            if (card) {
+                // 2. Calcular estado general del apartamento
+                let aptoStatus = 'Instalado';
+                if (row.repartidor.tipo !== 'Ninguno' && row.repartidor.estado !== 'Instalado') {
+                    aptoStatus = 'Pendiente';
+                }
+                if (row.espacios) {
+                    Object.keys(row.espacios).forEach(esp => {
+                        if (row.espacios[esp].estado !== 'Instalado') aptoStatus = 'Pendiente';
+                    });
+                }
+
+                // 3. Actualizar badge general en la cabecera de la tarjeta
+                const headerBadge = card.querySelector('.apto-header .badge');
+                if (headerBadge) {
+                    headerBadge.className = `badge ${getBadgeClass(aptoStatus)}`;
+                    headerBadge.textContent = aptoStatus;
+                }
+
+                // 4. Actualizar texto de repartidor en la cabecera
+                const repText = card.querySelector('.apto-header .text-sm');
+                if (repText) {
+                    repText.textContent = `Repartidor: ${row.repartidor.tipo}`;
+                }
+
+                // 5. Si el tipo cambió y activó automáticamente el estado del repartidor
+                const repBadge = card.querySelector('.grid-4 .badge');
+                const repSelect = card.querySelector('.grid-4 select:nth-of-type(2)');
+                if (repBadge && repSelect) {
+                    repBadge.className = `badge ${getBadgeClass(row.repartidor.estado)}`;
+                    repBadge.textContent = row.repartidor.estado;
+                    repSelect.value = row.repartidor.estado;
+                }
+            }
+
+            // 6. Actualizar contadores en vivo del resumen superior
+            if (typeof updateIntSum === 'function') {
+                updateIntSum();
+            }
+        }
+
+        window.updateInteriorRep = function(aptoId, field, val, el) {
+            if (!state.interior[aptoId]) return;
             state.interior[aptoId].repartidor[field] = val;
             if(field === 'tipo') {
                 state.interior[aptoId].repartidor.instalado = (val !== 'Ninguno');
@@ -1642,12 +1744,15 @@
                 }
             }
             saveState();
+            actualizarAptoCardInPlace(aptoId, el);
         };
 
-        window.updateInteriorEsp = function(aptoId, esp, field, val) {
+        window.updateInteriorEsp = function(aptoId, esp, field, val, el) {
+            if (!state.interior[aptoId] || !state.interior[aptoId].espacios[esp]) return;
             if(field === 'toma') val = val.checked;
             state.interior[aptoId].espacios[esp][field] = val;
             saveState();
+            actualizarAptoCardInPlace(aptoId, el);
         };
 
         // --- SETS & VERTICAL RENDER ---
@@ -1672,7 +1777,7 @@
                         <td>
                             <div class="flex items-center gap-2">
                                 <span class="badge ${getBadgeClass(row.estado)}">${row.estado}</span>
-                                ${buildSelect(statusOpts, row.estado, `updateSet('${key}', 'estado', this.value); renderSets();`)}
+                                ${buildSelect(statusOpts, row.estado, `updateSet('${key}', 'estado', this.value, this)`)}
                             </div>
                         </td>
                     </tr>
@@ -1723,18 +1828,18 @@
                         <td>${buildSelect(verticalEquipos, row.equipo, `updateVertical(${row.id}, 'equipo', this.value)`)}</td>
                         <td><input type="text" class="table-input" value="${row.ref}" onchange="updateVertical(${row.id}, 'ref', this.value)"></td>
                         <td>${buildSelect(cableTipos, row.cableTipo, `updateVertical(${row.id}, 'cableTipo', this.value)`)}</td>
-                        <td><input type="number" step="0.1" class="table-input" value="${row.cable}" onchange="updateVertical(${row.id}, 'cable', this.value); renderVertical();" style="width: 70px;"></td>
+                        <td><input type="number" step="0.1" class="table-input" value="${row.cable}" onchange="updateVertical(${row.id}, 'cable', this.value); updateVerticalSum();" style="width: 70px;"></td>
                         <td>
                             <div class="flex items-center gap-1">
-                                <input type="number" class="table-input" value="${row.conectores}" onchange="updateVertical(${row.id}, 'conectores', this.value); renderVertical();" style="width: 50px;">
-                                <input type="checkbox" title="Etiquetas Instaladas" ${row.etiq !== false ? 'checked' : ''} onchange="updateVertical(${row.id}, 'etiq', this.checked); renderVertical();">
+                                <input type="number" class="table-input" value="${row.conectores}" onchange="updateVertical(${row.id}, 'conectores', this.value); updateVerticalSum();" style="width: 50px;">
+                                <input type="checkbox" title="Etiquetas Instaladas" ${row.etiq !== false ? 'checked' : ''} onchange="updateVertical(${row.id}, 'etiq', this.checked);">
                             </div>
                         </td>
-                        <td><input type="number" class="table-input" value="${row.cargas || ''}" onchange="updateVertical(${row.id}, 'cargas', this.value); renderVertical();" style="width: 60px;"></td>
+                        <td><input type="number" class="table-input" value="${row.cargas || ''}" onchange="updateVertical(${row.id}, 'cargas', this.value);" style="width: 60px;"></td>
                         <td>
                             <div class="flex items-center gap-2">
                                 <span class="badge ${getBadgeClass(row.estado)}">${row.estado}</span>
-                                ${buildSelect(statusOpts, row.estado, `updateVertical(${row.id}, 'estado', this.value); renderVertical();`)}
+                                ${buildSelect(statusOpts, row.estado, `updateVertical(${row.id}, 'estado', this.value, this)`)}
                             </div>
                         </td>
                         <td><input type="text" class="table-input" value="${row.obs}" onchange="updateVertical(${row.id}, 'obs', this.value)"></td>
@@ -1788,7 +1893,7 @@
                             <td>
                                 <div class="flex items-center gap-2">
                                     <span class="badge ${getBadgeClass(row.estado)}">${row.estado}</span>
-                                    ${buildSelect(statusOpts, row.estado, `updateDispersion('${aptoId}', 'estado', this.value); renderDispersion();`)}
+                                    ${buildSelect(statusOpts, row.estado, `updateDispersion('${aptoId}', 'estado', this.value, this)`)}
                                 </div>
                             </td>
                             <td><input type="text" class="table-input" value="${row.obs}" onchange="updateDispersion('${aptoId}', 'obs', this.value)"></td>
@@ -1812,6 +1917,14 @@
         // --- INTERIOR RENDER ---
         function renderInterior() {
             const container = document.getElementById('interior-cards');
+            if (!container) return;
+
+            // Conservar el estado de apartamentos expandidos antes de reconstruir el HTML
+            const expandedCardIds = new Set();
+            container.querySelectorAll('.apto-card.expanded').forEach(card => {
+                if (card.id) expandedCardIds.add(card.id);
+            });
+
             container.innerHTML = '';
             
             const c = state.config;
@@ -1853,15 +1966,17 @@
                                 <td>
                                     <div class="flex items-center gap-2">
                                         <span class="badge ${getBadgeClass(rEsp.estado)}">${rEsp.estado}</span>
-                                        ${buildSelect(statusOpts, rEsp.estado, `updateInteriorEsp('${aptoId}', '${esp}', 'estado', this.value); renderInterior();`)}
+                                        ${buildSelect(statusOpts, rEsp.estado, `updateInteriorEsp('${aptoId}', '${esp}', 'estado', this.value, this)`)}
                                     </div>
                                 </td>
                             </tr>
                         `;
                     });
 
+                    const isCardExpanded = expandedCardIds.has(`card-${aptoId}`) ? ' expanded' : '';
+
                     container.innerHTML += `
-                        <div class="apto-card" id="card-${aptoId}">
+                        <div class="apto-card${isCardExpanded}" id="card-${aptoId}">
                             <div class="apto-header" onclick="this.parentElement.classList.toggle('expanded')">
                                 <div class="font-bold">Apto ${aptoId}</div>
                                 <div class="flex gap-4 items-center">
@@ -1874,7 +1989,7 @@
                                 <div class="grid-4 mb-4">
                                     <div class="form-group">
                                         <label class="form-label">Tipo de Repartidor / Splitter</label>
-                                        ${buildSelect(repartidorTipos, row.repartidor.tipo, `updateInteriorRep('${aptoId}', 'tipo', this.value); renderInterior();`)}
+                                        ${buildSelect(repartidorTipos, row.repartidor.tipo, `updateInteriorRep('${aptoId}', 'tipo', this.value, this)`)}
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Referencia Repartidor</label>
@@ -1882,7 +1997,10 @@
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Estado Repartidor</label>
-                                        ${buildSelect(statusOpts, row.repartidor.estado, `updateInteriorRep('${aptoId}', 'estado', this.value); renderInterior();`)}
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge ${getBadgeClass(row.repartidor.estado)}">${row.repartidor.estado}</span>
+                                            ${buildSelect(statusOpts, row.repartidor.estado, `updateInteriorRep('${aptoId}', 'estado', this.value, this)`)}
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Cargas Resistivas</label>
