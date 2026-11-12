@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.proyectos_calculadoras (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL DEFAULT auth.uid(),
     usuario_nombre TEXT NOT NULL,
     usuario_email TEXT NOT NULL,
-    herramienta TEXT NOT NULL,         -- 'calculadora-tubos', 'loss-gen-app', 'informes-obra'
+    herramienta TEXT NOT NULL,         -- 'calculadora-tubos', 'loss-gen-app', 'loss-fiber-app', 'informes-obra'
     nombre_proyecto TEXT NOT NULL,     -- Ej: "Torre Barcelona Fase 2"
     modo TEXT,                          -- Ej: 'torres' o 'parcelaciones'
     datos_json JSONB NOT NULL,          -- Estructura completa de las tablas en JSON

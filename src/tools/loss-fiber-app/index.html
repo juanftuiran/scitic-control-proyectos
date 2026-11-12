@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculadora de Pérdidas de Fibra Óptica para Urbanizaciones de Casas — Múltiples Transmisores / Sectores TDT / TV — SCITIC">
+    <title>Calculadora de Pérdidas Fibra Óptica (Casas / TDT Multi-Sector) — SCITIC</title>
+
+    <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <!-- Integración con Base de Datos SCITIC y Tema Central -->
+    <link rel="stylesheet" href="../../theme/theme.css?v=14">
+    <link rel="stylesheet" href="../../css/design-system.css?v=14">
+    <script src="../../theme/theme.js?v=14"></script>
+    <script src="../../theme/icons.js?v=14"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../js/services/api.js"></script>
+    <script src="../../js/components/Toast.js?v=11"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            margin: 0; padding: 20px;
+            color: var(--text-main); font-size: 12px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Título del proyecto ── */
+        .project-title {
+            font-size: 24px; font-weight: 800; letter-spacing: -0.02em;
+            text-align: center; color: var(--text-main);
+            border: none; background: transparent;
+            width: 100%; margin-bottom: 16px;
+            border-bottom: 2px dashed transparent;
+            transition: 0.25s; display: block;
+            padding: 6px 0;
+        }
+        .project-title:focus { outline: none; border-bottom: 2px dashed #0284c7; }
+
+        /* ── Paneles y Tarjetas ── */
+        .header-panel {
+            background: var(--panel-bg); backdrop-filter: blur(14px);
+            border: 1px solid var(--border); padding: 16px 18px;
+            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.32);
+            margin-bottom: 14px; display: flex;
+            flex-wrap: wrap; gap: 10px; align-items: flex-end;
+        }
+        .panel-section-title {
+            width: 100%; font-size: 13px; font-weight: 700;
+            color: var(--primary-blue, #38bdf8); margin: 0 0 -2px 0;
+            padding-bottom: 6px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 6px; justify-content: space-between;
+            letter-spacing: 0.01em;
+        }
+        .panel-section-title .icon { font-size: 16px; }
+
+        /* ── Formularios compactos ajustados al contenido ── */
+        .input-group {
+            display: flex; flex-direction: column;
+            width: fit-content; max-width: 100%;
+        }
+        .input-group label {
+            font-size: 10.5px; font-weight: 600;
+            color: var(--primary-blue, #38bdf8); margin-bottom: 3px;
+            white-space: nowrap;
+        }
+        .input-group input:not([type="checkbox"]), .input-group select {
+            padding: 5px 8px; background: var(--input-bg);
+            color: var(--text-main); border: 1px solid var(--border);
+            border-radius: 6px; font-size: 11.5px;
+            font-family: inherit; width: fit-content;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #0284c7; outline: none;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
+        }
+        .input-group input[type="number"] {
+            width: 78px;
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
+        }
+        .input-group select { width: auto; min-width: 130px; }
+        .spacer { flex-grow: 1; }
+
+        /* ── Ficha de referencia de cable G.657 ── */
+        .cable-spec-banner {
+            width: 100%; background: rgba(2, 132, 199, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px; padding: 8px 12px;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 8px; margin-top: 2px;
+        }
+        .cable-spec-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(15, 23, 42, 0.6); padding: 3px 6px;
+            border-radius: 4px; font-size: 10.5px; border: 1px solid var(--border);
+        }
+        .cable-spec-tag strong { color: #38bdf8; }
+
+        /* ── Pestañas de Sectores / Transmisores ── */
+        .sector-tabs-bar {
+            display: flex; align-items: center; gap: 6px;
+            flex-wrap: wrap; width: 100%; margin-bottom: 12px;
+            border-bottom: 2px solid var(--border); padding-bottom: 8px;
+        }
+        .sector-tab-btn {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border);
+            color: var(--text-muted); padding: 7px 14px;
+            border-radius: 8px; cursor: pointer; font-size: 11.5px;
+            font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .sector-tab-btn:hover {
+            color: var(--text-main); background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .sector-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: #ffffff; border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+        }
+        .sector-tab-btn.tab-all {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #c4b5fd;
+        }
+        .sector-tab-btn.tab-all.active {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+            color: #fff; border-color: #a78bfa;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+        }
+        .sector-tab-add {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px dashed rgba(16, 185, 129, 0.45);
+            color: #34d399; padding: 7px 12px; border-radius: 8px;
+            cursor: pointer; font-size: 11.5px; font-weight: 600;
+        }
+        .sector-tab-add:hover {
+            background: rgba(16, 185, 129, 0.25); color: #fff;
+        }
+
+        /* ── Botones ── */
+        button {
+            padding: 6px 12px; border: 1px solid transparent; border-radius: 6px;
+            font-weight: 600; cursor: pointer; font-family: inherit;
+            transition: all 0.2s; color: white; font-size: 11.5px;
+            display: inline-flex; align-items: center; gap: 5px;
+            width: fit-content;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-calc  { background: linear-gradient(135deg, #0284c7, #0ea5e9); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.28); }
+        .btn-calc:hover  { background: linear-gradient(135deg, #38bdf8, #0284c7); transform: translateY(-1px); }
+        .btn-config { background: rgba(2, 132, 199, 0.2); border-color: rgba(56, 189, 248, 0.35); color: #7dd3fc; }
+        .btn-config:hover { background: rgba(2, 132, 199, 0.35); color: #fff; }
+        .btn-save  { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d; }
+        .btn-save:hover { background: rgba(245, 158, 11, 0.3); color: #fff; }
+        .btn-json-save { background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.38); color: #c4b5fd; }
+        .btn-json-save:hover { background: rgba(139, 92, 246, 0.3); color: #fff; }
+        .btn-json-load { background: rgba(13, 148, 136, 0.2); border-color: rgba(20, 184, 166, 0.38); color: #5eead4; }
+        .btn-json-load:hover { background: rgba(13, 148, 136, 0.34); color: #fff; }
+        .btn-excel { background: rgba(22, 163, 74, 0.22); border-color: rgba(34, 197, 94, 0.42); color: #4ade80; }
+        .btn-excel:hover { background: rgba(22, 163, 74, 0.35); color: #fff; }
+        .btn-pdf   { background: rgba(220, 38, 38, 0.2); border-color: rgba(248, 113, 113, 0.4); color: #fca5a5; }
+        .btn-pdf:hover { background: rgba(220, 38, 38, 0.34); color: #fff; }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); border-color: rgba(248, 113, 113, 0.4); color: #fca5a5; padding: 3px 6px; font-size: 10.5px; }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.4); color: #fff; }
+
+        .btn-theme-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 10px; border-radius: 6px;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .btn-theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.16); color: #38bdf8;
+        }
+
+        /* ── Tablas compactas y ajustadas al contenido ── */
+        .table-container {
+            overflow-x: auto; background: var(--panel-bg);
+            backdrop-filter: blur(14px); border: 1px solid var(--border);
+            border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+            margin-bottom: 14px;
+        }
+        table {
+            width: fit-content; min-width: 100%; border-collapse: collapse;
+            text-align: center; font-size: 11px;
+        }
+        th {
+            background-color: var(--input-bg); color: var(--primary-blue, #38bdf8);
+            padding: 6px 6px; border: 1px solid var(--border);
+            font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 2;
+            width: fit-content;
+        }
+        th.sub-th { background-color: rgba(2, 132, 199, 0.25); color: var(--text-main); font-size: 10px; padding: 4px 5px; }
+        th.th-accent { background-color: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+        th.th-result { background-color: rgba(14, 165, 233, 0.3); color: #7dd3fc; }
+        td {
+            padding: 4px 5px; border: 1px solid var(--border);
+            white-space: nowrap; color: var(--text-main);
+            user-select: text; width: fit-content;
+        }
+        tr:nth-child(even) { background-color: var(--bg-light); }
+        tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .nap-cell {
+            font-weight: 700; color: #38bdf8;
+            background-color: rgba(15, 23, 42, 0.94);
+            font-size: 11px; text-align: center; vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Celdas editables compactas */
+        .cell-edit {
+            width: fit-content; min-width: 42px; max-width: 60px;
+            text-align: center; padding: 2px 3px;
+            border: 1px solid var(--border); border-radius: 4px;
+            font-size: 11px; background: var(--input-bg); color: var(--text-main);
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-variant-numeric: tabular-nums;
+            transition: all 0.2s;
+        }
+        .cell-edit:focus {
+            border-color: #0284c7; background: #1e293b;
+            outline: none; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
+        }
+        .cell-text-edit {
+            width: fit-content; min-width: 75px; max-width: 120px;
+            text-align: left; padding: 2px 4px;
+            border: 1px solid var(--border); border-radius: 4px;
+            font-size: 11px; background: var(--input-bg); color: var(--text-main);
+        }
+
+        /* ── Estados de Potencia Óptica en dBm ── */
+        .nivel-ok   { color: #34d399; font-weight: 700; font-family: var(--font-mono, 'JetBrains Mono', monospace); }
+        .nivel-warn { color: #fbbf24; font-weight: 700; font-family: var(--font-mono, 'JetBrains Mono', monospace); }
+        .nivel-bad  { color: #f87171; font-weight: 700; font-family: var(--font-mono, 'JetBrains Mono', monospace); }
+
+        .badge-status {
+            display: inline-block; padding: 2px 6px; border-radius: 9999px;
+            font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .badge-success { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+        .badge-warning { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+        .badge-danger  { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+
+        /* ── Tooltips ── */
+        .help-tip {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: rgba(56, 189, 248, 0.2); color: #38bdf8;
+            font-size: 9.5px; font-weight: bold; cursor: help;
+            margin-left: 3px; vertical-align: middle; user-select: none;
+        }
+        .help-tip:hover { background: #38bdf8; color: #020617; }
+
+        /* ── Hub de Proyectos UI ── */
+        .hub-wrapper { max-width: 1200px; margin: 0 auto; padding: 20px 10px; }
+        .hub-header {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px; margin-bottom: 25px;
+            background: var(--panel-bg); backdrop-filter: blur(14px);
+            border: 1px solid var(--border); border-radius: 12px; padding: 20px 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .hub-title-group h1 { margin: 0 0 6px 0; font-size: 22px; font-weight: 800; color: var(--text-heading, #f8fafc); }
+        .hub-title-group p { margin: 0; color: var(--text-muted); font-size: 12.5px; }
+        .btn-hub-new {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: #fff; font-weight: bold; border-radius: 8px; border: none;
+            padding: 9px 16px; cursor: pointer; font-size: 12px;
+        }
+        .btn-hub-secondary {
+            background: rgba(2, 132, 199, 0.15); color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .hub-toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; gap: 15px; flex-wrap: wrap;
+        }
+        .hub-search-input {
+            flex: 1; min-width: 260px; max-width: 450px; padding: 9px 14px;
+            background: var(--input-bg); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text-main); font-size: 12.5px;
+        }
+        .hub-counter { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .hub-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px; margin-bottom: 40px;
+        }
+        .hub-card {
+            background: var(--panel-bg); backdrop-filter: blur(14px);
+            border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.25); display: flex; flex-direction: column;
+            justify-content: space-between; min-height: 180px;
+            transition: all 0.25s ease;
+        }
+        .hub-card:hover {
+            transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+        }
+        .hub-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .hub-card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-heading, #f8fafc); line-height: 1.3; }
+        .hub-card-source { font-size: 10px; padding: 2px 7px; border-radius: 12px; font-weight: bold; }
+        .source-server { background: rgba(2, 132, 199, 0.25); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+        .source-template { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.35); }
+        .hub-card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+        .hub-card-stats {
+            background: rgba(15, 23, 42, 0.5); padding: 8px 10px; border-radius: 6px;
+            border: 1px solid var(--border); margin-bottom: 12px;
+            display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 4px;
+        }
+        .stat-item .val { font-weight: bold; font-size: 13px; color: #38bdf8; }
+        .stat-item .lbl { font-size: 9px; color: var(--text-muted); }
+        .hub-card-actions {
+            display: flex; gap: 8px; justify-content: flex-end; align-items: center; border-top: 1px solid var(--border); padding-top: 10px;
+        }
+        .btn-hub-open {
+            background: #0284c7; color: #fff; padding: 6px 12px; font-size: 11.5px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;
+        }
+        .btn-hub-back {
+            background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11.5px; font-weight: 600;
+        }
+        .btn-hub-back:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        .hidden { display: none !important; }
+
+        /* ── Modales ── */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px); display: none; justify-content: center;
+            align-items: center; z-index: 9999; padding: 20px;
+        }
+        .modal-card-calc {
+            background: var(--card-bg, #0f172a); border: 1px solid var(--border);
+            border-radius: 12px; width: 100%; max-width: 560px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); overflow: hidden;
+        }
+        .modal-header-calc {
+            padding: 14px 18px; background: rgba(30, 41, 59, 0.75);
+            border-bottom: 1px solid var(--border); display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .modal-header-calc h3 { margin: 0; font-size: 15px; color: var(--text-heading, #f8fafc); }
+        .modal-close-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            font-size: 18px; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+        }
+        .modal-close-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .modal-body-calc { padding: 18px; overflow-y: auto; max-height: 75vh; }
+        .modal-footer-calc {
+            padding: 12px 18px; background: rgba(30, 41, 59, 0.5);
+            border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;
+        }
+        .toast-calc {
+            position: fixed; bottom: 25px; right: 25px; padding: 10px 18px;
+            border-radius: 8px; font-size: 12px; font-weight: 600; color: #fff;
+            z-index: 10000; box-shadow: 0 8px 25px rgba(0,0,0,0.5); display: none;
+            align-items: center; gap: 8px;
+        }
+
+        /* ══════════════════════════════════════════════════════ */
+        /* MODO CLARO (LIGHT THEME) — CONSISTENCIA CON SCITIC     */
+        /* ══════════════════════════════════════════════════════ */
+        html[data-theme="light"] body {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .project-title {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .header-panel,
+        html[data-theme="light"] .table-container,
+        html[data-theme="light"] .hub-header,
+        html[data-theme="light"] .hub-card {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+        }
+        html[data-theme="light"] .panel-section-title {
+            color: #0369a1 !important;
+            border-bottom-color: #e2e8f0 !important;
+        }
+        html[data-theme="light"] .input-group label {
+            color: #0284c7 !important;
+        }
+        html[data-theme="light"] .input-group input:not([type="checkbox"]),
+        html[data-theme="light"] .input-group select,
+        html[data-theme="light"] .cell-edit,
+        html[data-theme="light"] .cell-text-edit,
+        html[data-theme="light"] .hub-search-input {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .cell-edit:focus {
+            background: #f0fdf4 !important;
+            border-color: #0284c7 !important;
+        }
+        html[data-theme="light"] .sector-tab-btn {
+            background: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #475569 !important;
+        }
+        html[data-theme="light"] .sector-tab-btn:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .sector-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9) !important;
+            color: #ffffff !important;
+            border-color: #0284c7 !important;
+        }
+        html[data-theme="light"] th {
+            background-color: #f1f5f9 !important;
+            color: #0284c7 !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] th.sub-th {
+            background-color: #e2e8f0 !important;
+            color: #334155 !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] th.th-accent {
+            background-color: #fef3c7 !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+        }
+        html[data-theme="light"] th.th-result {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] td {
+            border-color: #e2e8f0 !important;
+            color: #1e293b !important;
+        }
+        html[data-theme="light"] tr:nth-child(even) {
+            background-color: #f8fafc !important;
+        }
+        html[data-theme="light"] tr:hover {
+            background-color: #f1f5f9 !important;
+        }
+        html[data-theme="light"] .nap-cell {
+            background-color: #f1f5f9 !important;
+            color: #0369a1 !important;
+        }
+        html[data-theme="light"] .hub-title-group h1,
+        html[data-theme="light"] .hub-card-title {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .cable-spec-banner {
+            background: #f0f9ff !important;
+            border-color: #bae6fd !important;
+        }
+        html[data-theme="light"] .cable-spec-tag {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #334155 !important;
+        }
+        html[data-theme="light"] .hub-card-stats {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+        }
+        html[data-theme="light"] .modal-card-calc {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] .modal-header-calc,
+        html[data-theme="light"] .modal-footer-calc {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+        }
+        html[data-theme="light"] .modal-header-calc h3 {
+            color: #0f172a !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- PANTALLA INICIAL: CATÁLOGO DE URBANIZACIONES          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="vista-proyectos-hub" class="hub-wrapper">
+        <div class="hub-header">
+            <div class="hub-title-group">
+                <h1>🏘️ Calculadora de Pérdidas de Fibra Óptica (TDT Multi-Sector)</h1>
+                <p>Diseño de redes ópticas para urbanizaciones horizontales por bloques de casas, múltiples transmisores/sectores independientes, cajas NAP con splitters y consolidación global.</p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <button type="button" class="btn-theme-toggle" id="btnThemeToggleHub" onclick="alternarTemaVisual()" title="Alternar Modo Oscuro / Claro">
+                    🌓 Tema
+                </button>
+                <button type="button" class="btn-hub-new" onclick="crearNuevaUrbanizacion()">
+                    ➕ Iniciar Nueva Urbanización
+                </button>
+                <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('input-cargar-json').click()">
+                    📂 Cargar Archivo (.json)
+                </button>
+            </div>
+        </div>
+
+        <div class="hub-toolbar">
+            <input type="text" id="hub-search-input" class="hub-search-input" onkeyup="filtrarHubProyectos()" placeholder="🔍 Buscar urbanización por nombre o sector...">
+            <div id="hub-counter" class="hub-counter">Cargando proyectos...</div>
+        </div>
+
+        <div id="hub-proyectos-lista" class="hub-list">
+            <!-- Renderizado dinámico -->
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- VISTA DEL EDITOR DE LA URBANIZACIÓN                    -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="vista-editor" style="display: none;">
+
+        <!-- BARRA SUPERIOR DE NAVEGACIÓN Y ACCIONES -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn-hub-back" onclick="volverAlHubProyectos()">
+                    ← Volver a Proyectos
+                </button>
+                <button type="button" class="btn-theme-toggle" id="btnThemeToggleEditor" onclick="alternarTemaVisual()" title="Alternar Modo Oscuro / Claro">
+                    🌓 Modo Claro/Oscuro
+                </button>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-calc" onclick="generarBalanceUrbanizacion()" title="Calcular balance óptico de todos los sectores">⚡ Calcular Todo</button>
+                <button type="button" class="btn-save" onclick="abrirModalGuardar()" title="Guardar proyecto en base de datos">☁️ Guardar</button>
+                <button type="button" class="btn-json-save" onclick="guardarJSON()">💾 Guardar JSON</button>
+                <button type="button" class="btn-json-load" onclick="document.getElementById('input-cargar-json').click()">📂 Cargar JSON</button>
+                <input type="file" id="input-cargar-json" accept=".json" style="display:none" onchange="cargarJSON(event)">
+                <button type="button" class="btn-excel" onclick="exportarExcel()">📊 Exportar Excel</button>
+                <button type="button" class="btn-pdf" onclick="exportarPDF()">📄 Exportar PDF</button>
+                <button type="button" class="btn-config" onclick="mostrarHubProyectos()">📂 Proyectos</button>
+            </div>
+        </div>
+
+        <!-- BADGE DE PROYECTO VINCULADO AL SERVIDOR -->
+        <div id="badge-proyecto-activo" style="display: none; align-items: center; justify-content: space-between; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 6px 12px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 15px;">☁️</span>
+                <span style="font-size: 11.5px; font-weight: 600; color: #38bdf8;">Urbanización en Servidor:</span>
+                <strong id="lbl-nombre-proyecto-activo" style="color: var(--text-heading); font-size: 12px;">-</strong>
+            </div>
+            <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn-calc" onclick="guardarProyectoEnServidor(false)" style="padding: 3px 8px; font-size: 10.5px;">Sobrescribir</button>
+                <button type="button" class="btn-config" onclick="desvincularProyectoActivo()" style="padding: 3px 6px; font-size: 10.5px;">Desvincular</button>
+            </div>
+        </div>
+
+        <input type="text" class="project-title" id="project-title" value="Urbanización Residencial — Red Óptica TDT Multi-Sector" spellcheck="false">
+
+        <!-- ═══════════════ PARÁMETROS GLOBALES DEL SISTEMA TDT ═══════════════ -->
+        <div class="header-panel">
+            <div class="panel-section-title">
+                <span><span class="icon">⚙️</span> Parámetros Globales de Recepción TDT y Cableado de Fibra</span>
+                <span style="font-size: 10.5px; font-weight: normal; color: var(--text-muted);">
+                    Valores modificables de referencia para todos los sectores
+                </span>
+            </div>
+
+            <!-- Banner con ficha técnica de cable FOD1 RO1030 de la imagen del usuario -->
+            <div class="cable-spec-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">📄</span>
+                    <div>
+                        <strong style="color: #38bdf8; font-size: 11.5px;">Modelo de Referencia: RO1030 / RO1031 (FOD1 / FOD2)</strong>
+                        <div style="font-size: 10.5px; color: var(--text-muted);">
+                            Fibra Monomodo ITU-T G.657 | Chaqueta LSZH | Acometidas a Casas Exterior/Interior | Norma IEC-60794-1-2
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <span class="cable-spec-tag">Drop FOD1 @1550nm: <strong>0.25 dB/km</strong></span>
+                    <span class="cable-spec-tag">Troncal Multifibra @1550nm: <strong>0.22 dB/km</strong></span>
+                    <span class="cable-spec-tag">Fusión Defecto: <strong>0.10 dB</strong></span>
+                    <span class="cable-spec-tag">Conector Mecánico Defecto: <strong>1.00 dB</strong></span>
+                </div>
+            </div>
+
+            <!-- Rango de recepción del micro-nodo (por defecto -15 dBm a +4 dBm) -->
+            <div class="input-group" style="min-width: 280px;">
+                <label>Rango Operativo Micro-Nodo TV (dBm) <span class="help-tip" title="Sensibilidad óptica admisible (-15 a +4 dBm por defecto). Dentro de este rango el micro-nodo entrega RF sin pixelación ni saturación">?</span></label>
+                <div style="display: flex; gap: 6px; align-items: center; background: var(--input-bg); padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;">
+                    <span style="font-size: 10.5px; color: var(--text-muted);">Mín:</span>
+                    <input type="number" id="rx-min-dbm" value="-15.0" step="0.5" style="width: 55px; text-align: center; color: #fbbf24; font-weight: bold;" onchange="autoCalcularSiVisible()">
+                    <span style="font-size: 10.5px; color: var(--text-muted);">Máx:</span>
+                    <input type="number" id="rx-max-dbm" value="4.0" step="0.5" style="width: 55px; text-align: center; color: #38bdf8; font-weight: bold;" onchange="autoCalcularSiVisible()">
+                    <span style="font-size: 10.5px; color: var(--text-muted); margin-left: 2px;">Óptimo:</span>
+                    <span style="font-size: 10.5px; color: #34d399; font-weight: 700;">-10 a 0 dBm</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Longitud de Onda <span class="help-tip" title="1550 nm estándar para TDT por menor atenuación y compatibilidad con amplificadores EDFA">?</span></label>
+                <select id="sel-longitud-onda" onchange="onLongitudOndaGlobalChange()">
+                    <option value="1550" selected>1550 nm (Estándar TDT con EDFA)</option>
+                    <option value="1310">1310 nm (Segunda Ventana)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Aten. Drop FOD1 (dB/km) <span class="help-tip" title="Atenuación del cable drop G.657 RO1030 (0.25 dB/km @ 1550nm)">?</span></label>
+                <input type="number" id="atten-drop-km" value="0.25" step="0.01" min="0.1" max="1.5" onchange="autoCalcularSiVisible()">
+            </div>
+
+            <div class="input-group">
+                <label>Aten. Troncal Multifibra (dB/km) <span class="help-tip" title="Atenuación del cable multifibra troncal (0.22 dB/km @ 1550nm)">?</span></label>
+                <input type="number" id="atten-troncal-km" value="0.22" step="0.01" min="0.1" max="1.0" onchange="autoCalcularSiVisible()">
+            </div>
+        </div>
+
+        <!-- ═══════════════ PESTAÑAS DE SECTORES / TRANSMISORES ═══════════════ -->
+        <div class="sector-tabs-bar" id="sector-tabs-container">
+            <!-- Botones dinámicos de pestañas de sectores -->
+        </div>
+
+        <!-- ═══════════════ PANEL DE CONFIGURACIÓN DEL SECTOR ACTIVO ═══════════════ -->
+        <div id="sector-config-panel" class="header-panel">
+            <div class="panel-section-title">
+                <span id="sector-title-display"><span class="icon">📡</span> Configuración de Transmisor / Sector</span>
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn-config" style="padding: 3px 8px; font-size: 10.5px;" onclick="duplicarSectorActivo()">📋 Duplicar Sector</button>
+                    <button type="button" class="btn-danger" id="btn-eliminar-sector" onclick="eliminarSectorActivo()">🗑️ Eliminar Sector</button>
+                </div>
+            </div>
+
+            <div class="input-group" style="min-width: 220px;">
+                <label>Nombre del Sector / Zona:</label>
+                <input type="text" id="sector-in-nombre" style="width: 100%; min-width: 200px; font-weight: 700; color: #38bdf8;" onchange="actualizarNombreSectorActivo(this.value)">
+            </div>
+
+            <div class="input-group">
+                <label>Potencia Tx de este Sector (dBm) <span class="help-tip" title="Potencia de salida del transmisor óptico o puerto EDFA asignado a este sector (+10 a +20 dBm)">?</span></label>
+                <input type="number" id="sector-in-txpower" value="16.0" step="0.5" min="-5" max="30" onchange="actualizarParametroSectorActivo('txPower', parseFloat(this.value)||16)">
+            </div>
+
+            <div class="input-group">
+                <label>Splitter Cabecera / ODF <span class="help-tip" title="Divisor primario en cabecera si este transmisor atiende varios ramales de este sector">?</span></label>
+                <select id="sector-in-splitter-cabecera" onchange="actualizarParametroSectorActivo('splitterCabecera', parseFloat(this.value))">
+                    <option value="0.0">Directo (0.0 dB - Salida pura a Ramales)</option>
+                    <option value="3.6">PLC 1x2 (3.6 dB - 2 Ramales)</option>
+                    <option value="7.2" selected>PLC 1x4 (7.2 dB - 4 Ramales)</option>
+                    <option value="10.4">PLC 1x8 (10.4 dB - 8 Ramales)</option>
+                    <option value="13.6">PLC 1x16 (13.6 dB)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Pérdida por Fusión (dB) <span class="help-tip" title="Pérdida por empalme de fusión (0.10 dB por defecto)">?</span></label>
+                <input type="number" id="sector-in-fusion" value="0.10" step="0.01" min="0.01" max="0.5" onchange="actualizarParametroSectorActivo('fusionLoss', parseFloat(this.value)||0.10)">
+            </div>
+
+            <div class="input-group">
+                <label>Pérdida Conector Mecánico (dB) <span class="help-tip" title="Pérdida por conector mecánico rápido SC/APC (1.00 dB por defecto)">?</span></label>
+                <input type="number" id="sector-in-conector" value="1.00" step="0.05" min="0.1" max="2.0" onchange="actualizarParametroSectorActivo('connectorLoss', parseFloat(this.value)||1.00)">
+            </div>
+        </div>
+
+        <!-- ═══════════════ TABLA DE CAJAS NAP DEL SECTOR ACTIVO ═══════════════ -->
+        <div id="sector-naps-section" class="header-panel" style="display: block;">
+            <div class="panel-section-title" style="margin-bottom: 8px;">
+                <span><span class="icon">🏘️</span> Cajas NAP y Bloques de Casas — <strong id="lbl-nombre-sector-tabla" style="color: #38bdf8;">Sector 1</strong></span>
+                <button type="button" class="btn-hub-new" style="padding: 4px 10px; font-size: 11px;" onclick="agregarNuevaNAPAlSectorActivo()">
+                    ➕ Agregar Caja NAP / Bloque a este Sector
+                </button>
+            </div>
+
+            <div class="table-container" style="margin-bottom: 8px;">
+                <table id="tabla-naps-config">
+                    <thead>
+                        <tr>
+                            <th>Caja NAP / Bloque</th>
+                            <th>Ramal / Fibras</th>
+                            <th>Hilo</th>
+                            <th>Dist. Troncal (m) <span class="help-tip" title="Metros de multifibra desde el transmisor/cabecera hasta esta Caja NAP">?</span></th>
+                            <th>Splitter NAP <span class="help-tip" title="Splitter PLC en la caja NAP para este bloque de casas">?</span></th>
+                            <th>N° Casas <span class="help-tip" title="Cantidad de casas conectadas a este splitter NAP">?</span></th>
+                            <th>Drop Mín (m)</th>
+                            <th>Drop Máx (m)</th>
+                            <th>Fusiones</th>
+                            <th>Conectores</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body-naps-config">
+                        <!-- Filas dinámicas de Cajas NAP del sector activo -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Resumen rápido del sector activo -->
+            <div id="mini-resumen-sector" style="display: flex; gap: 12px; align-items: center; font-size: 11px; color: var(--text-muted); padding: 4px 0;">
+                <!-- Dinámico -->
+            </div>
+        </div>
+
+        <!-- ═══════════════ MATRIZ DETALLADA DE RESULTADOS (CASA POR CASA) ═══════════════ -->
+        <div id="results-section">
+            <div class="panel-section-title" style="margin-bottom: 8px;">
+                <span><span class="icon">📊</span> Matriz de Balance Óptico Detallado — <span id="lbl-sector-resultados-title">Sector Activo</span></span>
+                <span id="badge-cumplimiento-sector" class="badge-status badge-success">CÁLCULO LISTO</span>
+            </div>
+
+            <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">SECTOR / TX</th>
+                            <th rowspan="2">CAJA NAP</th>
+                            <th rowspan="2">RAMAL</th>
+                            <th rowspan="2">CASA / LOTE</th>
+                            <th colspan="3" class="sub-th">Distancias Fibra (m)</th>
+                            <th rowspan="2">Pérd. Fibra (dB)</th>
+                            <th colspan="2" class="sub-th">Fusiones</th>
+                            <th colspan="2" class="sub-th">Conectores</th>
+                            <th colspan="2" class="sub-th">Splitters (dB)</th>
+                            <th rowspan="2" class="th-accent">Pérdida Total (dB)</th>
+                            <th rowspan="2" class="th-result">Potencia Rx (dBm) <span class="help-tip" title="Potencia óptica incidente en el micro-nodo de la casa">?</span></th>
+                            <th rowspan="2" class="th-result">Margen (dB)</th>
+                            <th rowspan="2">Estado Micro-Nodo TV</th>
+                        </tr>
+                        <tr>
+                            <th class="sub-th">Troncal</th>
+                            <th class="sub-th">Drop FOD1</th>
+                            <th class="sub-th">Total</th>
+                            <th class="sub-th">Cant</th>
+                            <th class="sub-th">dB</th>
+                            <th class="sub-th">Cant</th>
+                            <th class="sub-th">dB</th>
+                            <th class="sub-th">Cabecera</th>
+                            <th class="sub-th">NAP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body">
+                        <!-- Filas detalladas casa por casa -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ═════════════════════════════════════════════════════════════ -->
+            <!-- RESUMEN GLOBAL CONSOLIDADO DE TODOS LOS SECTORES / TRANSMISORES -->
+            <!-- ═════════════════════════════════════════════════════════════ -->
+            <div class="table-container" style="padding: 16px; margin-top: 14px; border: 1.5px solid rgba(56, 189, 248, 0.4);">
+                <div class="panel-section-title" style="margin-bottom: 12px;">
+                    <span><span class="icon">🌐</span> RESUMEN GLOBAL CONSOLIDADO — Toda la Urbanización (Suma de Todos los Sectores)</span>
+                    <span id="badge-cumplimiento-global" class="badge-status badge-success">SISTEMA CONFORME</span>
+                </div>
+
+                <!-- Tarjetas KPI Globales -->
+                <div id="summary-cards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px;">
+                    <!-- Métricas globales dinámicas -->
+                </div>
+
+                <!-- Tabla Resumen Comparativa por Sector -->
+                <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; margin-bottom: 6px;">
+                    Comparativa y Desglose por Sector / Transmisor:
+                </div>
+                <div class="table-container" style="margin-bottom: 12px; box-shadow: none;">
+                    <table id="tabla-resumen-sectores">
+                        <thead>
+                            <tr>
+                                <th>Sector / Transmisor</th>
+                                <th>Potencia Tx</th>
+                                <th>Splitter Cab.</th>
+                                <th>Cajas NAP</th>
+                                <th style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Casas Atendidas</th>
+                                <th>Metros Drop FOD1</th>
+                                <th>Pérdida Máx (dB)</th>
+                                <th>Potencia Rx Mín</th>
+                                <th>Potencia Rx Máx</th>
+                                <th>Desbalance</th>
+                                <th>Estado Sector</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-resumen-sectores">
+                            <!-- Filas dinámicas por sector + Fila Totalizadora -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="summary-diagnosis-text" style="font-size: 11.5px; line-height: 1.6; padding: 10px 14px; background: rgba(15, 23, 42, 0.5); border-radius: 8px; border: 1px solid var(--border);">
+                    <!-- Diagnóstico normativo global -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- MODAL DE GUARDAR URBANIZACIÓN EN SERVIDOR              -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <div id="modal-guardar-servidor" class="modal-overlay">
+        <div class="modal-card-calc">
+            <div class="modal-header-calc">
+                <h3>☁️ Guardar Urbanización en Servidor</h3>
+                <button type="button" class="modal-close-btn" onclick="cerrarModalGuardar()">✕</button>
+            </div>
+            <div class="modal-body-calc">
+                <div id="box-proyecto-existente" style="display: none; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px;">
+                    <div style="font-size: 10.5px; color: var(--text-muted);">Proyecto vinculado actual:</div>
+                    <strong id="lbl-nombre-existente-modal" style="color: #38bdf8; font-size: 12px;"></strong>
+                </div>
+                <label style="display: block; font-size: 11.5px; color: #38bdf8; font-weight: 600; margin-bottom: 5px;">
+                    Nombre de la Urbanización:
+                </label>
+                <input type="text" id="modal-in-nombre-proyecto" style="width: 100%; padding: 8px 10px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 12px;" placeholder="Ej. Urbanización Campestre Los Álamos">
+            </div>
+            <div class="modal-footer-calc" id="footer-acciones-guardar">
+                <button type="button" class="btn-config" onclick="cerrarModalGuardar()">Cancelar</button>
+                <button type="button" class="btn-calc" onclick="guardarProyectoEnServidor(true)">Guardar en Servidor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICACIONES -->
+    <div id="toast-calc" class="toast-calc"></div>
+
+    <!-- LIBRERÍAS DE EXPORTACIÓN -->
+    <script src="lib/jspdf.umd.min.js"></script>
+    <script src="lib/jspdf.plugin.autotable.min.js"></script>
+    <script src="lib/xlsx.bundle.js"></script>
+
+    <!-- MÓDULOS DE CÁLCULO Y CONSTANTES -->
+    <script src="js/constantes.js"></script>
+    <script src="js/motor-calculo.js"></script>
+
+    <!-- CONTROLADOR PRINCIPAL MULTI-SECTOR -->
+    <script>
+    /**
+     * =========================================================================
+     * CONTROLADOR: Urbanizaciones de Casas TDT con Múltiples Transmisores / Sectores
+     * =========================================================================
+     */
+
+    let proyectoActivoId = null;
+    let proyectoActivoNombre = '';
+    let hubProyectosCache = [];
+
+    // Colores para identificar ramales
+    const RAMAL_COLORS = {
+        'Ramal 1': '#38bdf8',
+        'Ramal 2': '#34d399',
+        'Ramal 3': '#fbbf24',
+        'Ramal 4': '#f472b6',
+        'Ramal 5': '#a78bfa',
+        'Ramal Norte': '#38bdf8',
+        'Ramal Sur': '#34d399',
+        'Ramal Oriente': '#fbbf24',
+        'Ramal Occidente': '#f472b6'
+    };
+
+    // Estructura de sectores en memoria
+    let listaSectores = [];
+    let sectorActivoId = null; // 'all' para consolidado o ID específico de sector
+    let cacheResultadosSectores = []; // Almacena filas y balances de cada sector
+
+    // Plantillas orientadas a urbanizaciones multi-sector
+    const PLANTILLAS_URBANIZACIONES = [
+        {
+            id: 'tpl-urbanizacion-multisector-96',
+            esPlantilla: true,
+            nombre_proyecto: 'Urbanización Campestre Los Álamos — 96 Casas (2 Sectores / 2 Tx)',
+            updated_at: '2026-03-01T00:00:00.000Z',
+            datos_json: {
+                projectTitle: 'Urbanización Campestre Los Álamos — 96 Casas (2 Sectores / 2 Tx)',
+                wavelength: '1550',
+                attenTroncalKm: 0.22,
+                attenDropKm: 0.25,
+                rxMin: -15.0,
+                rxMax: 4.0,
+                sectores: [
+                    {
+                        id: 'sec-1',
+                        nombre: 'Sector Norte (Tx 1 - Mzas A a F)',
+                        txPower: 16.0,
+                        splitterCabecera: 7.2, // PLC 1x4
+                        fusionLoss: 0.10,
+                        connectorLoss: 1.00,
+                        naps: [
+                            { nombre: 'NAP-N1 (Mza A)', ramal: 'Ramal 1', hilo: 1, distTroncal: 280, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N2 (Mza B)', ramal: 'Ramal 1', hilo: 2, distTroncal: 490, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N3 (Mza C)', ramal: 'Ramal 1', hilo: 3, distTroncal: 720, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N4 (Mza D)', ramal: 'Ramal 2', hilo: 1, distTroncal: 380, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N5 (Mza E)', ramal: 'Ramal 2', hilo: 2, distTroncal: 640, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 75, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N6 (Mza F)', ramal: 'Ramal 2', hilo: 3, distTroncal: 920, splitterNap: 10.4, numCasas: 8, dropMin: 30, dropMax: 85, fusiones: 2, conectores: 2 }
+                        ]
+                    },
+                    {
+                        id: 'sec-2',
+                        nombre: 'Sector Sur (Tx 2 - Mzas G a L)',
+                        txPower: 16.0,
+                        splitterCabecera: 7.2,
+                        fusionLoss: 0.10,
+                        connectorLoss: 1.00,
+                        naps: [
+                            { nombre: 'NAP-S1 (Mza G)', ramal: 'Ramal 3', hilo: 1, distTroncal: 310, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S2 (Mza H)', ramal: 'Ramal 3', hilo: 2, distTroncal: 560, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S3 (Mza I)', ramal: 'Ramal 3', hilo: 3, distTroncal: 850, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S4 (Mza J)', ramal: 'Ramal 4', hilo: 1, distTroncal: 420, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S5 (Mza K)', ramal: 'Ramal 4', hilo: 2, distTroncal: 710, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 75, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S6 (Mza L)', ramal: 'Ramal 4', hilo: 3, distTroncal: 1120, splitterNap: 10.4, numCasas: 8, dropMin: 30, dropMax: 90, fusiones: 2, conectores: 2 }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            id: 'tpl-condominio-32',
+            esPlantilla: true,
+            nombre_proyecto: 'Condominio Campestre El Roble — 32 Casas (1 Sector / 4 NAPs 1x8)',
+            updated_at: '2026-03-01T00:00:00.000Z',
+            datos_json: {
+                projectTitle: 'Condominio Campestre El Roble — 32 Casas (1 Sector / 4 NAPs 1x8)',
+                wavelength: '1550',
+                attenTroncalKm: 0.22,
+                attenDropKm: 0.25,
+                rxMin: -15.0,
+                rxMax: 4.0,
+                sectores: [
+                    {
+                        id: 'sec-1',
+                        nombre: 'Sector Central (Tx 1)',
+                        txPower: 16.0,
+                        splitterCabecera: 7.2,
+                        fusionLoss: 0.10,
+                        connectorLoss: 1.00,
+                        naps: [
+                            { nombre: 'NAP-01 (Mza 1)', ramal: 'Ramal 1', hilo: 1, distTroncal: 250, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-02 (Mza 2)', ramal: 'Ramal 1', hilo: 2, distTroncal: 480, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-03 (Mza 3)', ramal: 'Ramal 1', hilo: 3, distTroncal: 760, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-04 (Mza 4)', ramal: 'Ramal 1', hilo: 4, distTroncal: 1050, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 80, fusiones: 2, conectores: 2 }
+                        ]
+                    }
+                ]
+            }
+        }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        sincronizarBotonTema();
+        mostrarHubProyectos();
+
+        // Escuchar cambios de tema externos
+        window.addEventListener('sciticthemechange', (e) => {
+            sincronizarBotonTema();
+        });
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'scitic_ui_theme') {
+                const isLight = e.newValue === 'light';
+                if (isLight) document.documentElement.setAttribute('data-theme', 'light');
+                else document.documentElement.removeAttribute('data-theme');
+                sincronizarBotonTema();
+            }
+        });
+    });
+
+    // ════════════════════════════════════════
+    // CONTROL DEL MODO OSCURO / CLARO
+    // ════════════════════════════════════════
+
+    function alternarTemaVisual() {
+        if (typeof window.SCITICTheme !== 'undefined' && typeof window.SCITICTheme.toggle === 'function') {
+            window.SCITICTheme.toggle();
+        } else {
+            const esClaro = document.documentElement.getAttribute('data-theme') === 'light';
+            if (esClaro) {
+                document.documentElement.removeAttribute('data-theme');
+                try { localStorage.setItem('scitic_ui_theme', 'dark'); } catch(_) {}
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                try { localStorage.setItem('scitic_ui_theme', 'light'); } catch(_) {}
+            }
+        }
+        sincronizarBotonTema();
+    }
+
+    function sincronizarBotonTema() {
+        const esClaro = document.documentElement.getAttribute('data-theme') === 'light';
+        const txt = esClaro ? '🌙 Modo Oscuro' : '☀️ Modo Claro';
+        const hubBtn = document.getElementById('btnThemeToggleHub');
+        const edBtn = document.getElementById('btnThemeToggleEditor');
+        if (hubBtn) hubBtn.textContent = txt;
+        if (edBtn) edBtn.textContent = txt;
+    }
+
+    function notificarToast(mensaje, tipo = 'info') {
+        const toast = document.getElementById('toast-calc');
+        if (!toast) return;
+        toast.textContent = mensaje;
+        toast.style.display = 'flex';
+        if (tipo === 'success') toast.style.background = '#10b981';
+        else if (tipo === 'error') toast.style.background = '#ef4444';
+        else if (tipo === 'warning') toast.style.background = '#f59e0b';
+        else toast.style.background = '#0284c7';
+        setTimeout(() => { toast.style.display = 'none'; }, 3200);
+    }
+
+    function getAPIService() {
+        return (typeof window.API !== 'undefined') ? window.API : (window.parent && window.parent.API ? window.parent.API : null);
+    }
+
+    // ════════════════════════════════════════
+    // GESTIÓN DEL HUB DE PROYECTOS
+    // ════════════════════════════════════════
+
+    async function mostrarHubProyectos() {
+        document.getElementById('vista-editor').style.display = 'none';
+        document.getElementById('vista-proyectos-hub').style.display = 'block';
+
+        hubProyectosCache = [...PLANTILLAS_URBANIZACIONES];
+        renderizarTarjetasHub(hubProyectosCache);
+
+        try {
+            const api = getAPIService();
+            if (api && api.getProyectosCalculadora) {
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000));
+                const res = await Promise.race([api.getProyectosCalculadora('loss-fiber-app'), timeoutPromise]);
+                if (Array.isArray(res) && res.length > 0) {
+                    hubProyectosCache = [...res, ...PLANTILLAS_URBANIZACIONES];
+                    renderizarTarjetasHub(hubProyectosCache);
+                }
+            }
+        } catch (e) {
+            console.warn("Carga de proyectos del servidor offline:", e);
+        }
+    }
+
+    function volverAlHubProyectos() {
+        mostrarHubProyectos();
+    }
+
+    function renderizarTarjetasHub(lista) {
+        const contLista = document.getElementById('hub-proyectos-lista');
+        const contCounter = document.getElementById('hub-counter');
+        if (!contLista) return;
+
+        contCounter.textContent = `${lista.length} urbanización(es) disponible(s)`;
+        contLista.innerHTML = '';
+
+        if (lista.length === 0) {
+            contLista.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No se encontraron urbanizaciones.</div>';
+            return;
+        }
+
+        lista.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'hub-card';
+
+            const esPl = p.esPlantilla;
+            const fuenteTag = esPl
+                ? '<span class="hub-card-source source-template">📑 Plantilla</span>'
+                : '<span class="hub-card-source source-server">☁️ Servidor</span>';
+
+            const d = p.datos_json || {};
+            const secs = d.sectores || [];
+            const cantSectores = secs.length > 0 ? secs.length : 1;
+
+            let totalCasas = 0;
+            let totalNaps = 0;
+
+            if (Array.isArray(d.sectores) && d.sectores.length > 0) {
+                d.sectores.forEach(s => {
+                    (s.naps || []).forEach(n => {
+                        totalCasas += (parseInt(n.numCasas) || 0);
+                        totalNaps++;
+                    });
+                });
+            } else if (Array.isArray(d.naps)) {
+                // Compatibilidad con versión previa mono-sector
+                d.naps.forEach(n => { totalCasas += (parseInt(n.numCasas) || 0); totalNaps++; });
+            }
+
+            let fecha = 'Plantilla base';
+            if (p.updated_at && !esPl) {
+                try { fecha = new Date(p.updated_at).toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }); } catch(_) {}
+            }
+
+            const btnEliminar = esPl ? '' : `
+                <button type="button" class="btn-config" style="padding: 4px 7px; font-size: 11px;" onclick="eliminarProyectoHub('${p.id}', '${escapeHTML(p.nombre_proyecto)}')" title="Eliminar proyecto">🗑️</button>
+            `;
+
+            card.innerHTML = `
+                <div>
+                    <div class="hub-card-top">
+                        <h3 class="hub-card-title">${escapeHTML(p.nombre_proyecto || 'Urbanización')}</h3>
+                        ${fuenteTag}
+                    </div>
+                    <div class="hub-card-meta">
+                        Actualizado: ${fecha} | Red: <strong style="color:#38bdf8;">TDT Multi-Sector</strong>
+                    </div>
+                    <div class="hub-card-stats">
+                        <div class="stat-item"><div class="val">${cantSectores}</div><div class="lbl">Sectores/Tx</div></div>
+                        <div class="stat-item"><div class="val">${totalNaps}</div><div class="lbl">Cajas NAP</div></div>
+                        <div class="stat-item"><div class="val">${totalCasas}</div><div class="lbl">Total Casas</div></div>
+                    </div>
+                </div>
+                <div class="hub-card-actions">
+                    ${btnEliminar}
+                    <button type="button" class="btn-hub-open" onclick="abrirProyectoDesdeHub('${p.id}')">Abrir Proyecto</button>
+                </div>
+            `;
+            contLista.appendChild(card);
+        });
+    }
+
+    function filtrarHubProyectos() {
+        const q = (document.getElementById('hub-search-input')?.value || '').toLowerCase();
+        const filtrados = hubProyectosCache.filter(p => {
+            const nom = (p.nombre_proyecto || '').toLowerCase();
+            return nom.includes(q);
+        });
+        renderizarTarjetasHub(filtrados);
+    }
+
+    function abrirProyectoDesdeHub(id) {
+        const p = hubProyectosCache.find(x => String(x.id) === String(id));
+        if (!p) return;
+
+        if (p.esPlantilla) {
+            proyectoActivoId = null;
+            proyectoActivoNombre = p.nombre_proyecto;
+        } else {
+            proyectoActivoId = p.id;
+            proyectoActivoNombre = p.nombre_proyecto;
+        }
+        actualizarBadgeProyectoActivo();
+
+        cargarDatosEnInterfaz(p.datos_json);
+
+        document.getElementById('vista-proyectos-hub').style.display = 'none';
+        document.getElementById('vista-editor').style.display = 'block';
+
+        generarPestañasSectores();
+        renderizarSectorActivo();
+        generarBalanceUrbanizacion();
+    }
+
+    function crearNuevaUrbanizacion() {
+        proyectoActivoId = null;
+        proyectoActivoNombre = 'Nueva Urbanización TDT Multi-Sector';
+        actualizarBadgeProyectoActivo();
+
+        const base = PLANTILLAS_URBANIZACIONES[0].datos_json;
+        cargarDatosEnInterfaz(base);
+        document.getElementById('project-title').value = 'Nueva Urbanización Residencial — Red TDT Multi-Sector';
+
+        document.getElementById('vista-proyectos-hub').style.display = 'none';
+        document.getElementById('vista-editor').style.display = 'block';
+
+        generarPestañasSectores();
+        renderizarSectorActivo();
+        generarBalanceUrbanizacion();
+    }
+
+    async function eliminarProyectoHub(id, nombre) {
+        if (!confirm(`¿Estás seguro de eliminar el proyecto "${nombre}" del servidor?`)) return;
+        const api = getAPIService();
+        if (!api) return;
+        try {
+            const ok = await api.eliminarProyectoCalculadora(id);
+            if (ok) {
+                notificarToast("Proyecto eliminado", "success");
+                mostrarHubProyectos();
+            }
+        } catch (e) {
+            notificarToast("Error al eliminar proyecto", "error");
+        }
+    }
+
+    function actualizarBadgeProyectoActivo() {
+        const badge = document.getElementById('badge-proyecto-activo');
+        const lbl = document.getElementById('lbl-nombre-proyecto-activo');
+        if (proyectoActivoId) {
+            badge.style.display = 'flex';
+            lbl.textContent = proyectoActivoNombre || 'Proyecto Servidor';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function desvincularProyectoActivo() {
+        proyectoActivoId = null;
+        actualizarBadgeProyectoActivo();
+        notificarToast("Proyecto desvinculado. Al guardar se creará uno nuevo.", "info");
+    }
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[tag] || tag));
+    }
+
+    // ════════════════════════════════════════
+    // GESTIÓN DE DATOS Y MULTI-SECTOR
+    // ════════════════════════════════════════
+
+    function cargarDatosEnInterfaz(d) {
+        if (!d) return;
+        if (d.projectTitle) document.getElementById('project-title').value = d.projectTitle;
+        if (d.wavelength) document.getElementById('sel-longitud-onda').value = d.wavelength;
+        if (d.attenTroncalKm !== undefined) document.getElementById('atten-troncal-km').value = d.attenTroncalKm;
+        if (d.attenDropKm !== undefined) document.getElementById('atten-drop-km').value = d.attenDropKm;
+
+        // Por defecto solicitados: rxMin = -15.0, rxMax = 4.0
+        document.getElementById('rx-min-dbm').value = (d.rxMin !== undefined) ? d.rxMin : -15.0;
+        document.getElementById('rx-max-dbm').value = (d.rxMax !== undefined) ? d.rxMax : 4.0;
+
+        // Carga de sectores
+        if (Array.isArray(d.sectores) && d.sectores.length > 0) {
+            listaSectores = JSON.parse(JSON.stringify(d.sectores));
+        } else if (Array.isArray(d.naps) && d.naps.length > 0) {
+            // Conversión de formato mono-sector a multi-sector
+            listaSectores = [{
+                id: 'sec-1',
+                nombre: 'Sector 1 (Tx Principal)',
+                txPower: (d.txPower !== undefined) ? d.txPower : 16.0,
+                splitterCabecera: (d.splitterCabecera !== undefined) ? d.splitterCabecera : 7.2,
+                fusionLoss: (d.fusionLoss !== undefined) ? d.fusionLoss : 0.10,
+                connectorLoss: (d.connectorLoss !== undefined) ? d.connectorLoss : 1.00,
+                naps: JSON.parse(JSON.stringify(d.naps))
+            }];
+        } else {
+            listaSectores = JSON.parse(JSON.stringify(PLANTILLAS_URBANIZACIONES[0].datos_json.sectores));
+        }
+
+        // Asegurar que cada sector tenga valores por defecto solicitados
+        listaSectores.forEach(s => {
+            if (s.fusionLoss === undefined) s.fusionLoss = 0.10;
+            if (s.connectorLoss === undefined) s.connectorLoss = 1.00;
+            if (s.txPower === undefined) s.txPower = 16.0;
+            if (s.splitterCabecera === undefined) s.splitterCabecera = 7.2;
+        });
+
+        sectorActivoId = listaSectores[0]?.id || 'sec-1';
+    }
+
+    function onLongitudOndaGlobalChange() {
+        const wl = document.getElementById('sel-longitud-onda').value;
+        if (wl === '1310') {
+            document.getElementById('atten-troncal-km').value = '0.35';
+            document.getElementById('atten-drop-km').value = '0.38';
+        } else {
+            document.getElementById('atten-troncal-km').value = '0.22';
+            document.getElementById('atten-drop-km').value = '0.25';
+        }
+        autoCalcularSiVisible();
+    }
+
+    function autoCalcularSiVisible() {
+        generarBalanceUrbanizacion();
+    }
+
+    // ════════════════════════════════════════
+    // CONTROLADOR DE PESTAÑAS DE SECTORES
+    // ════════════════════════════════════════
+
+    function generarPestañasSectores() {
+        const cont = document.getElementById('sector-tabs-container');
+        if (!cont) return;
+        cont.innerHTML = '';
+
+        listaSectores.forEach((sec, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `sector-tab-btn ${sec.id === sectorActivoId ? 'active' : ''}`;
+            const totalCasasSec = (sec.naps || []).reduce((acc, n) => acc + (parseInt(n.numCasas) || 0), 0);
+            btn.innerHTML = `📡 <strong>${escapeHTML(sec.nombre)}</strong> <span style="opacity: 0.8; font-size: 10px;">(+${sec.txPower} dBm | ${totalCasasSec} casas)</span>`;
+            btn.onclick = () => {
+                sectorActivoId = sec.id;
+                generarPestañasSectores();
+                renderizarSectorActivo();
+                generarBalanceUrbanizacion();
+            };
+            cont.appendChild(btn);
+        });
+
+        // Pestaña especial: "Vista Consolidada (Todos los Sectores)"
+        const btnConsol = document.createElement('button');
+        btnConsol.type = 'button';
+        btnConsol.className = `sector-tab-btn tab-all ${sectorActivoId === 'all' ? 'active' : ''}`;
+        btnConsol.innerHTML = `🌐 <strong>Ver Todos los Sectores (Consolidado)</strong>`;
+        btnConsol.onclick = () => {
+            sectorActivoId = 'all';
+            generarPestañasSectores();
+            renderizarSectorActivo();
+            generarBalanceUrbanizacion();
+        };
+        cont.appendChild(btnConsol);
+
+        // Botón para agregar nuevo Sector / Transmisor
+        const btnAdd = document.createElement('button');
+        btnAdd.type = 'button';
+        btnAdd.className = 'sector-tab-add';
+        btnAdd.innerHTML = `➕ Agregar Sector / Transmisor`;
+        btnAdd.onclick = () => agregarNuevoSector();
+        cont.appendChild(btnAdd);
+    }
+
+    function renderizarSectorActivo() {
+        const panelConfig = document.getElementById('sector-config-panel');
+        const panelNaps = document.getElementById('sector-naps-section');
+        const btnEliminar = document.getElementById('btn-eliminar-sector');
+
+        if (sectorActivoId === 'all') {
+            // Modo consolidado: oculta edición de un solo sector y muestra tabla global
+            panelConfig.style.display = 'none';
+            panelNaps.style.display = 'none';
+            document.getElementById('lbl-sector-resultados-title').textContent = 'Todos los Sectores (Consolidado Completo)';
+            return;
+        }
+
+        panelConfig.style.display = 'flex';
+        panelNaps.style.display = 'block';
+
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+
+        document.getElementById('sector-title-display').innerHTML = `<span class="icon">📡</span> Configuración Transmisor: <strong style="color: #38bdf8;">${escapeHTML(sec.nombre)}</strong>`;
+        document.getElementById('lbl-nombre-sector-tabla').textContent = sec.nombre;
+        document.getElementById('lbl-sector-resultados-title').textContent = sec.nombre;
+
+        document.getElementById('sector-in-nombre').value = sec.nombre;
+        document.getElementById('sector-in-txpower').value = sec.txPower !== undefined ? sec.txPower : 16.0;
+        document.getElementById('sector-in-splitter-cabecera').value = sec.splitterCabecera !== undefined ? sec.splitterCabecera : 7.2;
+        document.getElementById('sector-in-fusion').value = sec.fusionLoss !== undefined ? sec.fusionLoss : 0.10;
+        document.getElementById('sector-in-conector').value = sec.connectorLoss !== undefined ? sec.connectorLoss : 1.00;
+
+        if (btnEliminar) {
+            btnEliminar.style.display = (listaSectores.length > 1) ? 'inline-flex' : 'none';
+        }
+
+        renderizarTablaNapsSectorActivo();
+    }
+
+    function actualizarNombreSectorActivo(nuevoNombre) {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+        sec.nombre = nuevoNombre.trim() || 'Sector Sin Nombre';
+        generarPestañasSectores();
+        renderizarSectorActivo();
+        generarBalanceUrbanizacion();
+    }
+
+    function actualizarParametroSectorActivo(campo, valor) {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+        sec[campo] = valor;
+        generarPestañasSectores();
+        generarBalanceUrbanizacion();
+    }
+
+    function agregarNuevoSector() {
+        const num = listaSectores.length + 1;
+        const nuevoId = 'sec-' + Date.now();
+        listaSectores.push({
+            id: nuevoId,
+            nombre: `Sector ${num} (Tx ${num})`,
+            txPower: 16.0,
+            splitterCabecera: 7.2,
+            fusionLoss: 0.10,
+            connectorLoss: 1.00,
+            naps: [
+                {
+                    nombre: `NAP-${num}01 (Mza ${String.fromCharCode(64 + num)}1)`,
+                    ramal: `Ramal ${num}`,
+                    hilo: 1,
+                    distTroncal: 350,
+                    splitterNap: 10.4,
+                    numCasas: 8,
+                    dropMin: 20,
+                    dropMax: 65,
+                    fusiones: 2,
+                    conectores: 2
+                }
+            ]
+        });
+        sectorActivoId = nuevoId;
+        generarPestañasSectores();
+        renderizarSectorActivo();
+        generarBalanceUrbanizacion();
+        notificarToast(`Sector ${num} con Transmisor independiente agregado.`, 'success');
+    }
+
+    function duplicarSectorActivo() {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+        const copia = JSON.parse(JSON.stringify(sec));
+        copia.id = 'sec-' + Date.now();
+        copia.nombre = copia.nombre + ' (Copia)';
+        listaSectores.push(copia);
+        sectorActivoId = copia.id;
+        generarPestañasSectores();
+        renderizarSectorActivo();
+        generarBalanceUrbanizacion();
+        notificarToast('Sector duplicado con éxito.', 'success');
+    }
+
+    function eliminarSectorActivo() {
+        if (listaSectores.length <= 1) {
+            notificarToast('Debe haber al menos 1 Sector / Transmisor en el proyecto.', 'warning');
+            return;
+        }
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!confirm(`¿Eliminar el sector "${sec?.nombre}" y todas sus Cajas NAP?`)) return;
+
+        const idx = listaSectores.findIndex(s => s.id === sectorActivoId);
+        listaSectores.splice(idx, 1);
+        sectorActivoId = listaSectores[0].id;
+        generarPestañasSectores();
+        renderizarSectorActivo();
+        generarBalanceUrbanizacion();
+        notificarToast('Sector eliminado.', 'info');
+    }
+
+    // ════════════════════════════════════════
+    // GESTIÓN DE CAJAS NAP DEL SECTOR ACTIVO
+    // ════════════════════════════════════════
+
+    function renderizarTablaNapsSectorActivo() {
+        const tbody = document.getElementById('body-naps-config');
+        tbody.innerHTML = '';
+
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec || !sec.naps || sec.naps.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" style="padding: 16px; color: var(--text-muted);">No hay Cajas NAP en este sector. Agrega una con el botón superior.</td></tr>';
+            return;
+        }
+
+        let casasSector = 0;
+        let troncalSector = 0;
+
+        sec.naps.forEach((nap, idx) => {
+            const tr = document.createElement('tr');
+            casasSector += (parseInt(nap.numCasas) || 0);
+            troncalSector += (parseFloat(nap.distTroncal) || 0);
+
+            const ramalColor = RAMAL_COLORS[nap.ramal] || '#38bdf8';
+
+            tr.innerHTML = `
+                <td class="nap-cell">
+                    <input type="text" class="cell-text-edit" value="${escapeHTML(nap.nombre)}" style="font-weight: bold; color: #38bdf8;" onchange="actualizarDatoNapSector(${idx}, 'nombre', this.value)">
+                </td>
+                <td>
+                    <input type="text" class="cell-text-edit" value="${escapeHTML(nap.ramal || 'Ramal 1')}" style="color: ${ramalColor}; font-weight: 600;" onchange="actualizarDatoNapSector(${idx}, 'ramal', this.value)">
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.hilo || (idx + 1)}" min="1" max="48" onchange="actualizarDatoNapSector(${idx}, 'hilo', parseInt(this.value)||1)">
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.distTroncal || 300}" min="0" step="5" style="min-width: 55px;" onchange="actualizarDatoNapSector(${idx}, 'distTroncal', parseFloat(this.value)||0)" title="Metros de multifibra desde cabecera">
+                </td>
+                <td>
+                    <select style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 10.5px;" onchange="actualizarDatoNapSector(${idx}, 'splitterNap', parseFloat(this.value))">
+                        <option value="7.2" ${nap.splitterNap === 7.2 ? 'selected' : ''}>PLC 1x4 (7.2 dB)</option>
+                        <option value="10.4" ${nap.splitterNap === 10.4 ? 'selected' : ''}>PLC 1x8 (10.4 dB)</option>
+                        <option value="13.6" ${nap.splitterNap === 13.6 ? 'selected' : ''}>PLC 1x16 (13.6 dB)</option>
+                        <option value="16.9" ${nap.splitterNap === 16.9 ? 'selected' : ''}>PLC 1x32 (16.9 dB)</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.numCasas || 8}" min="1" max="32" style="font-weight: bold;" onchange="actualizarDatoNapSector(${idx}, 'numCasas', parseInt(this.value)||1)">
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.dropMin || 20}" min="1" step="2" onchange="actualizarDatoNapSector(${idx}, 'dropMin', parseFloat(this.value)||1)">
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.dropMax || 65}" min="1" step="2" onchange="actualizarDatoNapSector(${idx}, 'dropMax', parseFloat(this.value)||1)">
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.fusiones || 2}" min="0" max="10" onchange="actualizarDatoNapSector(${idx}, 'fusiones', parseInt(this.value)||0)">
+                </td>
+                <td>
+                    <input type="number" class="cell-edit" value="${nap.conectores || 2}" min="0" max="10" onchange="actualizarDatoNapSector(${idx}, 'conectores', parseInt(this.value)||0)">
+                </td>
+                <td>
+                    <button type="button" class="btn-danger" onclick="eliminarNAPSector(${idx})" title="Eliminar Caja NAP">✕</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Actualizar mini resumen
+        const mini = document.getElementById('mini-resumen-sector');
+        if (mini) {
+            mini.innerHTML = `
+                <span>Cajas NAP: <strong style="color:#38bdf8;">${sec.naps.length}</strong></span> |
+                <span>Casas en este sector: <strong style="color:#34d399;">${casasSector}</strong></span> |
+                <span>Distancia Troncal Acumulada: <strong style="color:#fbbf24;">${troncalSector.toFixed(0)} m</strong></span>
+            `;
+        }
+    }
+
+    function actualizarDatoNapSector(idx, campo, valor) {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec || !sec.naps[idx]) return;
+        sec.naps[idx][campo] = valor;
+        generarPestañasSectores();
+        generarBalanceUrbanizacion();
+    }
+
+    function agregarNuevaNAPAlSectorActivo() {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+        const num = sec.naps.length + 1;
+        const distEst = 300 + (num - 1) * 250;
+        sec.naps.push({
+            nombre: `NAP-${num.toString().padStart(2, '0')}`,
+            ramal: `Ramal 1`,
+            hilo: num,
+            distTroncal: distEst,
+            splitterNap: 10.4,
+            numCasas: 8,
+            dropMin: 20,
+            dropMax: 65,
+            fusiones: 2,
+            conectores: 2
+        });
+        renderizarTablaNapsSectorActivo();
+        generarPestañasSectores();
+        generarBalanceUrbanizacion();
+        notificarToast(`Caja NAP-${num} agregada a ${sec.nombre}`, 'success');
+    }
+
+    function eliminarNAPSector(idx) {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+        if (sec.naps.length <= 1) {
+            notificarToast('Debe haber al menos 1 Caja NAP en el sector.', 'warning');
+            return;
+        }
+        sec.naps.splice(idx, 1);
+        renderizarTablaNapsSectorActivo();
+        generarPestañasSectores();
+        generarBalanceUrbanizacion();
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CÁLCULO INDEPENDIENTE POR SECTOR Y CONSOLIDACIÓN GLOBAL AL FINAL
+    // ══════════════════════════════════════════════════════════════════
+
+    function generarBalanceUrbanizacion() {
+        const attenTroncal = parseFloat(document.getElementById('atten-troncal-km').value) || 0.22;
+        const attenDrop = parseFloat(document.getElementById('atten-drop-km').value) || 0.25;
+
+        // Sensibilidad por defecto -15 dBm a +4 dBm
+        const rxMin = parseFloat(document.getElementById('rx-min-dbm').value) || -15.0;
+        const rxMax = parseFloat(document.getElementById('rx-max-dbm').value) || 4.0;
+
+        cacheResultadosSectores = [];
+
+        // 1. CÁLCULO INDEPENDIENTE DE CADA SECTOR
+        listaSectores.forEach(sec => {
+            const txP = parseFloat(sec.txPower !== undefined ? sec.txPower : 16.0);
+            const splCab = parseFloat(sec.splitterCabecera !== undefined ? sec.splitterCabecera : 7.2);
+            const fusL = parseFloat(sec.fusionLoss !== undefined ? sec.fusionLoss : 0.10);
+            const conL = parseFloat(sec.connectorLoss !== undefined ? sec.connectorLoss : 1.00);
+
+            const filasSector = [];
+
+            (sec.naps || []).forEach(nap => {
+                const dTroncal = parseFloat(nap.distTroncal) || 0;
+                const splNap = parseFloat(nap.splitterNap) || 10.4;
+                const nCasas = parseInt(nap.numCasas) || 1;
+                const dropMin = parseFloat(nap.dropMin) || 15;
+                const dropMax = parseFloat(nap.dropMax) || 60;
+                const nFusiones = parseInt(nap.fusiones) || 2;
+                const nConectores = parseInt(nap.conectores) || 2;
+
+                for (let c = 0; c < nCasas; c++) {
+                    const dDrop = (nCasas === 1) ? dropMin : (dropMin + ((dropMax - dropMin) / (nCasas - 1)) * c);
+                    const dTotal = dTroncal + dDrop;
+
+                    // Pérdidas de fibra independientes
+                    const perdTroncal = MotorCalculoFO.perdidaFibra(dTroncal, attenTroncal);
+                    const perdDrop = MotorCalculoFO.perdidaFibra(dDrop, attenDrop);
+                    const perdFibra = perdTroncal + perdDrop;
+
+                    // Fusiones y conectores
+                    const perdFus = MotorCalculoFO.perdidaFusiones(nFusiones, fusL);
+                    const perdCon = MotorCalculoFO.perdidaConectores(nConectores, conL);
+
+                    // Pérdida total de este enlace
+                    const perdTotal = perdFibra + perdFus + perdCon + splCab + splNap;
+
+                    // Potencia recibida calculada respecto al transmisor de ESTE sector
+                    const potRx = MotorCalculoFO.potenciaRecibida(txP, perdTotal);
+                    const evalRx = MotorCalculoFO.evaluarReceptor(potRx, rxMin, rxMax, -10.0, 0.0);
+                    const margen = potRx - rxMin;
+
+                    filasSector.push({
+                        sectorId: sec.id,
+                        sectorNombre: sec.nombre,
+                        txPower: txP,
+                        nap: nap.nombre,
+                        ramal: nap.ramal,
+                        hilo: nap.hilo,
+                        casa: `Casa ${c + 1}`,
+                        distTroncal: dTroncal,
+                        distDrop: dDrop,
+                        distTotalFibra: dTotal,
+                        perdFibra: perdFibra,
+                        numFusiones: nFusiones,
+                        perdFus: perdFus,
+                        numConectores: nConectores,
+                        perdCon: perdCon,
+                        splCabecera: splCab,
+                        splNap: splNap,
+                        perdidaTotal: perdTotal,
+                        potenciaRx: potRx,
+                        margenOptico: margen,
+                        estado: evalRx.estado,
+                        evalRx: evalRx
+                    });
+                }
+            });
+
+            const resumenSec = MotorCalculoFO.calcularResumenSector(filasSector, { rangoMinimo: rxMin, rangoMaximo: rxMax });
+
+            cacheResultadosSectores.push({
+                sector: sec,
+                filas: filasSector,
+                resumen: resumenSec,
+                naps: sec.naps || []
+            });
+        });
+
+        // 2. RENDERIZAR TABLA DETALLADA SEGÚN SECTOR ACTIVO
+        renderizarTablaDetalladaResultados(rxMin, rxMax);
+
+        // 3. RENDERIZAR RESUMEN GLOBAL CONSOLIDADO (Suma todas las casas de todos los sistemas)
+        renderizarConsolidacionGlobal(rxMin, rxMax);
+    }
+
+    function renderizarTablaDetalladaResultados(rxMin, rxMax) {
+        const resultsBody = document.getElementById('results-body');
+        resultsBody.innerHTML = '';
+
+        let filasAMostrar = [];
+
+        if (sectorActivoId === 'all') {
+            cacheResultadosSectores.forEach(s => {
+                filasAMostrar = filasAMostrar.concat(s.filas);
+            });
+        } else {
+            const secData = cacheResultadosSectores.find(s => s.sector.id === sectorActivoId);
+            if (secData) filasAMostrar = secData.filas;
+        }
+
+        filasAMostrar.forEach(f => {
+            const tr = document.createElement('tr');
+            tr.dataset.sector = f.sectorNombre;
+            tr.dataset.nap = f.nap;
+            tr.dataset.ramal = f.ramal;
+            tr.dataset.hilo = f.hilo;
+            tr.dataset.casa = f.casa;
+            tr.dataset.dTroncal = f.distTroncal;
+            tr.dataset.dDrop = f.distDrop.toFixed(1);
+            tr.dataset.dTotal = f.distTotalFibra.toFixed(1);
+            tr.dataset.perdFibra = f.perdFibra.toFixed(3);
+            tr.dataset.nFus = f.numFusiones;
+            tr.dataset.perdFus = f.perdFus.toFixed(3);
+            tr.dataset.nCon = f.numConectores;
+            tr.dataset.perdCon = f.perdCon.toFixed(3);
+            tr.dataset.splCabecera = f.splCabecera;
+            tr.dataset.splNap = f.splNap;
+            tr.dataset.perdTotal = f.perdidaTotal.toFixed(2);
+            tr.dataset.potRx = f.potenciaRx.toFixed(2);
+            tr.dataset.margen = f.margenOptico.toFixed(2);
+            tr.dataset.estado = f.estado;
+
+            tr.innerHTML = `
+                <td style="font-weight: 600; color: #38bdf8; font-size: 10.5px;">${escapeHTML(f.sectorNombre)}</td>
+                <td class="nap-cell">${escapeHTML(f.nap)}</td>
+                <td style="color: ${RAMAL_COLORS[f.ramal] || '#38bdf8'}; font-weight: 600;">${escapeHTML(f.ramal)} (H-${f.hilo})</td>
+                <td style="font-weight: 700; color: var(--text-main);">${escapeHTML(f.casa)}</td>
+                <td>${f.distTroncal.toFixed(0)}</td>
+                <td>${f.distDrop.toFixed(1)}</td>
+                <td style="font-weight: 700; color: #38bdf8;">${f.distTotalFibra.toFixed(1)}</td>
+                <td style="font-family: var(--font-mono);">${f.perdFibra.toFixed(3)}</td>
+                <td>${f.numFusiones}</td>
+                <td style="font-family: var(--font-mono);">${f.perdFus.toFixed(2)}</td>
+                <td>${f.numConectores}</td>
+                <td style="font-family: var(--font-mono);">${f.perdCon.toFixed(2)}</td>
+                <td>${f.splCabecera.toFixed(1)}</td>
+                <td>${f.splNap.toFixed(1)}</td>
+                <td class="th-accent" style="font-weight: 700; font-family: var(--font-mono);">${f.perdidaTotal.toFixed(2)}</td>
+                <td class="${f.evalRx.clase}" style="font-size: 12px;">${f.potenciaRx.toFixed(2)} dBm</td>
+                <td style="font-weight: 700; color: ${f.margenOptico >= 0 ? '#34d399' : '#f87171'}; font-family: var(--font-mono);">
+                    ${f.margenOptico >= 0 ? '+' : ''}${f.margenOptico.toFixed(2)} dB
+                </td>
+                <td><span class="badge-status ${f.evalRx.badgeClase}">${f.evalRx.label}</span></td>
+            `;
+            resultsBody.appendChild(tr);
+        });
+
+        // Actualizar badge del sector activo
+        const badgeSec = document.getElementById('badge-cumplimiento-sector');
+        if (sectorActivoId === 'all') {
+            badgeSec.textContent = 'MOSTRANDO TODOS LOS SECTORES';
+            badgeSec.className = 'badge-status badge-success';
+        } else {
+            const secData = cacheResultadosSectores.find(s => s.sector.id === sectorActivoId);
+            if (secData?.resumen?.cumpleTodo) {
+                badgeSec.textContent = 'SECTOR 100% CONFORME';
+                badgeSec.className = 'badge-status badge-success';
+            } else {
+                badgeSec.textContent = 'ALERTA EN SECTOR';
+                badgeSec.className = 'badge-status badge-danger';
+            }
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CONSOLIDACIÓN GLOBAL: SUMA TODAS LAS CASAS DE TODOS LOS SISTEMAS
+    // ══════════════════════════════════════════════════════════════════
+
+    function renderizarConsolidacionGlobal(rxMin, rxMax) {
+        const global = MotorCalculoFO.calcularResumenGlobal(cacheResultadosSectores, { rangoMinimo: rxMin, rangoMaximo: rxMax });
+        if (!global) return;
+
+        const badgeGlobal = document.getElementById('badge-cumplimiento-global');
+        if (global.cumpleTodo) {
+            badgeGlobal.className = 'badge-status badge-success';
+            badgeGlobal.textContent = '🟢 CUMPLE 100% EN TODOS LOS SECTORES';
+        } else {
+            badgeGlobal.className = 'badge-status badge-danger';
+            badgeGlobal.textContent = '🔴 ALERTA DE POTENCIA EN EL SISTEMA';
+        }
+
+        // Tarjetas KPIs Globales
+        const cardsCont = document.getElementById('summary-cards-container');
+        cardsCont.innerHTML = `
+            <div class="hub-card" style="min-height: auto; padding: 10px;">
+                <div style="font-size: 10.5px; color: var(--text-muted);">Total Casas del Proyecto</div>
+                <div style="font-size: 22px; font-weight: 800; color: #34d399;">${global.totalCasas}</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Suma de todos los sectores</div>
+            </div>
+            <div class="hub-card" style="min-height: auto; padding: 10px;">
+                <div style="font-size: 10.5px; color: var(--text-muted);">Transmisores / Sectores</div>
+                <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">${global.totalSectores}</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">${global.totalNaps} Cajas NAP en total</div>
+            </div>
+            <div class="hub-card" style="min-height: auto; padding: 10px;">
+                <div style="font-size: 10.5px; color: var(--text-muted);">Peor Nivel Óptico (Worst)</div>
+                <div style="font-size: 20px; font-weight: 800; color: ${global.minPotencia >= rxMin ? '#34d399' : '#f87171'};">
+                    ${global.minPotencia.toFixed(2)} dBm
+                </div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Límite Mín: ${rxMin.toFixed(1)} dBm</div>
+            </div>
+            <div class="hub-card" style="min-height: auto; padding: 10px;">
+                <div style="font-size: 10.5px; color: var(--text-muted);">Mejor Nivel Óptico (Best)</div>
+                <div style="font-size: 20px; font-weight: 800; color: ${global.maxPotencia <= rxMax ? '#38bdf8' : '#f87171'};">
+                    ${global.maxPotencia.toFixed(2)} dBm
+                </div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Límite Máx: +${rxMax.toFixed(1)} dBm</div>
+            </div>
+            <div class="hub-card" style="min-height: auto; padding: 10px;">
+                <div style="font-size: 10.5px; color: var(--text-muted);">Desbalance Óptico Global</div>
+                <div style="font-size: 20px; font-weight: 800; color: #fbbf24;">${global.desbalanceOptico.toFixed(2)} dB</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Diferencia Max - Min</div>
+            </div>
+            <div class="hub-card" style="min-height: auto; padding: 10px;">
+                <div style="font-size: 10.5px; color: var(--text-muted);">Cable Drop FOD1 Total</div>
+                <div style="font-size: 20px; font-weight: 800; color: #a78bfa;">${global.totalMetrosDrop.toFixed(0)} m</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Fibra G.657 RO1030</div>
+            </div>
+        `;
+
+        // Tabla comparativa de sectores
+        const bodySectores = document.getElementById('body-resumen-sectores');
+        bodySectores.innerHTML = '';
+
+        cacheResultadosSectores.forEach(s => {
+            const tr = document.createElement('tr');
+            const r = s.resumen;
+            const estadoBadge = r.cumpleTodo
+                ? '<span class="badge-status badge-success">CUMPLE</span>'
+                : '<span class="badge-status badge-danger">FUERA DE RANGO</span>';
+
+            tr.innerHTML = `
+                <td style="font-weight: 700; color: #38bdf8;">${escapeHTML(s.sector.nombre)}</td>
+                <td>+${s.sector.txPower} dBm</td>
+                <td>${s.sector.splitterCabecera} dB</td>
+                <td>${s.naps.length} NAPs</td>
+                <td style="font-weight: 800; color: #34d399; font-size: 12px;">${r.totalCasas}</td>
+                <td>${r.totalMetrosDrop.toFixed(0)} m</td>
+                <td style="font-family: var(--font-mono);">${r.maxPerdida.toFixed(2)} dB</td>
+                <td style="font-weight: 700; color: ${r.minPotencia >= rxMin ? '#34d399' : '#f87171'}; font-family: var(--font-mono);">${r.minPotencia.toFixed(2)} dBm</td>
+                <td style="font-weight: 700; color: ${r.maxPotencia <= rxMax ? '#38bdf8' : '#f87171'}; font-family: var(--font-mono);">${r.maxPotencia.toFixed(2)} dBm</td>
+                <td style="font-family: var(--font-mono);">${r.desbalanceOptico.toFixed(2)} dB</td>
+                <td>${estadoBadge}</td>
+            `;
+            bodySectores.appendChild(tr);
+        });
+
+        // Fila Totalizadora Final
+        const trTotal = document.createElement('tr');
+        trTotal.style.background = 'rgba(2, 132, 199, 0.15)';
+        trTotal.style.fontWeight = 'bold';
+        trTotal.innerHTML = `
+            <td style="color: #38bdf8; font-weight: 800;">TOTAL URBANIZACIÓN</td>
+            <td>-</td>
+            <td>-</td>
+            <td>${global.totalNaps} NAPs</td>
+            <td style="color: #34d399; font-size: 13px; font-weight: 800;">${global.totalCasas} CASAS</td>
+            <td>${global.totalMetrosDrop.toFixed(0)} m</td>
+            <td style="font-family: var(--font-mono);">${global.maxPerdida.toFixed(2)} dB</td>
+            <td style="color: ${global.minPotencia >= rxMin ? '#34d399' : '#f87171'}; font-family: var(--font-mono);">${global.minPotencia.toFixed(2)} dBm</td>
+            <td style="color: ${global.maxPotencia <= rxMax ? '#38bdf8' : '#f87171'}; font-family: var(--font-mono);">${global.maxPotencia.toFixed(2)} dBm</td>
+            <td style="font-family: var(--font-mono);">${global.desbalanceOptico.toFixed(2)} dB</td>
+            <td>${global.cumpleTodo ? '<span class="badge-status badge-success">SISTEMA OK</span>' : '<span class="badge-status badge-danger">REVISAR</span>'}</td>
+        `;
+        bodySectores.appendChild(trTotal);
+
+        // Diagnóstico normativo
+        const diag = document.getElementById('summary-diagnosis-text');
+        const projName = document.getElementById('project-title').value || 'Urbanización';
+
+        if (global.cumpleTodo) {
+            diag.innerHTML = `
+                <strong style="color: #34d399;">✔ SISTEMA ÓPTICO MULTI-SECTOR CONFORME:</strong> Se verificó el balance independiente de los <strong>${global.totalSectores} sectores / transmisores</strong>, atendiendo a un total consolidado de <strong>${global.totalCasas} casas</strong> distribuidas en <strong>${global.totalNaps} Cajas NAP</strong>.
+                Todas las acometidas con cable drop FOD1 (G.657 RO1030) entregan niveles entre <strong>${global.minPotencia.toFixed(2)} dBm</strong> y <strong>${global.maxPotencia.toFixed(2)} dBm</strong>, dentro de la ventana de recepción admisible (${rxMin} a ${rxMax} dBm), garantizando recepción TDT estable sin pixelado.
+            `;
+        } else {
+            diag.innerHTML = `
+                <strong style="color: #f87171;">⚠ ADVERTENCIA EN EL SISTEMA MULTI-SECTOR:</strong> Se detectaron casas fuera de la ventana operativa (-15 a +4 dBm).
+                ${global.minPotencia < rxMin ? `La casa más desfavorable recibe ${global.minPotencia.toFixed(2)} dBm (< ${rxMin} dBm). Aumenta la potencia del transmisor de ese sector o ajusta el splitter de cabecera.` : ''}
+                ${global.maxPotencia > rxMax ? `La casa más cercana recibe ${global.maxPotencia.toFixed(2)} dBm (> +${rxMax} dBm), lo que saturará el fotodiodo del micro-nodo. Agrega atenuación o splitter en ese sector.` : ''}
+            `;
+        }
+    }
+
+    // ════════════════════════════════════════
+    // GUARDADO Y SERIALIZACIÓN
+    // ════════════════════════════════════════
+
+    function obtenerDatosProyecto() {
+        return {
+            herramienta: 'loss-fiber-app',
+            modo: 'urbanizaciones-casas-multisector',
+            version: '2.5',
+            projectTitle: document.getElementById('project-title').value,
+            wavelength: document.getElementById('sel-longitud-onda').value,
+            attenTroncalKm: parseFloat(document.getElementById('atten-troncal-km').value),
+            attenDropKm: parseFloat(document.getElementById('atten-drop-km').value),
+            rxMin: parseFloat(document.getElementById('rx-min-dbm').value),
+            rxMax: parseFloat(document.getElementById('rx-max-dbm').value),
+            sectores: JSON.parse(JSON.stringify(listaSectores))
+        };
+    }
+
+    function abrirModalGuardar() {
+        const modal = document.getElementById('modal-guardar-servidor');
+        const inNombre = document.getElementById('modal-in-nombre-proyecto');
+        const boxExistente = document.getElementById('box-proyecto-existente');
+        const lblExistente = document.getElementById('lbl-nombre-existente-modal');
+        const footerAcciones = document.getElementById('footer-acciones-guardar');
+        if (!modal) return;
+
+        const currentTitle = document.getElementById('project-title').value.trim() || 'Urbanización Multi-Sector TDT';
+        inNombre.value = proyectoActivoNombre || currentTitle;
+
+        if (proyectoActivoId) {
+            boxExistente.style.display = 'block';
+            lblExistente.textContent = `${proyectoActivoNombre} (ID: ${proyectoActivoId.substring(0, 8)}...)`;
+            footerAcciones.innerHTML = `
+                <button type="button" class="btn-config" onclick="cerrarModalGuardar()">Cancelar</button>
+                <button type="button" class="btn-config" onclick="guardarProyectoEnServidor(true)" style="background: #64748b; color: #fff;">Guardar como Nuevo</button>
+                <button type="button" class="btn-calc" onclick="guardarProyectoEnServidor(false)">Actualizar (Sobrescribir)</button>
+            `;
+        } else {
+            boxExistente.style.display = 'none';
+            footerAcciones.innerHTML = `
+                <button type="button" class="btn-config" onclick="cerrarModalGuardar()">Cancelar</button>
+                <button type="button" class="btn-calc" onclick="guardarProyectoEnServidor(true)">Guardar en Servidor</button>
+            `;
+        }
+
+        modal.style.display = 'flex';
+        inNombre.focus();
+    }
+
+    function cerrarModalGuardar() {
+        const modal = document.getElementById('modal-guardar-servidor');
+        if (modal) modal.style.display = 'none';
+    }
+
+    async function guardarProyectoEnServidor(esNuevo = false) {
+        const api = getAPIService();
+        if (!api) {
+            notificarToast('Base de datos no disponible.', 'error');
+            return;
+        }
+
+        const inNombre = document.getElementById('modal-in-nombre-proyecto');
+        const nombreProyecto = inNombre ? inNombre.value.trim() : '';
+
+        if (!nombreProyecto) {
+            notificarToast('Escribe un nombre para la urbanización.', 'warning');
+            inNombre?.focus();
+            return;
+        }
+
+        const idDestino = esNuevo ? null : proyectoActivoId;
+        const datos = obtenerDatosProyecto();
+
+        let totalCasas = 0;
+        let totalNaps = 0;
+        datos.sectores.forEach(s => {
+            (s.naps || []).forEach(n => {
+                totalCasas += (parseInt(n.numCasas) || 0);
+                totalNaps++;
+            });
+        });
+
+        try {
+            notificarToast("Guardando urbanización multi-sector en servidor...", "info");
+            const res = await api.guardarProyectoCalculadora({
+                id: idDestino,
+                herramienta: 'loss-fiber-app',
+                nombreProyecto: nombreProyecto,
+                modo: 'urbanizaciones-casas-multisector',
+                datosJson: datos,
+                resumen: {
+                    tipo: 'Urbanización Casas Multi-Sector',
+                    cantSectores: datos.sectores.length,
+                    cantNaps: totalNaps,
+                    totalCasas: totalCasas
+                }
+            });
+
+            if (res && res.exito) {
+                proyectoActivoId = res.data?.id || res.id || idDestino;
+                proyectoActivoNombre = nombreProyecto;
+                document.getElementById('project-title').value = nombreProyecto;
+                actualizarBadgeProyectoActivo();
+                cerrarModalGuardar();
+                notificarToast("Urbanización guardada en servidor con éxito.", "success");
+            } else {
+                throw new Error(res?.mensaje || 'Error al guardar');
+            }
+        } catch (error) {
+            console.error("Error al guardar:", error);
+            notificarToast("No se pudo guardar: " + (error.message || error), "error");
+        }
+    }
+
+    function guardarJSON() {
+        const datos = obtenerDatosProyecto();
+        const str = JSON.stringify(datos, null, 2);
+        const blob = new Blob([str], { type: 'application/json' });
+        const a = document.createElement('a');
+        const projName = document.getElementById('project-title').value || 'Urbanizacion_MultiSector_TDT';
+        a.href = URL.createObjectURL(blob);
+        a.download = projName.replace(/[^a-zA-Z0-9_-]/g, '_') + '.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        notificarToast("Archivo JSON descargado", "success");
+    }
+
+    function cargarJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                proyectoActivoId = null;
+                proyectoActivoNombre = data.projectTitle || 'Urbanización Cargada';
+                actualizarBadgeProyectoActivo();
+                cargarDatosEnInterfaz(data);
+                document.getElementById('vista-proyectos-hub').style.display = 'none';
+                document.getElementById('vista-editor').style.display = 'block';
+                generarPestañasSectores();
+                renderizarSectorActivo();
+                generarBalanceUrbanizacion();
+                notificarToast("Proyecto JSON cargado con éxito", "success");
+            } catch (err) {
+                notificarToast("Error al leer archivo JSON", "error");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // EXPORTACIÓN A EXCEL (.XLSX) — REPORTES MULTI-SECTOR Y CONSOLIDADO
+    // ══════════════════════════════════════════════════════════════════
+
+    function exportarExcel() {
+        if (typeof XLSX === 'undefined') {
+            notificarToast('Librería XLSX no disponible', 'error');
+            return;
+        }
+
+        if (cacheResultadosSectores.length === 0) {
+            notificarToast('Calcula el balance primero', 'warning');
+            return;
+        }
+
+        const projectName = document.getElementById('project-title').value || 'Urbanización Fibra TDT';
+        const wavelength = document.getElementById('sel-longitud-onda').value;
+        const attenTroncal = parseFloat(document.getElementById('atten-troncal-km').value) || 0.22;
+        const attenDrop = parseFloat(document.getElementById('atten-drop-km').value) || 0.25;
+        const rxMin = parseFloat(document.getElementById('rx-min-dbm').value) || -15.0;
+        const rxMax = parseFloat(document.getElementById('rx-max-dbm').value) || 4.0;
+
+        const wb = XLSX.utils.book_new();
+
+        // ─── HOJA 1: RESUMEN EJECUTIVO CONSOLIDADO ───
+        const resSheetData = [];
+        resSheetData.push([projectName]);
+        resSheetData.push([
+            `Red: Urbanización Casas TDT Multi-Sector`,
+            `Longitud Onda: ${wavelength} nm`,
+            `Rango Receptor TV: ${rxMin} a +${rxMax} dBm`,
+            `Drop G.657 RO1030: ${attenDrop} dB/km`,
+            `Troncal: ${attenTroncal} dB/km`
+        ]);
+        resSheetData.push([]);
+        resSheetData.push([
+            'SECTOR / TRANSMISOR', 'POTENCIA TX (dBm)', 'SPLITTER CABECERA (dB)',
+            'CAJAS NAP', 'TOTAL CASAS', 'CABLE DROP (m)',
+            'PÉRDIDA MÁX (dB)', 'POTENCIA RX MÍN (dBm)', 'POTENCIA RX MÁX (dBm)',
+            'DESBALANCE (dB)', 'ESTADO TDT'
+        ]);
+
+        const startResRow = 5;
+        let sIdx = 0;
+
+        cacheResultadosSectores.forEach(s => {
+            const r = s.resumen;
+            resSheetData.push([
+                s.sector.nombre,
+                s.sector.txPower,
+                s.sector.splitterCabecera,
+                s.naps.length,
+                r.totalCasas,
+                r.totalMetrosDrop,
+                r.maxPerdida,
+                r.minPotencia,
+                r.maxPotencia,
+                r.desbalanceOptico,
+                r.cumpleTodo ? 'CUMPLE' : 'FUERA DE RANGO'
+            ]);
+            sIdx++;
+        });
+
+        // Fila Totalizadora con fórmulas de Excel
+        const lastResRow = startResRow + sIdx - 1;
+        resSheetData.push([
+            'TOTAL URBANIZACIÓN (CONSOLIDADO)',
+            '-',
+            '-',
+            { f: `SUM(D${startResRow}:D${lastResRow})` }, // Total NAPs
+            { f: `SUM(E${startResRow}:E${lastResRow})` }, // Total Casas
+            { f: `SUM(F${startResRow}:F${lastResRow})` }, // Total Metros Drop
+            { f: `MAX(G${startResRow}:G${lastResRow})` }, // Pérdida Máxima
+            { f: `MIN(H${startResRow}:H${lastResRow})` }, // Peor Potencia Rx
+            { f: `MAX(I${startResRow}:I${lastResRow})` }, // Mejor Potencia Rx
+            { f: `MAX(I${startResRow}:I${lastResRow})-MIN(H${startResRow}:H${lastResRow})` }, // Desbalance
+            'CONSOLIDADO'
+        ]);
+
+        const wsResumen = XLSX.utils.aoa_to_sheet(resSheetData);
+        wsResumen['!cols'] = [
+            { wch: 30 }, { wch: 18 }, { wch: 22 },
+            { wch: 12 }, { wch: 14 }, { wch: 16 },
+            { wch: 18 }, { wch: 22 }, { wch: 22 },
+            { wch: 16 }, { wch: 18 }
+        ];
+        XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Consolidado');
+
+        // ─── HOJAS 2..N: DETALLE INDEPENDIENTE POR CADA SECTOR ───
+        cacheResultadosSectores.forEach((s, secIndex) => {
+            const secData = [];
+            const txP = s.sector.txPower;
+            const splCab = s.sector.splitterCabecera;
+            const fusL = s.sector.fusionLoss;
+            const conL = s.sector.connectorLoss;
+
+            secData.push([`${s.sector.nombre} — Balance Óptico Detallado`]);
+            secData.push([
+                `Transmisor Tx: +${txP} dBm`,
+                `Splitter Cabecera: ${splCab} dB`,
+                `Pérdida Fusión: ${fusL} dB`,
+                `Pérdida Conector Mecánico: ${conL} dB`
+            ]);
+            secData.push([]);
+            secData.push([
+                'CAJA NAP', 'RAMAL', 'HILO', 'CASA',
+                'Troncal (m)', 'Drop FOD1 (m)', 'Total Fibra (m)',
+                'Pérd. Fibra (dB)', 'Fusiones Cant.', 'Fusiones dB',
+                'Conectores Cant.', 'Conectores dB', 'Splitter Cabecera (dB)', 'Splitter NAP (dB)',
+                'PÉRDIDA TOTAL (dB)', 'POTENCIA RX (dBm)', 'MARGEN (dB)', 'ESTADO'
+            ]);
+
+            const startSecRow = 5;
+            let rIdx = 0;
+
+            s.filas.forEach(f => {
+                const r = startSecRow + rIdx;
+                secData.push([
+                    f.nap, f.ramal, f.hilo, f.casa,
+                    f.distTroncal, f.distDrop,
+                    { f: `E${r}+F${r}` },
+                    { f: `((E${r}/1000)*${attenTroncal})+((F${r}/1000)*${attenDrop})` },
+                    f.numFusiones,
+                    { f: `I${r}*${fusL}` },
+                    f.numConectores,
+                    { f: `K${r}*${conL}` },
+                    splCab, f.splNap,
+                    { f: `H${r}+J${r}+L${r}+M${r}+N${r}` }, // Pérdida Total
+                    { f: `${txP}-O${r}` },                   // Potencia Rx
+                    { f: `P${r}-(${rxMin})` },               // Margen
+                    f.estado
+                ]);
+                rIdx++;
+            });
+
+            // Resumen al pie del sector
+            secData.push([]);
+            const lastSecRow = startSecRow + rIdx - 1;
+            secData.push([`MÉTRICAS DE ${s.sector.nombre.toUpperCase()}`]);
+            secData.push(['Total Casas en Sector', { f: `COUNTA(D${startSecRow}:D${lastSecRow})` }]);
+            secData.push(['Potencia Rx Mínima (dBm)', { f: `MIN(P${startSecRow}:P${lastSecRow})` }]);
+            secData.push(['Potencia Rx Máxima (dBm)', { f: `MAX(P${startSecRow}:P${lastSecRow})` }]);
+            secData.push(['Metros Cable Drop FOD1', { f: `SUM(F${startSecRow}:F${lastSecRow})` }]);
+
+            const wsSec = XLSX.utils.aoa_to_sheet(secData);
+            wsSec['!cols'] = [
+                { wch: 18 }, { wch: 14 }, { wch: 6 }, { wch: 12 },
+                { wch: 12 }, { wch: 14 }, { wch: 14 },
+                { wch: 16 }, { wch: 14 }, { wch: 14 },
+                { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 16 },
+                { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }
+            ];
+
+            // Nombre de hoja seguro (máx 31 chars)
+            let sheetName = `Sector ${secIndex + 1}`;
+            if (s.sector.nombre) {
+                sheetName = s.sector.nombre.substring(0, 28).replace(/[\\/?*[\]:]/g, '_');
+            }
+            XLSX.utils.book_append_sheet(wb, wsSec, sheetName);
+        });
+
+        // ─── HOJA FINAL: DETALLE GENERAL TODAS LAS CASAS ───
+        const wsGlobalData = [];
+        wsGlobalData.push([`${projectName} — Matriz General Todas las Casas`]);
+        wsGlobalData.push([`Total Sectores: ${cacheResultadosSectores.length}`, `Rango Micro-Nodo TV: ${rxMin} a +${rxMax} dBm`]);
+        wsGlobalData.push([]);
+        wsGlobalData.push([
+            'SECTOR', 'TRANSMISOR TX', 'CAJA NAP', 'RAMAL', 'HILO', 'CASA',
+            'Troncal (m)', 'Drop FOD1 (m)', 'Total Fibra (m)',
+            'Pérd. Fibra (dB)', 'Pérdida Fusiones (dB)', 'Pérdida Conectores (dB)',
+            'Splitter Cab. (dB)', 'Splitter NAP (dB)',
+            'PÉRDIDA TOTAL (dB)', 'POTENCIA RX (dBm)', 'MARGEN (dB)', 'ESTADO'
+        ]);
+
+        cacheResultadosSectores.forEach(s => {
+            s.filas.forEach(f => {
+                wsGlobalData.push([
+                    f.sectorNombre,
+                    `+${f.txPower} dBm`,
+                    f.nap, f.ramal, f.hilo, f.casa,
+                    f.distTroncal, f.distDrop, f.distTotalFibra,
+                    f.perdFibra, f.perdFus, f.perdCon,
+                    f.splCabecera, f.splNap,
+                    f.perdidaTotal, f.potenciaRx, f.margenOptico,
+                    f.estado
+                ]);
+            });
+        });
+
+        const wsGlobal = XLSX.utils.aoa_to_sheet(wsGlobalData);
+        wsGlobal['!cols'] = [
+            { wch: 22 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 6 }, { wch: 12 },
+            { wch: 12 }, { wch: 14 }, { wch: 14 },
+            { wch: 14 }, { wch: 16 }, { wch: 16 },
+            { wch: 16 }, { wch: 16 },
+            { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }
+        ];
+        XLSX.utils.book_append_sheet(wb, wsGlobal, 'Todas las Casas');
+
+        XLSX.writeFile(wb, projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '_MultiSector.xlsx');
+        notificarToast("Archivo Excel Multi-Sector generado con éxito", "success");
+    }
+
+    // ════════════════════════════════════════
+    // EXPORTACIÓN A PDF (.PDF)
+    // ════════════════════════════════════════
+
+    function exportarPDF() {
+        if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+            notificarToast('Librería jsPDF no disponible', 'error');
+            return;
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+
+        const projectName = document.getElementById('project-title').value || 'Urbanización Fibra TDT Multi-Sector';
+        const rxMin = document.getElementById('rx-min-dbm').value;
+        const rxMax = document.getElementById('rx-max-dbm').value;
+
+        doc.setFontSize(14);
+        doc.setTextColor(2, 132, 199);
+        doc.text(projectName, 14, 14);
+
+        doc.setFontSize(8.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`SCITIC S.A.S. — Balance Óptico Multi-Sector TDT | Sectores: ${cacheResultadosSectores.length} | Drop: FOD1 G.657 RO1030 | Rango Receptor TV: ${rxMin} a ${rxMax} dBm`, 14, 20);
+
+        const headers = [
+            ['Sector', 'Caja NAP', 'Ramal', 'Casa', 'Troncal', 'Drop', 'Total', 'P.Fibra', 'Fus', 'Con', 'Spl.Cab', 'Spl.NAP', 'P.Total', 'Pot.Rx', 'Margen', 'Estado']
+        ];
+
+        const data = [];
+        cacheResultadosSectores.forEach(s => {
+            s.filas.forEach(f => {
+                data.push([
+                    f.sectorNombre,
+                    f.nap,
+                    f.ramal,
+                    f.casa,
+                    `${f.distTroncal.toFixed(0)}m`,
+                    `${f.distDrop.toFixed(1)}m`,
+                    `${f.distTotalFibra.toFixed(1)}m`,
+                    `${f.perdFibra.toFixed(2)}`,
+                    `${f.perdFus.toFixed(2)}`,
+                    `${f.perdCon.toFixed(2)}`,
+                    `${f.splCabecera.toFixed(1)}`,
+                    `${f.splNap.toFixed(1)}`,
+                    `${f.perdidaTotal.toFixed(2)}`,
+                    `${f.potenciaRx.toFixed(2)} dBm`,
+                    `${f.margenOptico.toFixed(2)} dB`,
+                    f.estado
+                ]);
+            });
+        });
+
+        doc.autoTable({
+            head: headers,
+            body: data,
+            startY: 25,
+            theme: 'grid',
+            styles: { fontSize: 6.5, cellPadding: 1.2, halign: 'center' },
+            headStyles: { fillColor: [2, 132, 199], textColor: 255, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            didParseCell: function(data) {
+                if (data.column.index === 13) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.textColor = [2, 132, 199];
+                }
+                if (data.column.index === 15) {
+                    const val = data.cell.raw;
+                    if (val === 'OPTIMO') data.cell.styles.textColor = [16, 185, 129];
+                    else if (val === 'CUMPLE') data.cell.styles.textColor = [217, 119, 6];
+                    else data.cell.styles.textColor = [220, 38, 38];
+                }
+            }
+        });
+
+        doc.save(projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '_Casas_MultiSector.pdf');
+        notificarToast("Archivo PDF generado con éxito", "success");
+    }
+    </script>
+</body>
+</html>

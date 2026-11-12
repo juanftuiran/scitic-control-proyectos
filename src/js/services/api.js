@@ -214,6 +214,7 @@ class APIService {
         const mapa = {
             'calculadora-tubos': 'Calculadora de Tubos RITEL',
             'loss-gen-app': 'Calculadora de Pérdidas TDT',
+            'loss-fiber-app': 'Calculadora de Pérdidas Fibra Óptica (TDT)',
             'informes-obra': 'Registro de Instalación TDT'
         };
         return mapa[herramienta] || herramienta || 'Herramienta de Ingeniería';

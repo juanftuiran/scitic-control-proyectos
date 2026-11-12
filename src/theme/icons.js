@@ -60,6 +60,7 @@
         'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
         'pipe': '<circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="4"/>',
         'antenna': '<path d="M2 20h20"/><path d="M5 20V9l3-3"/><path d="M9 20V5l4-3"/><path d="M15 20V9l3-3"/><path d="M19 20v-7"/><circle cx="5" cy="9" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="15" cy="9" r="1"/>',
+        'fiber': '<circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M5 17c0-6.627 5.373-12 12-12"/><path d="M5 12c0-3.866 3.134-7 7-7"/><path d="M12 19c3.866 0 7-3.134 7-7"/>',
         'building': '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="18" x2="9" y2="18.01"/><line x1="15" y1="18" x2="15" y2="18.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/>'
     };
 

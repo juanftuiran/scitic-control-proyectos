@@ -653,21 +653,43 @@
                         </div>
                     </div>
 
-                    <!-- Card: Calculadora de Pérdidas TDT -->
-                    <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/loss-gen-app/index.html', 'Calculadora de Pérdidas TDT')">
+                    <!-- Card: Calculadora de Pérdidas TDT (Coaxial) -->
+                    <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/loss-gen-app/index.html', 'Calculadora de Pérdidas TDT (Coaxial)')">
                         <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #10b981, #34d399);"></div>
                         <div class="herramienta-card-body">
                             <div class="herramienta-card-icon" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
                                 <span data-icon="antenna" data-size="30" data-color="#10b981"></span>
                             </div>
                             <div class="herramienta-card-content">
-                                <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Pérdidas TDT</h4>
+                                <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Pérdidas TDT (Coaxial)</h4>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Balance de potencia RF (470/698 MHz), cadenas de derivadores y cumplimiento CRC 5405 (47–70 dBµV).</p>
                             </div>
                         </div>
                         <div class="herramienta-card-footer">
-                            <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">Señal TDT</span>
+                            <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">Coaxial RF</span>
                             <span class="herramienta-tag" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2);">CRC 5405</span>
+                            <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                Abrir
+                                <span data-icon="arrow-right" data-size="14"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card: Calculadora de Pérdidas Fibra Óptica (TDT) -->
+                    <div class="herramienta-card glass-panel" onclick="abrirHerramienta('./src/tools/loss-fiber-app/index.html', 'Calculadora de Pérdidas Fibra Óptica (TDT)')">
+                        <div class="herramienta-card-accent" style="background: linear-gradient(135deg, #0284c7, #38bdf8);"></div>
+                        <div class="herramienta-card-body">
+                            <div class="herramienta-card-icon" style="background: rgba(2, 132, 199, 0.12); border: 1px solid rgba(56, 189, 248, 0.25);">
+                                <span data-icon="fiber" data-size="30" data-color="#0284c7"></span>
+                            </div>
+                            <div class="herramienta-card-content">
+                                <h4 style="font-size: 1.05rem; color: var(--scitic-dark); margin-bottom: 6px; text-transform: none; letter-spacing: -0.3px;">Calculadora de Pérdidas Fibra Óptica (Casas / TDT)</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Balance en dBm para urbanizaciones de casas, ramales multifibra, cajas NAP con splitters, drop G.657 (RO1030/1031) y micro-nodos TV.</p>
+                            </div>
+                        </div>
+                        <div class="herramienta-card-footer">
+                            <span class="herramienta-tag" style="background: rgba(2, 132, 199, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2);">Casas / Urbanización</span>
+                            <span class="herramienta-tag" style="background: rgba(2, 132, 199, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2);">Cajas NAP</span>
                             <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 Abrir
                                 <span data-icon="arrow-right" data-size="14"></span>
