@@ -580,20 +580,20 @@
                 </span>
             </div>
 
-            <!-- Banner con ficha técnica de cable FOD1 RO1030 de la imagen del usuario -->
+            <!-- Banner de especificaciones genéricas de fibra: Troncal 12 hilos / Drop 2 hilos -->
             <div class="cable-spec-banner">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 16px;">📄</span>
                     <div>
-                        <strong style="color: #38bdf8; font-size: 11.5px;">Modelo de Referencia: RO1030 / RO1031 (FOD1 / FOD2)</strong>
+                        <strong style="color: #38bdf8; font-size: 11.5px;">Parámetros de Fibra: Troncal 12 Hilos / Drop 2 Hilos</strong>
                         <div style="font-size: 10.5px; color: var(--text-muted);">
-                            Fibra Monomodo ITU-T G.657 | Chaqueta LSZH | Acometidas a Casas Exterior/Interior | Norma IEC-60794-1-2
+                            Fibra Monomodo ITU-T G.657 | Troncales de 12 Hilos | Acometidas Drop de 2 Hilos | Chaqueta LSZH Exterior/Interior
                         </div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <span class="cable-spec-tag">Drop FOD1 @1550nm: <strong>0.25 dB/km</strong></span>
-                    <span class="cable-spec-tag">Troncal Multifibra @1550nm: <strong>0.22 dB/km</strong></span>
+                    <span class="cable-spec-tag">Drop (2 Hilos) @1550nm: <strong>0.25 dB/km</strong></span>
+                    <span class="cable-spec-tag">Troncal (12 Hilos) @1550nm: <strong>0.22 dB/km</strong></span>
                     <span class="cable-spec-tag">Fusión Defecto: <strong>0.10 dB</strong></span>
                     <span class="cable-spec-tag">Conector Mecánico Defecto: <strong>1.00 dB</strong></span>
                 </div>
@@ -621,12 +621,12 @@
             </div>
 
             <div class="input-group">
-                <label>Aten. Drop FOD1 (dB/km) <span class="help-tip" title="Atenuación del cable drop G.657 RO1030 (0.25 dB/km @ 1550nm)">?</span></label>
+                <label>Aten. Drop (2 Hilos) (dB/km) <span class="help-tip" title="Atenuación del cable drop de 2 hilos G.657 (0.25 dB/km @ 1550nm)">?</span></label>
                 <input type="number" id="atten-drop-km" value="0.25" step="0.01" min="0.1" max="1.5" onchange="autoCalcularSiVisible()">
             </div>
 
             <div class="input-group">
-                <label>Aten. Troncal Multifibra (dB/km) <span class="help-tip" title="Atenuación del cable multifibra troncal (0.22 dB/km @ 1550nm)">?</span></label>
+                <label>Aten. Troncal (12 Hilos) (dB/km) <span class="help-tip" title="Atenuación del cable troncal de 12 hilos (0.22 dB/km @ 1550nm)">?</span></label>
                 <input type="number" id="atten-troncal-km" value="0.22" step="0.01" min="0.1" max="1.0" onchange="autoCalcularSiVisible()">
             </div>
         </div>
@@ -702,7 +702,7 @@
                             <th>Caja NAP / Bloque</th>
                             <th>Ramal / Fibras</th>
                             <th>Hilo</th>
-                            <th>Dist. Troncal (m) <span class="help-tip" title="Metros de multifibra desde el transmisor/cabecera hasta esta Caja NAP">?</span></th>
+                            <th>Dist. Troncal (m) <span class="help-tip" title="Metros de cable troncal de 12 hilos desde el transmisor/cabecera hasta esta Caja NAP">?</span></th>
                             <th>Splitter NAP <span class="help-tip" title="Splitter PLC en la caja NAP para este bloque de casas">?</span></th>
                             <th>Casas / Lotes (Secuencia) <span class="help-tip" title="Especifica las casas de esta NAP. Puedes usar guiones para consecutivos (ej: 1-8), comas para saltos (ej: 1, 3, 5) o combinadas (ej: 1-4, 8, 12-15)">?</span></th>
                             <th>Drop Mín (m)</th>
@@ -750,8 +750,8 @@
                             <th rowspan="2">Estado Micro-Nodo TV</th>
                         </tr>
                         <tr>
-                            <th class="sub-th">Troncal</th>
-                            <th class="sub-th">Drop FOD1</th>
+                            <th class="sub-th">Troncal (12H)</th>
+                            <th class="sub-th">Drop (2H)</th>
                             <th class="sub-th">Total</th>
                             <th class="sub-th">Cant</th>
                             <th class="sub-th">dB</th>
@@ -795,7 +795,7 @@
                                 <th>Cajas NAP</th>
                                 <th>Secuencia Casas</th>
                                 <th style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Casas Atendidas</th>
-                                <th>Metros Drop FOD1</th>
+                                <th>Metros Drop (2H)</th>
                                 <th>Pérdida Máx (dB)</th>
                                 <th>Potencia Rx Mín</th>
                                 <th>Potencia Rx Máx</th>
@@ -1910,9 +1910,9 @@
                 <div style="font-size: 9.5px; color: var(--text-muted);">Diferencia Max - Min</div>
             </div>
             <div class="hub-card" style="min-height: auto; padding: 10px;">
-                <div style="font-size: 10.5px; color: var(--text-muted);">Cable Drop FOD1 Total</div>
+                <div style="font-size: 10.5px; color: var(--text-muted);">Cable Drop Total (2 Hilos)</div>
                 <div style="font-size: 20px; font-weight: 800; color: #a78bfa;">${global.totalMetrosDrop.toFixed(0)} m</div>
-                <div style="font-size: 9.5px; color: var(--text-muted);">Fibra G.657 RO1030</div>
+                <div style="font-size: 9.5px; color: var(--text-muted);">Fibra Monomodo G.657</div>
             </div>
         `;
 
@@ -1973,7 +1973,7 @@
         if (global.cumpleTodo) {
             diag.innerHTML = `
                 <strong style="color: #34d399;">✔ SISTEMA ÓPTICO MULTI-SECTOR CONFORME:</strong> Se verificó el balance independiente de los <strong>${global.totalSectores} sectores / transmisores</strong>, atendiendo a un total consolidado de <strong>${global.totalCasas} casas</strong> distribuidas en <strong>${global.totalNaps} Cajas NAP</strong>.
-                Todas las acometidas con cable drop FOD1 (G.657 RO1030) entregan niveles entre <strong>${global.minPotencia.toFixed(2)} dBm</strong> y <strong>${global.maxPotencia.toFixed(2)} dBm</strong>, dentro de la ventana de recepción admisible (${rxMin} a ${rxMax} dBm), garantizando recepción TDT estable sin pixelado.
+                Todas las acometidas con cable drop de 2 hilos entregan niveles entre <strong>${global.minPotencia.toFixed(2)} dBm</strong> y <strong>${global.maxPotencia.toFixed(2)} dBm</strong>, dentro de la ventana de recepción admisible (${rxMin} a +${rxMax} dBm), garantizando recepción TDT estable sin pixelado.
             `;
         } else {
             diag.innerHTML = `
@@ -2169,8 +2169,8 @@
             `Red: Urbanización Casas TDT Multi-Sector`,
             `Longitud Onda: ${wavelength} nm`,
             `Rango Receptor TV: ${rxMin} a +${rxMax} dBm`,
-            `Drop G.657 RO1030: ${attenDrop} dB/km`,
-            `Troncal: ${attenTroncal} dB/km`
+            `Drop 2 Hilos (G.657): ${attenDrop} dB/km`,
+            `Troncal 12 Hilos: ${attenTroncal} dB/km`
         ]);
         resSheetData.push([]);
         resSheetData.push([
@@ -2247,7 +2247,7 @@
             secData.push([]);
             secData.push([
                 'CAJA NAP', 'RAMAL', 'HILO', 'CASA',
-                'Troncal (m)', 'Drop FOD1 (m)', 'Total Fibra (m)',
+                'Troncal 12H (m)', 'Drop 2H (m)', 'Total Fibra (m)',
                 'Pérd. Fibra (dB)', 'Fusiones Cant.', 'Fusiones dB',
                 'Conectores Cant.', 'Conectores dB', 'Splitter Cabecera (dB)', 'Splitter NAP (dB)',
                 'PÉRDIDA TOTAL (dB)', 'POTENCIA RX (dBm)', 'MARGEN (dB)', 'ESTADO'
@@ -2283,7 +2283,7 @@
             secData.push(['Total Casas en Sector', { f: `COUNTA(D${startSecRow}:D${lastSecRow})` }]);
             secData.push(['Potencia Rx Mínima (dBm)', { f: `MIN(P${startSecRow}:P${lastSecRow})` }]);
             secData.push(['Potencia Rx Máxima (dBm)', { f: `MAX(P${startSecRow}:P${lastSecRow})` }]);
-            secData.push(['Metros Cable Drop FOD1', { f: `SUM(F${startSecRow}:F${lastSecRow})` }]);
+            secData.push(['Metros Cable Drop (2 Hilos)', { f: `SUM(F${startSecRow}:F${lastSecRow})` }]);
 
             const wsSec = XLSX.utils.aoa_to_sheet(secData);
             wsSec['!cols'] = [
@@ -2309,7 +2309,7 @@
         wsGlobalData.push([]);
         wsGlobalData.push([
             'SECTOR', 'TRANSMISOR TX', 'CAJA NAP', 'RAMAL', 'HILO', 'CASA',
-            'Troncal (m)', 'Drop FOD1 (m)', 'Total Fibra (m)',
+            'Troncal 12H (m)', 'Drop 2H (m)', 'Total Fibra (m)',
             'Pérd. Fibra (dB)', 'Pérdida Fusiones (dB)', 'Pérdida Conectores (dB)',
             'Splitter Cab. (dB)', 'Splitter NAP (dB)',
             'PÉRDIDA TOTAL (dB)', 'POTENCIA RX (dBm)', 'MARGEN (dB)', 'ESTADO'
@@ -2366,7 +2366,7 @@
 
         doc.setFontSize(8.5);
         doc.setTextColor(100, 116, 139);
-        doc.text(`SCITIC S.A.S. — Balance Óptico Multi-Sector TDT | Sectores: ${cacheResultadosSectores.length} | Drop: FOD1 G.657 RO1030 | Rango Receptor TV: ${rxMin} a ${rxMax} dBm`, 14, 20);
+        doc.text(`SCITIC S.A.S. — Balance Óptico Multi-Sector TDT | Sectores: ${cacheResultadosSectores.length} | Troncal: 12 Hilos | Drop: 2 Hilos G.657 | Rango Receptor TV: ${rxMin} a ${rxMax} dBm`, 14, 20);
 
         const headers = [
             ['Sector', 'Caja NAP', 'Ramal', 'Casa', 'Troncal', 'Drop', 'Total', 'P.Fibra', 'Fus', 'Con', 'Spl.Cab', 'Spl.NAP', 'P.Total', 'Pot.Rx', 'Margen', 'Estado']

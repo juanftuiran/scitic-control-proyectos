@@ -3,7 +3,7 @@
  * CONSTANTES Y BASE DE DATOS DE DISPOSITIVOS ÓPTICOS
  * Calculadora de Pérdidas de Fibra Óptica para TDT / TV — SCITIC
  * =====================================================================
- * Modelo de referencia de cable drop: RO1030 / RO1031 (FOD1 / FOD2)
+ * Parámetros genéricos de fibra óptica: Troncal 12 hilos / Drop 2 hilos
  * Norma: ITU-T G.657 / IEC 60794-1-2 (Chaqueta LSZH)
  * Sistema: TDT (DVB-T2) sobre fibra óptica pasiva (RF overlay / Micro-nodos TV)
  * Compatible con múltiples sectores y múltiples transmisores ópticos.
@@ -13,34 +13,19 @@
 const CONSTANTES_FO = {
 
     // ─── CABLES DE FIBRA ÓPTICA ──────────────────────────────────────
-    // Especificaciones basadas en ficha técnica RO1030/RO1031 (FOD1/FOD2)
     // Coeficientes en dB/km (dB/m = dB_km / 1000)
     cables: {
-        'FOD1-G657': {
-            nombre: 'RO1030 / FOD1 (Drop G.657 1 Hilo LSZH)',
-            parte: 'RO1030',
-            referencia: 'FOD1',
-            tipo: 'G.657 (ITU-T G.657 / IEC 60794-1-2)',
-            chaqueta: 'LSZH (Low Smoke Zero Halogen)',
-            hilos: 1,
-            atten_1550: 0.25, // dB/km (0.00025 dB/m)
-            atten_1310: 0.38  // dB/km (0.00038 dB/m)
-        },
-        'FOD2-G657': {
-            nombre: 'RO1031 / FOD2 (Drop G.657 2 Hilos LSZH)',
-            parte: 'RO1031',
-            referencia: 'FOD2',
+        'DROP-2H': {
+            nombre: 'Cable Drop Óptico (2 Hilos G.657 LSZH)',
             tipo: 'G.657 (ITU-T G.657 / IEC 60794-1-2)',
             chaqueta: 'LSZH (Low Smoke Zero Halogen)',
             hilos: 2,
             atten_1550: 0.25, // dB/km (0.00025 dB/m)
             atten_1310: 0.38  // dB/km (0.00038 dB/m)
         },
-        'TRONCAL-G652D': {
-            nombre: 'Troncal Dieléctrico G.652.D (6-24 Hilos)',
-            parte: 'G652D-TR',
-            referencia: 'TR-SM',
-            tipo: 'G.652.D (ITU-T G.652.D)',
+        'TRONCAL-12H': {
+            nombre: 'Cable Troncal Multifibra (12 Hilos)',
+            tipo: 'G.652.D / G.657',
             chaqueta: 'PE / LSZH Exterior',
             hilos: 12,
             atten_1550: 0.22, // dB/km
