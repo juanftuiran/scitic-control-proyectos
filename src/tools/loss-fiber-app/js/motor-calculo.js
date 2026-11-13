@@ -233,5 +233,107 @@ const MotorCalculoFO = {
             totalFusiones: totalFusionesGlobal,
             totalConectores: totalConectoresGlobal
         };
+    },
+
+    /**
+     * Parsea una secuencia de casas especificada con comas, guiones o combinadas.
+     * Ejemplos soportados:
+     * - Consecutivos: "1-8" -> ["1", "2", "3", "4", "5", "6", "7", "8"]
+     * - Separados por comas: "1, 3, 5, 7" -> ["1", "3", "5", "7"]
+     * - Combinados (secuencias que se cortan): "1-4, 8, 12-15" -> ["1", "2", "3", "4", "8", "12", "13", "14", "15"]
+     * - Alfanuméricos: "M1-M4, M8" -> ["M1", "M2", "M3", "M4", "M8"]
+     * @param {string|number} strInput - Texto de la secuencia
+     * @param {number} fallbackCount - Cantidad de casas por defecto si está vacío
+     * @returns {Array<string>} Array de identificadores de casa
+     */
+    parsearSecuenciaCasas(strInput, fallbackCount = 8) {
+        if (strInput === null || strInput === undefined || String(strInput).trim() === '') {
+            const count = parseInt(fallbackCount) || 8;
+            const res = [];
+            for (let i = 1; i <= count; i++) res.push(String(i));
+            return res;
+        }
+
+        const str = String(strInput).trim();
+        const partes = str.split(/[,;]+/).map(p => p.trim()).filter(Boolean);
+        const resultado = [];
+
+        partes.forEach(parte => {
+            // Verificar si es un rango tipo "1-8", "1 - 8", "M1 - M4", "Casa 1 - Casa 4"
+            const matchRango = parte.match(/^([A-Za-z\s]*?)(\d+)\s*[-–—]\s*([A-Za-z\s]*?)(\d+)$/);
+            if (matchRango) {
+                const rawPre1 = matchRango[1];
+                const num1 = parseInt(matchRango[2], 10);
+                const rawPre2 = matchRango[3];
+                const num2 = parseInt(matchRango[4], 10);
+
+                const pre = rawPre1 || rawPre2 || '';
+                const paso = num1 <= num2 ? 1 : -1;
+                const limit = Math.min(Math.abs(num2 - num1) + 1, 256);
+
+                for (let i = 0; i < limit; i++) {
+                    const val = num1 + (i * paso);
+                    resultado.push(pre ? (pre + val).trim() : String(val));
+                }
+            } else {
+                resultado.push(parte);
+            }
+        });
+
+        return resultado.length > 0 ? resultado : ['1'];
+    },
+
+    /**
+     * Compacta una lista de casas en formato abreviado (ej: ["1", "2", "3", "4", "8"] -> "1-4, 8").
+     * @param {Array<string>} lista
+     * @returns {string} Secuencia compactada
+     */
+    compactarSecuenciaCasas(lista) {
+        if (!lista || lista.length === 0) return '';
+        const nums = [];
+        let todosNumeros = true;
+        for (const item of lista) {
+            const n = parseInt(String(item).replace(/[^\d]/g, ''), 10);
+            if (isNaN(n)) { todosNumeros = false; break; }
+            nums.push(n);
+        }
+        if (!todosNumeros || nums.length === 0) {
+            return lista.join(', ');
+        }
+        const rangos = [];
+        let inicio = nums[0];
+        let ant = nums[0];
+        for (let i = 1; i < nums.length; i++) {
+            if (nums[i] === ant + 1) {
+                ant = nums[i];
+            } else {
+                rangos.push(inicio === ant ? String(inicio) : (ant === inicio + 1 ? (inicio + ', ' + ant) : (inicio + '-' + ant)));
+                inicio = nums[i];
+                ant = nums[i];
+            }
+        }
+        rangos.push(inicio === ant ? String(inicio) : (ant === inicio + 1 ? (inicio + ', ' + ant) : (inicio + '-' + ant)));
+        return rangos.join(', ');
+    },
+
+    /**
+     * Formatea el nombre visual de la casa asegurando prefijo 'Casa' o respetando el que tenga.
+     * @param {string} item
+     * @returns {string} Nombre formateado (ej. "Casa 1", "Casa A4", "Lote 12")
+     */
+    formatearNombreCasa(item) {
+        const s = String(item).trim();
+        if (/^(casa|lote|apto|pto|mza|bloque)/i.test(s)) {
+            return s;
+        }
+        return 'Casa ' + s;
     }
 };
+
+// Exportar globalmente para navegador y Node.js
+if (typeof window !== 'undefined') {
+    window.MotorCalculoFO = MotorCalculoFO;
+}
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = MotorCalculoFO;
+}

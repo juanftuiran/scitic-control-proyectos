@@ -676,6 +676,14 @@
                 <label>Pérdida Conector Mecánico (dB) <span class="help-tip" title="Pérdida por conector mecánico rápido SC/APC (1.00 dB por defecto)">?</span></label>
                 <input type="number" id="sector-in-conector" value="1.00" step="0.05" min="0.1" max="2.0" onchange="actualizarParametroSectorActivo('connectorLoss', parseFloat(this.value)||1.00)">
             </div>
+
+            <div class="input-group" style="min-width: 260px;">
+                <label>Casas del Sector (Secuencia / Rango): <span class="help-tip" title="Casas que atiende este sector. Puedes especificar la secuencia separada por comas, guiones o combinadas (ej: 1-48 o 1-20, 25-52) y distribuirla automáticamente entre las Cajas NAP del sector">?</span></label>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <input type="text" id="sector-in-casas-seq" style="min-width: 150px; font-weight: 700; color: #34d399;" placeholder="Ej: 1-48 o 1-20, 25-52" onchange="actualizarCasasSeqSectorActivo(this.value)">
+                    <button type="button" class="btn-config" style="padding: 4px 8px; font-size: 10px; white-space: nowrap;" onclick="autoDistribuirCasasEnNaps()" title="Distribuir esta secuencia entre las Cajas NAP del sector">⚡ Distribuir</button>
+                </div>
+            </div>
         </div>
 
         <!-- ═══════════════ TABLA DE CAJAS NAP DEL SECTOR ACTIVO ═══════════════ -->
@@ -696,7 +704,7 @@
                             <th>Hilo</th>
                             <th>Dist. Troncal (m) <span class="help-tip" title="Metros de multifibra desde el transmisor/cabecera hasta esta Caja NAP">?</span></th>
                             <th>Splitter NAP <span class="help-tip" title="Splitter PLC en la caja NAP para este bloque de casas">?</span></th>
-                            <th>N° Casas <span class="help-tip" title="Cantidad de casas conectadas a este splitter NAP">?</span></th>
+                            <th>Casas / Lotes (Secuencia) <span class="help-tip" title="Especifica las casas de esta NAP. Puedes usar guiones para consecutivos (ej: 1-8), comas para saltos (ej: 1, 3, 5) o combinadas (ej: 1-4, 8, 12-15)">?</span></th>
                             <th>Drop Mín (m)</th>
                             <th>Drop Máx (m)</th>
                             <th>Fusiones</th>
@@ -785,6 +793,7 @@
                                 <th>Potencia Tx</th>
                                 <th>Splitter Cab.</th>
                                 <th>Cajas NAP</th>
+                                <th>Secuencia Casas</th>
                                 <th style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Casas Atendidas</th>
                                 <th>Metros Drop FOD1</th>
                                 <th>Pérdida Máx (dB)</th>
@@ -898,13 +907,14 @@
                         splitterCabecera: 7.2, // PLC 1x4
                         fusionLoss: 0.10,
                         connectorLoss: 1.00,
+                        casasSeq: '1-48',
                         naps: [
-                            { nombre: 'NAP-N1 (Mza A)', ramal: 'Ramal 1', hilo: 1, distTroncal: 280, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-N2 (Mza B)', ramal: 'Ramal 1', hilo: 2, distTroncal: 490, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 70, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-N3 (Mza C)', ramal: 'Ramal 1', hilo: 3, distTroncal: 720, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 65, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-N4 (Mza D)', ramal: 'Ramal 2', hilo: 1, distTroncal: 380, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-N5 (Mza E)', ramal: 'Ramal 2', hilo: 2, distTroncal: 640, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 75, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-N6 (Mza F)', ramal: 'Ramal 2', hilo: 3, distTroncal: 920, splitterNap: 10.4, numCasas: 8, dropMin: 30, dropMax: 85, fusiones: 2, conectores: 2 }
+                            { nombre: 'NAP-N1 (Mza A)', ramal: 'Ramal 1', hilo: 1, distTroncal: 280, splitterNap: 10.4, casas: '1-8', numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N2 (Mza B)', ramal: 'Ramal 1', hilo: 2, distTroncal: 490, splitterNap: 10.4, casas: '9-16', numCasas: 8, dropMin: 25, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N3 (Mza C)', ramal: 'Ramal 1', hilo: 3, distTroncal: 720, splitterNap: 10.4, casas: '17-24', numCasas: 8, dropMin: 20, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N4 (Mza D)', ramal: 'Ramal 2', hilo: 1, distTroncal: 380, splitterNap: 10.4, casas: '25-32', numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N5 (Mza E)', ramal: 'Ramal 2', hilo: 2, distTroncal: 640, splitterNap: 10.4, casas: '33-40', numCasas: 8, dropMin: 20, dropMax: 75, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-N6 (Mza F)', ramal: 'Ramal 2', hilo: 3, distTroncal: 920, splitterNap: 10.4, casas: '41-48', numCasas: 8, dropMin: 30, dropMax: 85, fusiones: 2, conectores: 2 }
                         ]
                     },
                     {
@@ -914,13 +924,14 @@
                         splitterCabecera: 7.2,
                         fusionLoss: 0.10,
                         connectorLoss: 1.00,
+                        casasSeq: '49-96',
                         naps: [
-                            { nombre: 'NAP-S1 (Mza G)', ramal: 'Ramal 3', hilo: 1, distTroncal: 310, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-S2 (Mza H)', ramal: 'Ramal 3', hilo: 2, distTroncal: 560, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-S3 (Mza I)', ramal: 'Ramal 3', hilo: 3, distTroncal: 850, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 70, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-S4 (Mza J)', ramal: 'Ramal 4', hilo: 1, distTroncal: 420, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 70, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-S5 (Mza K)', ramal: 'Ramal 4', hilo: 2, distTroncal: 710, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 75, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-S6 (Mza L)', ramal: 'Ramal 4', hilo: 3, distTroncal: 1120, splitterNap: 10.4, numCasas: 8, dropMin: 30, dropMax: 90, fusiones: 2, conectores: 2 }
+                            { nombre: 'NAP-S1 (Mza G)', ramal: 'Ramal 3', hilo: 1, distTroncal: 310, splitterNap: 10.4, casas: '49-56', numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S2 (Mza H)', ramal: 'Ramal 3', hilo: 2, distTroncal: 560, splitterNap: 10.4, casas: '57-64', numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S3 (Mza I)', ramal: 'Ramal 3', hilo: 3, distTroncal: 850, splitterNap: 10.4, casas: '65-72', numCasas: 8, dropMin: 20, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S4 (Mza J)', ramal: 'Ramal 4', hilo: 1, distTroncal: 420, splitterNap: 10.4, casas: '73-80', numCasas: 8, dropMin: 25, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S5 (Mza K)', ramal: 'Ramal 4', hilo: 2, distTroncal: 710, splitterNap: 10.4, casas: '81-88', numCasas: 8, dropMin: 20, dropMax: 75, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-S6 (Mza L)', ramal: 'Ramal 4', hilo: 3, distTroncal: 1120, splitterNap: 10.4, casas: '89-96', numCasas: 8, dropMin: 30, dropMax: 90, fusiones: 2, conectores: 2 }
                         ]
                     }
                 ]
@@ -946,11 +957,12 @@
                         splitterCabecera: 7.2,
                         fusionLoss: 0.10,
                         connectorLoss: 1.00,
+                        casasSeq: '1-8, 12-19, 25-32, 40-47',
                         naps: [
-                            { nombre: 'NAP-01 (Mza 1)', ramal: 'Ramal 1', hilo: 1, distTroncal: 250, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-02 (Mza 2)', ramal: 'Ramal 1', hilo: 2, distTroncal: 480, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-03 (Mza 3)', ramal: 'Ramal 1', hilo: 3, distTroncal: 760, splitterNap: 10.4, numCasas: 8, dropMin: 20, dropMax: 70, fusiones: 2, conectores: 2 },
-                            { nombre: 'NAP-04 (Mza 4)', ramal: 'Ramal 1', hilo: 4, distTroncal: 1050, splitterNap: 10.4, numCasas: 8, dropMin: 25, dropMax: 80, fusiones: 2, conectores: 2 }
+                            { nombre: 'NAP-01 (Mza 1)', ramal: 'Ramal 1', hilo: 1, distTroncal: 250, splitterNap: 10.4, casas: '1-8', numCasas: 8, dropMin: 20, dropMax: 60, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-02 (Mza 2)', ramal: 'Ramal 1', hilo: 2, distTroncal: 480, splitterNap: 10.4, casas: '12-19', numCasas: 8, dropMin: 25, dropMax: 65, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-03 (Mza 3)', ramal: 'Ramal 1', hilo: 3, distTroncal: 760, splitterNap: 10.4, casas: '25-32', numCasas: 8, dropMin: 20, dropMax: 70, fusiones: 2, conectores: 2 },
+                            { nombre: 'NAP-04 (Mza 4)', ramal: 'Ramal 1', hilo: 4, distTroncal: 1050, splitterNap: 10.4, casas: '40-47', numCasas: 8, dropMin: 25, dropMax: 80, fusiones: 2, conectores: 2 }
                         ]
                     }
                 ]
@@ -1252,6 +1264,11 @@
             if (s.connectorLoss === undefined) s.connectorLoss = 1.00;
             if (s.txPower === undefined) s.txPower = 16.0;
             if (s.splitterCabecera === undefined) s.splitterCabecera = 7.2;
+            (s.naps || []).forEach(n => {
+                if (!n.casas) {
+                    n.casas = `1-${n.numCasas || 8}`;
+                }
+            });
         });
 
         sectorActivoId = listaSectores[0]?.id || 'sec-1';
@@ -1286,8 +1303,16 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = `sector-tab-btn ${sec.id === sectorActivoId ? 'active' : ''}`;
-            const totalCasasSec = (sec.naps || []).reduce((acc, n) => acc + (parseInt(n.numCasas) || 0), 0);
-            btn.innerHTML = `📡 <strong>${escapeHTML(sec.nombre)}</strong> <span style="opacity: 0.8; font-size: 10px;">(+${sec.txPower} dBm | ${totalCasasSec} casas)</span>`;
+
+            const todasDelSector = [];
+            (sec.naps || []).forEach(n => {
+                const cList = MotorCalculoFO.parsearSecuenciaCasas(n.casas || ('1-' + (n.numCasas || 8)), n.numCasas || 8);
+                todasDelSector.push(...cList);
+            });
+            const secCasasResumen = sec.casasSeq || MotorCalculoFO.compactarSecuenciaCasas(todasDelSector);
+            const totalCasasSec = todasDelSector.length;
+
+            btn.innerHTML = `📡 <strong>${escapeHTML(sec.nombre)}</strong> <span style="opacity: 0.8; font-size: 10px;">(+${sec.txPower} dBm | Casas: ${secCasasResumen || totalCasasSec} [${totalCasasSec}])</span>`;
             btn.onclick = () => {
                 sectorActivoId = sec.id;
                 generarPestañasSectores();
@@ -1348,6 +1373,20 @@
         document.getElementById('sector-in-fusion').value = sec.fusionLoss !== undefined ? sec.fusionLoss : 0.10;
         document.getElementById('sector-in-conector').value = sec.connectorLoss !== undefined ? sec.connectorLoss : 1.00;
 
+        let secCasasResumen = '';
+        if (sec.casasSeq) {
+            secCasasResumen = sec.casasSeq;
+        } else if (sec.naps && sec.naps.length > 0) {
+            const todasDelSector = [];
+            sec.naps.forEach(n => {
+                const cList = MotorCalculoFO.parsearSecuenciaCasas(n.casas || ('1-' + (n.numCasas || 8)), n.numCasas || 8);
+                todasDelSector.push(...cList);
+            });
+            secCasasResumen = MotorCalculoFO.compactarSecuenciaCasas(todasDelSector);
+        }
+        const inSecCasas = document.getElementById('sector-in-casas-seq');
+        if (inSecCasas) inSecCasas.value = secCasasResumen;
+
         if (btnEliminar) {
             btnEliminar.style.display = (listaSectores.length > 1) ? 'inline-flex' : 'none';
         }
@@ -1368,6 +1407,59 @@
         const sec = listaSectores.find(s => s.id === sectorActivoId);
         if (!sec) return;
         sec[campo] = valor;
+        generarPestañasSectores();
+        generarBalanceUrbanizacion();
+    }
+
+    function actualizarCasasSeqSectorActivo(valor) {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec) return;
+        sec.casasSeq = valor.trim();
+        generarPestañasSectores();
+    }
+
+    function autoDistribuirCasasEnNaps() {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec || !sec.naps || sec.naps.length === 0) return;
+
+        const inputVal = document.getElementById('sector-in-casas-seq')?.value.trim();
+        if (!inputVal) {
+            notificarToast('Escribe una secuencia para el sector (ej: 1-48 o 1-20, 25-52)', 'warning');
+            return;
+        }
+
+        const listaTotal = MotorCalculoFO.parsearSecuenciaCasas(inputVal);
+        if (listaTotal.length === 0) return;
+
+        const numNaps = sec.naps.length;
+        let indexInicio = 0;
+
+        sec.naps.forEach((nap, i) => {
+            const capacidadBase = Math.floor(listaTotal.length / numNaps);
+            const residuo = listaTotal.length % numNaps;
+            const cantParaEstaNap = capacidadBase + (i < residuo ? 1 : 0);
+
+            const subLista = listaTotal.slice(indexInicio, indexInicio + cantParaEstaNap);
+            indexInicio += cantParaEstaNap;
+
+            nap.casas = MotorCalculoFO.compactarSecuenciaCasas(subLista);
+            nap.numCasas = subLista.length;
+        });
+
+        sec.casasSeq = inputVal;
+        renderizarTablaNapsSectorActivo();
+        generarPestañasSectores();
+        generarBalanceUrbanizacion();
+        notificarToast(`Secuencia de ${listaTotal.length} casas distribuida en ${numNaps} Cajas NAP`, 'success');
+    }
+
+    function actualizarSecuenciaCasasNap(idx, valor) {
+        const sec = listaSectores.find(s => s.id === sectorActivoId);
+        if (!sec || !sec.naps[idx]) return;
+        sec.naps[idx].casas = valor.trim();
+        const lista = MotorCalculoFO.parsearSecuenciaCasas(valor);
+        sec.naps[idx].numCasas = lista.length;
+        renderizarTablaNapsSectorActivo();
         generarPestañasSectores();
         generarBalanceUrbanizacion();
     }
@@ -1454,7 +1546,12 @@
 
         sec.naps.forEach((nap, idx) => {
             const tr = document.createElement('tr');
-            casasSector += (parseInt(nap.numCasas) || 0);
+            const casasList = MotorCalculoFO.parsearSecuenciaCasas(nap.casas || ('1-' + (nap.numCasas || 8)), nap.numCasas || 8);
+            const nCasasCalc = casasList.length;
+            nap.numCasas = nCasasCalc;
+            if (!nap.casas) nap.casas = MotorCalculoFO.compactarSecuenciaCasas(casasList);
+
+            casasSector += nCasasCalc;
             troncalSector += (parseFloat(nap.distTroncal) || 0);
 
             const ramalColor = RAMAL_COLORS[nap.ramal] || '#38bdf8';
@@ -1481,7 +1578,14 @@
                     </select>
                 </td>
                 <td>
-                    <input type="number" class="cell-edit" value="${nap.numCasas || 8}" min="1" max="32" style="font-weight: bold;" onchange="actualizarDatoNapSector(${idx}, 'numCasas', parseInt(this.value)||1)">
+                    <div style="display: flex; align-items: center; gap: 4px; justify-content: center;">
+                        <input type="text" class="cell-text-edit" value="${escapeHTML(nap.casas)}" 
+                               style="min-width: 95px; max-width: 145px; font-weight: bold; text-align: center; color: #34d399;" 
+                               placeholder="Ej: 1-8 o 1-4, 8, 12" 
+                               onchange="actualizarSecuenciaCasasNap(${idx}, this.value)" 
+                               title="Especifica las casas: separadas por comas (1, 3, 5), guiones (1-8) o combinadas (1-4, 8, 12-15)">
+                        <span class="badge-status badge-success" style="font-size: 9px; padding: 2px 4px; font-family: var(--font-mono);" title="Total casas calculadas de la secuencia">${nCasasCalc}</span>
+                    </div>
                 </td>
                 <td>
                     <input type="number" class="cell-edit" value="${nap.dropMin || 20}" min="1" step="2" onchange="actualizarDatoNapSector(${idx}, 'dropMin', parseFloat(this.value)||1)">
@@ -1526,12 +1630,25 @@
         if (!sec) return;
         const num = sec.naps.length + 1;
         const distEst = 300 + (num - 1) * 250;
+
+        let ultimaCasaNum = 0;
+        sec.naps.forEach(n => {
+            const list = MotorCalculoFO.parsearSecuenciaCasas(n.casas || ('1-' + (n.numCasas || 8)), n.numCasas || 8);
+            list.forEach(c => {
+                const parseNum = parseInt(String(c).replace(/[^\d]/g, ''), 10);
+                if (!isNaN(parseNum) && parseNum > ultimaCasaNum) ultimaCasaNum = parseNum;
+            });
+        });
+        const inicioCasa = (ultimaCasaNum > 0) ? (ultimaCasaNum + 1) : 1;
+        const finCasa = inicioCasa + 7;
+
         sec.naps.push({
             nombre: `NAP-${num.toString().padStart(2, '0')}`,
             ramal: `Ramal 1`,
             hilo: num,
             distTroncal: distEst,
             splitterNap: 10.4,
+            casas: `${inicioCasa}-${finCasa}`,
             numCasas: 8,
             dropMin: 20,
             dropMax: 65,
@@ -1541,7 +1658,7 @@
         renderizarTablaNapsSectorActivo();
         generarPestañasSectores();
         generarBalanceUrbanizacion();
-        notificarToast(`Caja NAP-${num} agregada a ${sec.nombre}`, 'success');
+        notificarToast(`Caja NAP-${num} agregada a ${sec.nombre} (Casas ${inicioCasa}-${finCasa})`, 'success');
     }
 
     function eliminarNAPSector(idx) {
@@ -1583,13 +1700,22 @@
             (sec.naps || []).forEach(nap => {
                 const dTroncal = parseFloat(nap.distTroncal) || 0;
                 const splNap = parseFloat(nap.splitterNap) || 10.4;
-                const nCasas = parseInt(nap.numCasas) || 1;
                 const dropMin = parseFloat(nap.dropMin) || 15;
                 const dropMax = parseFloat(nap.dropMax) || 60;
                 const nFusiones = parseInt(nap.fusiones) || 2;
                 const nConectores = parseInt(nap.conectores) || 2;
 
+                // Parsear secuencia de casas asignada a esta NAP
+                const casasList = MotorCalculoFO.parsearSecuenciaCasas(nap.casas || ('1-' + (nap.numCasas || 8)), nap.numCasas || 8);
+                const nCasas = casasList.length;
+                nap.numCasas = nCasas;
+                if (!nap.casas) {
+                    nap.casas = MotorCalculoFO.compactarSecuenciaCasas(casasList);
+                }
+
                 for (let c = 0; c < nCasas; c++) {
+                    const idCasa = casasList[c];
+                    const nombreCasa = MotorCalculoFO.formatearNombreCasa(idCasa);
                     const dDrop = (nCasas === 1) ? dropMin : (dropMin + ((dropMax - dropMin) / (nCasas - 1)) * c);
                     const dTotal = dTroncal + dDrop;
 
@@ -1617,7 +1743,8 @@
                         nap: nap.nombre,
                         ramal: nap.ramal,
                         hilo: nap.hilo,
-                        casa: `Casa ${c + 1}`,
+                        casa: nombreCasa,
+                        idCasa: idCasa,
                         distTroncal: dTroncal,
                         distDrop: dDrop,
                         distTotalFibra: dTotal,
@@ -1800,11 +1927,14 @@
                 ? '<span class="badge-status badge-success">CUMPLE</span>'
                 : '<span class="badge-status badge-danger">FUERA DE RANGO</span>';
 
+            const secCasasStr = s.sector.casasSeq || (s.naps || []).map(n => n.casas || '').filter(Boolean).join(', ') || `${r.totalCasas} Casas`;
+
             tr.innerHTML = `
                 <td style="font-weight: 700; color: #38bdf8;">${escapeHTML(s.sector.nombre)}</td>
                 <td>+${s.sector.txPower} dBm</td>
                 <td>${s.sector.splitterCabecera} dB</td>
                 <td>${s.naps.length} NAPs</td>
+                <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-main);" title="${escapeHTML(secCasasStr)}">${escapeHTML(secCasasStr)}</td>
                 <td style="font-weight: 800; color: #34d399; font-size: 12px;">${r.totalCasas}</td>
                 <td>${r.totalMetrosDrop.toFixed(0)} m</td>
                 <td style="font-family: var(--font-mono);">${r.maxPerdida.toFixed(2)} dB</td>
@@ -1825,6 +1955,7 @@
             <td>-</td>
             <td>-</td>
             <td>${global.totalNaps} NAPs</td>
+            <td style="font-family: var(--font-mono); color: var(--text-muted);">-</td>
             <td style="color: #34d399; font-size: 13px; font-weight: 800;">${global.totalCasas} CASAS</td>
             <td>${global.totalMetrosDrop.toFixed(0)} m</td>
             <td style="font-family: var(--font-mono);">${global.maxPerdida.toFixed(2)} dB</td>
@@ -2044,7 +2175,7 @@
         resSheetData.push([]);
         resSheetData.push([
             'SECTOR / TRANSMISOR', 'POTENCIA TX (dBm)', 'SPLITTER CABECERA (dB)',
-            'CAJAS NAP', 'TOTAL CASAS', 'CABLE DROP (m)',
+            'CAJAS NAP', 'SECUENCIA CASAS', 'TOTAL CASAS', 'CABLE DROP (m)',
             'PÉRDIDA MÁX (dB)', 'POTENCIA RX MÍN (dBm)', 'POTENCIA RX MÁX (dBm)',
             'DESBALANCE (dB)', 'ESTADO TDT'
         ]);
@@ -2054,11 +2185,13 @@
 
         cacheResultadosSectores.forEach(s => {
             const r = s.resumen;
+            const secCasas = s.sector.casasSeq || (s.naps || []).map(n => n.casas || '').filter(Boolean).join(', ') || `${r.totalCasas} Casas`;
             resSheetData.push([
                 s.sector.nombre,
                 s.sector.txPower,
                 s.sector.splitterCabecera,
                 s.naps.length,
+                secCasas,
                 r.totalCasas,
                 r.totalMetrosDrop,
                 r.maxPerdida,
@@ -2077,19 +2210,20 @@
             '-',
             '-',
             { f: `SUM(D${startResRow}:D${lastResRow})` }, // Total NAPs
-            { f: `SUM(E${startResRow}:E${lastResRow})` }, // Total Casas
-            { f: `SUM(F${startResRow}:F${lastResRow})` }, // Total Metros Drop
-            { f: `MAX(G${startResRow}:G${lastResRow})` }, // Pérdida Máxima
-            { f: `MIN(H${startResRow}:H${lastResRow})` }, // Peor Potencia Rx
-            { f: `MAX(I${startResRow}:I${lastResRow})` }, // Mejor Potencia Rx
-            { f: `MAX(I${startResRow}:I${lastResRow})-MIN(H${startResRow}:H${lastResRow})` }, // Desbalance
+            '-',                                         // Secuencia Casas
+            { f: `SUM(F${startResRow}:F${lastResRow})` }, // Total Casas
+            { f: `SUM(G${startResRow}:G${lastResRow})` }, // Total Metros Drop
+            { f: `MAX(H${startResRow}:H${lastResRow})` }, // Pérdida Máxima
+            { f: `MIN(I${startResRow}:I${lastResRow})` }, // Peor Potencia Rx
+            { f: `MAX(J${startResRow}:J${lastResRow})` }, // Mejor Potencia Rx
+            { f: `MAX(J${startResRow}:J${lastResRow})-MIN(I${startResRow}:I${lastResRow})` }, // Desbalance
             'CONSOLIDADO'
         ]);
 
         const wsResumen = XLSX.utils.aoa_to_sheet(resSheetData);
         wsResumen['!cols'] = [
             { wch: 30 }, { wch: 18 }, { wch: 22 },
-            { wch: 12 }, { wch: 14 }, { wch: 16 },
+            { wch: 12 }, { wch: 24 }, { wch: 14 }, { wch: 16 },
             { wch: 18 }, { wch: 22 }, { wch: 22 },
             { wch: 16 }, { wch: 18 }
         ];
