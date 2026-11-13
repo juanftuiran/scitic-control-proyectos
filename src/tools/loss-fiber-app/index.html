@@ -2140,6 +2140,7 @@
 
     // ══════════════════════════════════════════════════════════════════
     // EXPORTACIÓN A EXCEL (.XLSX) — REPORTES MULTI-SECTOR Y CONSOLIDADO
+    // FORMATEADOS EJECUTIVAMENTE CON ESTILOS, COLORES Y BORDES
     // ══════════════════════════════════════════════════════════════════
 
     function exportarExcel() {
@@ -2160,18 +2161,107 @@
         const rxMin = parseFloat(document.getElementById('rx-min-dbm').value) || -15.0;
         const rxMax = parseFloat(document.getElementById('rx-max-dbm').value) || 4.0;
 
+        const global = MotorCalculoFO.calcularResumenGlobal(cacheResultadosSectores, { rangoMinimo: rxMin, rangoMaximo: rxMax });
+
         const wb = XLSX.utils.book_new();
 
-        // ─── HOJA 1: RESUMEN EJECUTIVO CONSOLIDADO ───
+        // ─── PALETA CORPORATIVA DE ESTILOS SCITIC ───
+        const BORDER_THIN = {
+            top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
+            bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+            left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+            right:  { style: 'thin', color: { rgb: 'CBD5E1' } }
+        };
+        const BORDER_TOTAL = {
+            top:    { style: 'thin', color: { rgb: '0F172A' } },
+            bottom: { style: 'double', color: { rgb: '0F172A' } },
+            left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+            right:  { style: 'thin', color: { rgb: 'CBD5E1' } }
+        };
+
+        const STYLE_TITLE_BANNER = {
+            font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '004080' } }, // Navy SCITIC
+            alignment: { horizontal: 'center', vertical: 'center' }
+        };
+        const STYLE_SUBTITLE_BANNER = {
+            font: { italic: true, sz: 9.5, color: { rgb: '0F2942' } },
+            fill: { fgColor: { rgb: 'EBF5FB' } }, // Soft Sky
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: BORDER_THIN
+        };
+
+        const STYLE_TH_PRIMARY = {
+            font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '004080' } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border: BORDER_THIN
+        };
+        const STYLE_TH_SECONDARY = {
+            font: { bold: true, sz: 9.5, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '0284C7' } }, // Cyan / Sky 600
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border: BORDER_THIN
+        };
+        const STYLE_TH_ACCENT = {
+            font: { bold: true, sz: 10, color: { rgb: '000000' } },
+            fill: { fgColor: { rgb: 'F2A900' } }, // Gold Accent
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border: BORDER_THIN
+        };
+        const STYLE_TH_RESULT = {
+            font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '1A5276' } }, // Deep Blue Result
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border: BORDER_THIN
+        };
+
+        const STYLE_TD_EVEN = {
+            font: { sz: 9.5, color: { rgb: '0F172A' } },
+            fill: { fgColor: { rgb: 'FFFFFF' } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: BORDER_THIN
+        };
+        const STYLE_TD_ODD = {
+            font: { sz: 9.5, color: { rgb: '0F172A' } },
+            fill: { fgColor: { rgb: 'F8FAFC' } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: BORDER_THIN
+        };
+
+        const STYLE_STATUS_OK = {
+            font: { bold: true, sz: 9.5, color: { rgb: '065F46' } },
+            fill: { fgColor: { rgb: 'D1FAE5' } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: BORDER_THIN
+        };
+        const STYLE_STATUS_ALERT = {
+            font: { bold: true, sz: 9.5, color: { rgb: '991B1B' } },
+            fill: { fgColor: { rgb: 'FEE2E2' } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: BORDER_THIN
+        };
+
+        const STYLE_TOTAL_ROW = {
+            font: { bold: true, sz: 10, color: { rgb: '004080' } },
+            fill: { fgColor: { rgb: 'E0F2FE' } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: BORDER_TOTAL
+        };
+
+        function aplicarEstiloCelda(ws, r, c, estilo, format) {
+            const addr = XLSX.utils.encode_cell({ r: r, c: c });
+            if (!ws[addr]) ws[addr] = { t: 's', v: '' };
+            ws[addr].s = estilo;
+            if (format) ws[addr].z = format;
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // HOJA 1: RESUMEN EJECUTIVO CONSOLIDADO MULTI-SECTOR
+        // ══════════════════════════════════════════════════════════════════
         const resSheetData = [];
-        resSheetData.push([projectName]);
-        resSheetData.push([
-            `Red: Urbanización Casas TDT Multi-Sector`,
-            `Longitud Onda: ${wavelength} nm`,
-            `Rango Receptor TV: ${rxMin} a +${rxMax} dBm`,
-            `Drop 2 Hilos (G.657): ${attenDrop} dB/km`,
-            `Troncal 12 Hilos: ${attenTroncal} dB/km`
-        ]);
+        resSheetData.push([`SCITIC S.A.S. — ${projectName.toUpperCase()} — INFORME EJECUTIVO DE BALANCE ÓPTICO TDT`]);
+        resSheetData.push([`Red TDT Multi-Sector sobre Fibra Óptica Pasiva | Longitud de Onda: ${wavelength} nm | Troncal: 12 Hilos (${attenTroncal} dB/km) | Drop: 2 Hilos G.657 (${attenDrop} dB/km) | Ventana Receptor Micro-Nodo: ${rxMin} a +${rxMax} dBm`]);
         resSheetData.push([]);
         resSheetData.push([
             'SECTOR / TRANSMISOR', 'POTENCIA TX (dBm)', 'SPLITTER CABECERA (dB)',
@@ -2182,7 +2272,6 @@
 
         const startResRow = 5;
         let sIdx = 0;
-
         cacheResultadosSectores.forEach(s => {
             const r = s.resumen;
             const secCasas = s.sector.casasSeq || (s.naps || []).map(n => n.casas || '').filter(Boolean).join(', ') || `${r.totalCasas} Casas`;
@@ -2203,30 +2292,155 @@
             sIdx++;
         });
 
-        // Fila Totalizadora con fórmulas de Excel
+        // Fila Totalizadora con fórmulas dinámicas de Excel
         const lastResRow = startResRow + sIdx - 1;
         resSheetData.push([
             'TOTAL URBANIZACIÓN (CONSOLIDADO)',
             '-',
             '-',
-            { f: `SUM(D${startResRow}:D${lastResRow})` }, // Total NAPs
-            '-',                                         // Secuencia Casas
-            { f: `SUM(F${startResRow}:F${lastResRow})` }, // Total Casas
-            { f: `SUM(G${startResRow}:G${lastResRow})` }, // Total Metros Drop
-            { f: `MAX(H${startResRow}:H${lastResRow})` }, // Pérdida Máxima
-            { f: `MIN(I${startResRow}:I${lastResRow})` }, // Peor Potencia Rx
-            { f: `MAX(J${startResRow}:J${lastResRow})` }, // Mejor Potencia Rx
-            { f: `MAX(J${startResRow}:J${lastResRow})-MIN(I${startResRow}:I${lastResRow})` }, // Desbalance
-            'CONSOLIDADO'
+            { f: `SUM(D${startResRow}:D${lastResRow})` },
+            '-',
+            { f: `SUM(F${startResRow}:F${lastResRow})` },
+            { f: `SUM(G${startResRow}:G${lastResRow})` },
+            { f: `MAX(H${startResRow}:H${lastResRow})` },
+            { f: `MIN(I${startResRow}:I${lastResRow})` },
+            { f: `MAX(J${startResRow}:J${lastResRow})` },
+            { f: `MAX(J${startResRow}:J${lastResRow})-MIN(I${startResRow}:I${lastResRow})` },
+            global?.cumpleTodo ? 'SISTEMA CONFORME' : 'ALERTA TDT'
         ]);
 
+        // Bloque de Métricas Ejecutivas Globales al pie
+        resSheetData.push([]);
+        resSheetData.push(['MÉTRICAS CLAVE DEL SISTEMA MULTI-SECTOR', '', '', '', '', '', '', '', '', '', '', '']);
+        resSheetData.push(['Total Casas Atendidas en el Proyecto', { f: `F${lastResRow + 1}` }, 'Casas', 'Suma consolidada de todas las acometidas residenciales']);
+        resSheetData.push(['Total Transmisores / Sectores Independientes', global.totalSectores, 'Sectores', `${global.totalNaps} Cajas NAP distribuidas en la urbanización`]);
+        resSheetData.push(['Peor Nivel Óptico Recibido (Worst Case)', { f: `I${lastResRow + 1}` }, 'dBm', `Ventana admisible: ${rxMin} dBm a +${rxMax} dBm`]);
+        resSheetData.push(['Mejor Nivel Óptico Recibido (Best Case)', { f: `J${lastResRow + 1}` }, 'dBm', 'Nivel más cercano al transmisor sin saturación']);
+        resSheetData.push(['Desbalance Óptico Máximo del Sistema', { f: `K${lastResRow + 1}` }, 'dB', 'Diferencia máxima entre la casa más favorecida y la más lejana']);
+        resSheetData.push(['Total Cable Drop 2 Hilos G.657', { f: `G${lastResRow + 1}` }, 'Metros', 'Metros lineales requeridos para las acometidas']);
+        resSheetData.push(['Diagnóstico de Conformidad TDT', global.cumpleTodo ? 'CONFORME: 100% de las casas reciben señal en rango operativo.' : 'NO CONFORME: Revisar sectores con niveles fuera de rango.', '', '']);
+
         const wsResumen = XLSX.utils.aoa_to_sheet(resSheetData);
-        wsResumen['!cols'] = [
-            { wch: 30 }, { wch: 18 }, { wch: 22 },
-            { wch: 12 }, { wch: 24 }, { wch: 14 }, { wch: 16 },
-            { wch: 18 }, { wch: 22 }, { wch: 22 },
-            { wch: 16 }, { wch: 18 }
+        wsResumen['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 11 } }
         ];
+
+        for (let c = 0; c <= 11; c++) {
+            aplicarEstiloCelda(wsResumen, 0, c, STYLE_TITLE_BANNER);
+            aplicarEstiloCelda(wsResumen, 1, c, STYLE_SUBTITLE_BANNER);
+            let thStyle = STYLE_TH_PRIMARY;
+            if (c === 7) thStyle = STYLE_TH_ACCENT;
+            else if (c >= 8 && c <= 10) thStyle = STYLE_TH_RESULT;
+            aplicarEstiloCelda(wsResumen, 3, c, thStyle);
+        }
+
+        for (let i = 0; i < sIdx; i++) {
+            const rIdx = startResRow - 1 + i;
+            const isOdd = (i % 2 !== 0);
+            const baseStyle = isOdd ? STYLE_TD_ODD : STYLE_TD_EVEN;
+
+            for (let c = 0; c <= 11; c++) {
+                let cellStyle = Object.assign({}, baseStyle);
+                let format = null;
+                if (c === 0) {
+                    cellStyle.alignment = { horizontal: 'left', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '004080' } };
+                } else if (c === 1 || c === 2) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    format = '0.0';
+                } else if (c === 3 || c === 5) {
+                    cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                    if (c === 5) cellStyle.font = { bold: true, sz: 10, color: { rgb: '065F46' } };
+                } else if (c === 4) {
+                    cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                    cellStyle.font = { sz: 9, color: { rgb: '334155' } };
+                } else if (c === 6) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    format = '#,##0';
+                } else if (c === 7) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 9.5, color: { rgb: 'B45309' } };
+                    format = '0.00';
+                } else if (c === 8 || c === 9) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '004080' } };
+                    format = '0.00';
+                } else if (c === 10) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    format = '0.00';
+                } else if (c === 11) {
+                    const estado = resSheetData[rIdx][11];
+                    cellStyle = (estado === 'CUMPLE') ? STYLE_STATUS_OK : STYLE_STATUS_ALERT;
+                }
+                aplicarEstiloCelda(wsResumen, rIdx, c, cellStyle, format);
+            }
+        }
+
+        const totalRIdx = startResRow - 1 + sIdx;
+        for (let c = 0; c <= 11; c++) {
+            let totStyle = Object.assign({}, STYLE_TOTAL_ROW);
+            let format = null;
+            if (c === 0) totStyle.alignment = { horizontal: 'left', vertical: 'center' };
+            else if (c === 6) format = '#,##0';
+            else if (c >= 7 && c <= 10) format = '0.00';
+            else if (c === 11) {
+                totStyle = global?.cumpleTodo ? Object.assign({}, STYLE_STATUS_OK, { border: BORDER_TOTAL }) : Object.assign({}, STYLE_STATUS_ALERT, { border: BORDER_TOTAL });
+            }
+            aplicarEstiloCelda(wsResumen, totalRIdx, c, totStyle, format);
+        }
+
+        const kpiStartR = totalRIdx + 2;
+        wsResumen['!merges'].push({ s: { r: kpiStartR, c: 0 }, e: { r: kpiStartR, c: 11 } });
+        for (let c = 0; c <= 11; c++) {
+            aplicarEstiloCelda(wsResumen, kpiStartR, c, STYLE_TH_PRIMARY);
+        }
+
+        for (let k = 1; k <= 7; k++) {
+            const rowK = kpiStartR + k;
+            const isDiagnostico = (k === 7);
+            if (isDiagnostico) {
+                wsResumen['!merges'].push({ s: { r: rowK, c: 1 }, e: { r: rowK, c: 11 } });
+            } else {
+                wsResumen['!merges'].push({ s: { r: rowK, c: 3 }, e: { r: rowK, c: 11 } });
+            }
+
+            for (let c = 0; c <= 11; c++) {
+                const cellAddr = XLSX.utils.encode_cell({ r: rowK, c: c });
+                if (!wsResumen[cellAddr]) wsResumen[cellAddr] = { t: 's', v: '' };
+
+                const kpiStyle = {
+                    font: { sz: 9.5, color: { rgb: '0F172A' } },
+                    fill: { fgColor: { rgb: k % 2 === 0 ? 'F8FAFC' : 'FFFFFF' } },
+                    border: BORDER_THIN,
+                    alignment: { vertical: 'center' }
+                };
+
+                if (c === 0) {
+                    kpiStyle.font = { bold: true, sz: 9.5, color: { rgb: '004080' } };
+                    kpiStyle.alignment.horizontal = 'left';
+                } else if (c === 1) {
+                    kpiStyle.font = { bold: true, sz: 10, color: { rgb: isDiagnostico ? (global?.cumpleTodo ? '065F46' : '991B1B') : '0F172A' } };
+                    kpiStyle.alignment.horizontal = isDiagnostico ? 'left' : 'right';
+                    if (!isDiagnostico && (k === 1 || k === 6)) wsResumen[cellAddr].z = '#,##0';
+                    else if (!isDiagnostico && (k === 3 || k === 4 || k === 5)) wsResumen[cellAddr].z = '0.00';
+                } else if (c === 2) {
+                    kpiStyle.alignment.horizontal = 'center';
+                    kpiStyle.font = { italic: true, sz: 9, color: { rgb: '64748B' } };
+                } else {
+                    kpiStyle.alignment.horizontal = 'left';
+                    kpiStyle.font = { sz: 9, color: { rgb: '475569' } };
+                }
+                wsResumen[cellAddr].s = kpiStyle;
+            }
+        }
+
+        wsResumen['!cols'] = [
+            { wch: 32 }, { wch: 18 }, { wch: 22 }, { wch: 14 }, { wch: 28 }, { wch: 15 },
+            { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 22 }, { wch: 18 }, { wch: 22 }
+        ];
+        wsResumen['!rows'] = [ { hpt: 28 }, { hpt: 20 }, { hpt: 8 }, { hpt: 26 } ];
+
         XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Consolidado');
 
         // ─── HOJAS 2..N: DETALLE INDEPENDIENTE POR CADA SECTOR ───
@@ -2237,23 +2451,36 @@
             const fusL = s.sector.fusionLoss;
             const conL = s.sector.connectorLoss;
 
-            secData.push([`${s.sector.nombre} — Balance Óptico Detallado`]);
-            secData.push([
-                `Transmisor Tx: +${txP} dBm`,
-                `Splitter Cabecera: ${splCab} dB`,
-                `Pérdida Fusión: ${fusL} dB`,
-                `Pérdida Conector Mecánico: ${conL} dB`
-            ]);
+            secData.push([`SCITIC S.A.S. — ${s.sector.nombre.toUpperCase()} — BALANCE ÓPTICO DETALLADO`]);
+            secData.push([`Transmisor Tx: +${txP} dBm | Splitter Cabecera: ${splCab} dB | Fusión: ${fusL} dB | Conector: ${conL} dB | Troncal: 12 Hilos (${attenTroncal} dB/km) | Drop: 2 Hilos (${attenDrop} dB/km) | Ventana Rx: ${rxMin} a +${rxMax} dBm`]);
             secData.push([]);
+
+            // Encabezado Fila 1 (Categorías)
             secData.push([
-                'CAJA NAP', 'RAMAL', 'HILO', 'CASA',
-                'Troncal 12H (m)', 'Drop 2H (m)', 'Total Fibra (m)',
-                'Pérd. Fibra (dB)', 'Fusiones Cant.', 'Fusiones dB',
-                'Conectores Cant.', 'Conectores dB', 'Splitter Cabecera (dB)', 'Splitter NAP (dB)',
-                'PÉRDIDA TOTAL (dB)', 'POTENCIA RX (dBm)', 'MARGEN (dB)', 'ESTADO'
+                'CAJA NAP', 'RAMAL', 'HILO', 'CASA / LOTE',
+                'DISTANCIAS DE FIBRA (m)', '', '',
+                'PÉRD. FIBRA (dB)',
+                'EMPALMES FUSIÓN', '',
+                'CONECTORES MEC.', '',
+                'SPLITTERS (dB)', '',
+                'PÉRDIDA TOTAL (dB)',
+                'POTENCIA RX (dBm)',
+                'MARGEN (dB)',
+                'ESTADO MICRO-NODO'
             ]);
 
-            const startSecRow = 5;
+            // Encabezado Fila 2 (Sub-columnas)
+            secData.push([
+                '', '', '', '',
+                'Troncal 12H', 'Drop 2H', 'Total Fibra',
+                '',
+                'Cant.', 'dB',
+                'Cant.', 'dB',
+                'Cabecera', 'Caja NAP',
+                '', '', '', ''
+            ]);
+
+            const startSecRow = 6;
             let rIdx = 0;
 
             s.filas.forEach(f => {
@@ -2268,53 +2495,186 @@
                     f.numConectores,
                     { f: `K${r}*${conL}` },
                     splCab, f.splNap,
-                    { f: `H${r}+J${r}+L${r}+M${r}+N${r}` }, // Pérdida Total
-                    { f: `${txP}-O${r}` },                   // Potencia Rx
-                    { f: `P${r}-(${rxMin})` },               // Margen
+                    { f: `H${r}+J${r}+L${r}+M${r}+N${r}` },
+                    { f: `${txP}-O${r}` },
+                    { f: `P${r}-(${rxMin})` },
                     f.estado
                 ]);
                 rIdx++;
             });
 
-            // Resumen al pie del sector
-            secData.push([]);
             const lastSecRow = startSecRow + rIdx - 1;
-            secData.push([`MÉTRICAS DE ${s.sector.nombre.toUpperCase()}`]);
-            secData.push(['Total Casas en Sector', { f: `COUNTA(D${startSecRow}:D${lastSecRow})` }]);
-            secData.push(['Potencia Rx Mínima (dBm)', { f: `MIN(P${startSecRow}:P${lastSecRow})` }]);
-            secData.push(['Potencia Rx Máxima (dBm)', { f: `MAX(P${startSecRow}:P${lastSecRow})` }]);
-            secData.push(['Metros Cable Drop (2 Hilos)', { f: `SUM(F${startSecRow}:F${lastSecRow})` }]);
+            secData.push([]);
+            secData.push([`MÉTRICAS CLAVE DE ${s.sector.nombre.toUpperCase()}`, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            secData.push(['Total Casas en este Sector', { f: `COUNTA(D${startSecRow}:D${lastSecRow})` }, 'Casas', 'Acometidas activas']);
+            secData.push(['Potencia Óptica Mínima (Peor Caso)', { f: `MIN(P${startSecRow}:P${lastSecRow})` }, 'dBm', `Sensibilidad admisible: ${rxMin} dBm`]);
+            secData.push(['Potencia Óptica Máxima (Mejor Caso)', { f: `MAX(P${startSecRow}:P${lastSecRow})` }, 'dBm', `Límite saturación: +${rxMax} dBm`]);
+            secData.push(['Desbalance Óptico en el Sector', { f: `MAX(P${startSecRow}:P${lastSecRow})-MIN(P${startSecRow}:P${lastSecRow})` }, 'dB', 'Variación interna del sector']);
+            secData.push(['Cable Drop 2 Hilos Requerido', { f: `SUM(F${startSecRow}:F${lastSecRow})` }, 'Metros', 'Metros lineales de acometida']);
+            secData.push(['Pérdida Óptica Máxima Acumulada', { f: `MAX(O${startSecRow}:O${lastSecRow})` }, 'dB', 'Enlace más crítico']);
 
             const wsSec = XLSX.utils.aoa_to_sheet(secData);
-            wsSec['!cols'] = [
-                { wch: 18 }, { wch: 14 }, { wch: 6 }, { wch: 12 },
-                { wch: 12 }, { wch: 14 }, { wch: 14 },
-                { wch: 16 }, { wch: 14 }, { wch: 14 },
-                { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 16 },
-                { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }
+
+            wsSec['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 17 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 17 } },
+                { s: { r: 3, c: 0 }, e: { r: 4, c: 0 } },
+                { s: { r: 3, c: 1 }, e: { r: 4, c: 1 } },
+                { s: { r: 3, c: 2 }, e: { r: 4, c: 2 } },
+                { s: { r: 3, c: 3 }, e: { r: 4, c: 3 } },
+                { s: { r: 3, c: 4 }, e: { r: 3, c: 6 } },
+                { s: { r: 3, c: 7 }, e: { r: 4, c: 7 } },
+                { s: { r: 3, c: 8 }, e: { r: 3, c: 9 } },
+                { s: { r: 3, c: 10 }, e: { r: 3, c: 11 } },
+                { s: { r: 3, c: 12 }, e: { r: 3, c: 13 } },
+                { s: { r: 3, c: 14 }, e: { r: 4, c: 14 } },
+                { s: { r: 3, c: 15 }, e: { r: 4, c: 15 } },
+                { s: { r: 3, c: 16 }, e: { r: 4, c: 16 } },
+                { s: { r: 3, c: 17 }, e: { r: 4, c: 17 } }
             ];
 
-            // Nombre de hoja seguro (máx 31 chars)
-            let sheetName = `Sector ${secIndex + 1}`;
-            if (s.sector.nombre) {
-                sheetName = s.sector.nombre.substring(0, 28).replace(/[\\/?*[\]:]/g, '_');
+            for (let c = 0; c <= 17; c++) {
+                aplicarEstiloCelda(wsSec, 0, c, STYLE_TITLE_BANNER);
+                aplicarEstiloCelda(wsSec, 1, c, STYLE_SUBTITLE_BANNER);
+
+                let h1Style = STYLE_TH_PRIMARY;
+                if (c >= 4 && c <= 13) h1Style = STYLE_TH_SECONDARY;
+                else if (c === 14) h1Style = STYLE_TH_ACCENT;
+                else if (c >= 15 && c <= 16) h1Style = STYLE_TH_RESULT;
+                aplicarEstiloCelda(wsSec, 3, c, h1Style);
+
+                let h2Style = STYLE_TH_SECONDARY;
+                if (c === 14) h2Style = STYLE_TH_ACCENT;
+                else if (c >= 15 && c <= 16) h2Style = STYLE_TH_RESULT;
+                else if (c < 4 || c === 17) h2Style = STYLE_TH_PRIMARY;
+                aplicarEstiloCelda(wsSec, 4, c, h2Style);
             }
+
+            for (let i = 0; i < rIdx; i++) {
+                const rowI = startSecRow - 1 + i;
+                const isOdd = (i % 2 !== 0);
+                const baseStyle = isOdd ? STYLE_TD_ODD : STYLE_TD_EVEN;
+
+                for (let c = 0; c <= 17; c++) {
+                    let cellStyle = Object.assign({}, baseStyle);
+                    let format = null;
+
+                    if (c === 0) {
+                        cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                        cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '0284C7' } };
+                    } else if (c === 1) {
+                        cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                        cellStyle.font = { bold: true, sz: 9.5 };
+                    } else if (c === 2) {
+                        cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                        format = '0';
+                    } else if (c === 3) {
+                        cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                        cellStyle.font = { bold: true, sz: 10, color: { rgb: '0F172A' } };
+                    } else if (c >= 4 && c <= 6) {
+                        cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                        format = '0.0';
+                        if (c === 6) cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '0284C7' } };
+                    } else if (c === 7) {
+                        cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                        format = '0.000';
+                    } else if (c === 8 || c === 10) {
+                        cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                        format = '0';
+                    } else if (c === 9 || c === 11 || c === 12 || c === 13) {
+                        cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                        format = '0.00';
+                    } else if (c === 14) {
+                        cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                        cellStyle.font = { bold: true, sz: 10, color: { rgb: 'B45309' } };
+                        cellStyle.fill = { fgColor: { rgb: 'FFFBEB' } };
+                        format = '0.00';
+                    } else if (c === 15) {
+                        cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                        cellStyle.font = { bold: true, sz: 10, color: { rgb: '004080' } };
+                        cellStyle.fill = { fgColor: { rgb: 'F0FDF4' } };
+                        format = '0.00';
+                    } else if (c === 16) {
+                        cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                        cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '065F46' } };
+                        format = '+0.00;-0.00;0.00';
+                    } else if (c === 17) {
+                        const est = s.filas[i].estado;
+                        cellStyle = (est === 'OPTIMO' || est === 'CUMPLE') ? STYLE_STATUS_OK : STYLE_STATUS_ALERT;
+                    }
+
+                    aplicarEstiloCelda(wsSec, rowI, c, cellStyle, format);
+                }
+            }
+
+            const secKpiStartR = lastSecRow + 1;
+            wsSec['!merges'].push({ s: { r: secKpiStartR, c: 0 }, e: { r: secKpiStartR, c: 17 } });
+            for (let c = 0; c <= 17; c++) {
+                aplicarEstiloCelda(wsSec, secKpiStartR, c, STYLE_TH_PRIMARY);
+            }
+
+            for (let k = 1; k <= 6; k++) {
+                const rowK = secKpiStartR + k;
+                wsSec['!merges'].push({ s: { r: rowK, c: 3 }, e: { r: rowK, c: 17 } });
+
+                for (let c = 0; c <= 17; c++) {
+                    const cellAddr = XLSX.utils.encode_cell({ r: rowK, c: c });
+                    if (!wsSec[cellAddr]) wsSec[cellAddr] = { t: 's', v: '' };
+
+                    const kpiStyle = {
+                        font: { sz: 9.5, color: { rgb: '0F172A' } },
+                        fill: { fgColor: { rgb: k % 2 === 0 ? 'F8FAFC' : 'FFFFFF' } },
+                        border: BORDER_THIN,
+                        alignment: { vertical: 'center' }
+                    };
+
+                    if (c === 0) {
+                        kpiStyle.font = { bold: true, sz: 9.5, color: { rgb: '004080' } };
+                        kpiStyle.alignment.horizontal = 'left';
+                    } else if (c === 1) {
+                        kpiStyle.font = { bold: true, sz: 10, color: { rgb: '0F172A' } };
+                        kpiStyle.alignment.horizontal = 'right';
+                        if (k === 1 || k === 5) wsSec[cellAddr].z = '#,##0';
+                        else wsSec[cellAddr].z = '0.00';
+                    } else if (c === 2) {
+                        kpiStyle.alignment.horizontal = 'center';
+                        kpiStyle.font = { italic: true, sz: 9, color: { rgb: '64748B' } };
+                    } else {
+                        kpiStyle.alignment.horizontal = 'left';
+                        kpiStyle.font = { sz: 9, color: { rgb: '475569' } };
+                    }
+                    wsSec[cellAddr].s = kpiStyle;
+                }
+            }
+
+            wsSec['!cols'] = [
+                { wch: 18 }, { wch: 14 }, { wch: 8 }, { wch: 14 },
+                { wch: 15 }, { wch: 14 }, { wch: 15 }, { wch: 16 },
+                { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
+                { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 },
+                { wch: 14 }, { wch: 18 }
+            ];
+            wsSec['!rows'] = [ { hpt: 28 }, { hpt: 20 }, { hpt: 8 }, { hpt: 22 }, { hpt: 20 } ];
+
+            let sheetName = `Sector ${secIndex + 1}`;
+            if (s.sector.nombre) sheetName = s.sector.nombre.substring(0, 28).replace(/[\\/?*[\]:]/g, '_');
             XLSX.utils.book_append_sheet(wb, wsSec, sheetName);
         });
 
         // ─── HOJA FINAL: DETALLE GENERAL TODAS LAS CASAS ───
         const wsGlobalData = [];
-        wsGlobalData.push([`${projectName} — Matriz General Todas las Casas`]);
-        wsGlobalData.push([`Total Sectores: ${cacheResultadosSectores.length}`, `Rango Micro-Nodo TV: ${rxMin} a +${rxMax} dBm`]);
+        wsGlobalData.push([`SCITIC S.A.S. — ${projectName.toUpperCase()} — MATRIZ GENERAL CONSOLIDADA (TODAS LAS CASAS)`]);
+        wsGlobalData.push([`Total Sectores: ${cacheResultadosSectores.length} | Total Casas: ${global.totalCasas} | Rango Micro-Nodo TV: ${rxMin} a +${rxMax} dBm | Longitud Onda: ${wavelength} nm`]);
         wsGlobalData.push([]);
         wsGlobalData.push([
-            'SECTOR', 'TRANSMISOR TX', 'CAJA NAP', 'RAMAL', 'HILO', 'CASA',
+            'SECTOR', 'TRANSMISOR TX', 'CAJA NAP', 'RAMAL', 'HILO', 'CASA / LOTE',
             'Troncal 12H (m)', 'Drop 2H (m)', 'Total Fibra (m)',
-            'Pérd. Fibra (dB)', 'Pérdida Fusiones (dB)', 'Pérdida Conectores (dB)',
+            'Pérd. Fibra (dB)', 'Fusiones dB', 'Conectores dB',
             'Splitter Cab. (dB)', 'Splitter NAP (dB)',
             'PÉRDIDA TOTAL (dB)', 'POTENCIA RX (dBm)', 'MARGEN (dB)', 'ESTADO'
         ]);
 
+        let gIdx = 0;
         cacheResultadosSectores.forEach(s => {
             s.filas.forEach(f => {
                 wsGlobalData.push([
@@ -2327,21 +2687,86 @@
                     f.perdidaTotal, f.potenciaRx, f.margenOptico,
                     f.estado
                 ]);
+                gIdx++;
             });
         });
 
         const wsGlobal = XLSX.utils.aoa_to_sheet(wsGlobalData);
-        wsGlobal['!cols'] = [
-            { wch: 22 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 6 }, { wch: 12 },
-            { wch: 12 }, { wch: 14 }, { wch: 14 },
-            { wch: 14 }, { wch: 16 }, { wch: 16 },
-            { wch: 16 }, { wch: 16 },
-            { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 }
+        wsGlobal['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 17 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 17 } }
         ];
+
+        for (let c = 0; c <= 17; c++) {
+            aplicarEstiloCelda(wsGlobal, 0, c, STYLE_TITLE_BANNER);
+            aplicarEstiloCelda(wsGlobal, 1, c, STYLE_SUBTITLE_BANNER);
+
+            let thStyle = STYLE_TH_PRIMARY;
+            if (c >= 6 && c <= 13) thStyle = STYLE_TH_SECONDARY;
+            else if (c === 14) thStyle = STYLE_TH_ACCENT;
+            else if (c >= 15 && c <= 16) thStyle = STYLE_TH_RESULT;
+            aplicarEstiloCelda(wsGlobal, 3, c, thStyle);
+        }
+
+        for (let i = 0; i < gIdx; i++) {
+            const rIdx = 4 + i;
+            const isOdd = (i % 2 !== 0);
+            const baseStyle = isOdd ? STYLE_TD_ODD : STYLE_TD_EVEN;
+
+            for (let c = 0; c <= 17; c++) {
+                let cellStyle = Object.assign({}, baseStyle);
+                let format = null;
+
+                if (c === 0) {
+                    cellStyle.alignment = { horizontal: 'left', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '004080' } };
+                } else if (c === 1 || c === 2 || c === 3 || c === 4 || c === 5) {
+                    cellStyle.alignment = { horizontal: 'center', vertical: 'center' };
+                    if (c === 5) cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '0F172A' } };
+                } else if (c >= 6 && c <= 8) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    format = '0.0';
+                    if (c === 8) cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '0284C7' } };
+                } else if (c === 9) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    format = '0.000';
+                } else if (c >= 10 && c <= 13) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    format = '0.00';
+                } else if (c === 14) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 10, color: { rgb: 'B45309' } };
+                    cellStyle.fill = { fgColor: { rgb: 'FFFBEB' } };
+                    format = '0.00';
+                } else if (c === 15) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 10, color: { rgb: '004080' } };
+                    cellStyle.fill = { fgColor: { rgb: 'F0FDF4' } };
+                    format = '0.00';
+                } else if (c === 16) {
+                    cellStyle.alignment = { horizontal: 'right', vertical: 'center' };
+                    cellStyle.font = { bold: true, sz: 9.5, color: { rgb: '065F46' } };
+                    format = '+0.00;-0.00;0.00';
+                } else if (c === 17) {
+                    const estado = wsGlobalData[rIdx][17];
+                    cellStyle = (estado === 'OPTIMO' || estado === 'CUMPLE') ? STYLE_STATUS_OK : STYLE_STATUS_ALERT;
+                }
+
+                aplicarEstiloCelda(wsGlobal, rIdx, c, cellStyle, format);
+            }
+        }
+
+        wsGlobal['!cols'] = [
+            { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 8 }, { wch: 14 },
+            { wch: 15 }, { wch: 14 }, { wch: 15 }, { wch: 16 }, { wch: 14 }, { wch: 14 },
+            { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 18 }
+        ];
+        wsGlobal['!rows'] = [ { hpt: 28 }, { hpt: 20 }, { hpt: 8 }, { hpt: 26 } ];
+
         XLSX.utils.book_append_sheet(wb, wsGlobal, 'Todas las Casas');
 
         XLSX.writeFile(wb, projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '_MultiSector.xlsx');
-        notificarToast("Archivo Excel Multi-Sector generado con éxito", "success");
+        notificarToast("Archivo Excel formal con formato y estilos generado con éxito", "success");
     }
 
     // ════════════════════════════════════════
