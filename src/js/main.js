@@ -113,9 +113,33 @@ function actualizarPreviewHoras(val) {
 // ==========================================
 // 2. INICIALIZACIÓN Y AUTENTICACIÓN
 // ==========================================
+const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 horas
+
+function sesionExpirada24h() {
+    try {
+        const loginAt = Number(localStorage.getItem('scitic_login_at') || 0);
+        if (!loginAt) {
+            localStorage.setItem('scitic_login_at', String(Date.now()));
+            return false;
+        }
+        return (Date.now() - loginAt) >= SESSION_MAX_AGE_MS;
+    } catch (e) {
+        return false;
+    }
+}
+
 async function inicializarAuth() {
     // 1. Verificamos de forma síncrona si hay sesión cacheada en el navegador
     const cachedSession = window.API.getCachedSession();
+
+    if (cachedSession && sesionExpirada24h()) {
+        try { localStorage.removeItem('scitic_login_at'); } catch (e) {}
+        await window.API.logout();
+        document.getElementById('loginView').style.display = 'flex';
+        document.getElementById('appView').style.display = 'none';
+        Toast.info("Tu sesión superó las 24 horas. Inicia sesión nuevamente.");
+        return;
+    }
 
     if (cachedSession) {
         usuarioActual = cachedSession;
@@ -180,6 +204,7 @@ async function iniciarSesion() {
             usuarioActual = result;
             errorMsg.style.display = 'none';
             sessionStorage.removeItem('scitic_login_audited');
+            try { localStorage.setItem('scitic_login_at', String(Date.now())); } catch (e) {}
             hideLoader();
             await mostrarBienvenidaPersonalizada(usuarioActual);
             iniciarApp();
@@ -240,17 +265,17 @@ function mostrarBienvenidaPersonalizada(usuario) {
     return new Promise((resolve) => {
         setTimeout(() => {
             if (statusEl) statusEl.textContent = 'Preparando tus módulos y entorno SCITIC...';
-        }, 950);
+        }, 1800);
 
         setTimeout(() => {
             splash.classList.add('is-leaving');
-        }, 1700);
+        }, 3600);
 
         setTimeout(() => {
             splash.style.display = 'none';
             splash.classList.remove('is-leaving');
             resolve();
-        }, 2050);
+        }, 4000);
     });
 }
 
@@ -304,6 +329,7 @@ function montarVistaPorRuta(modulo) {
 
 async function cerrarSesion() {
     sessionStorage.removeItem('scitic_login_audited');
+    try { localStorage.removeItem('scitic_login_at'); } catch (e) {}
     await window.API.logout();
     location.reload();
 }
