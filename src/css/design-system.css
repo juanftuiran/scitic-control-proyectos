@@ -29,15 +29,15 @@ html[data-theme="light"] .admin-project-title {
 
 html[data-theme="light"] .glass-panel,
 html[data-theme="light"] .card {
-    background: #ffffff !important;
-    border-color: #e2e8f0 !important;
+    background: #f6faff !important;
+    border-color: #c9d9ee !important;
     box-shadow: var(--shadow-sm) !important;
 }
 
 html[data-theme="light"] header,
 html[data-theme="light"] .app-header {
-    background: rgba(255, 255, 255, 0.92) !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    background: rgba(237, 244, 252, 0.92) !important;
+    border-bottom: 1px solid #c9d9ee !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 }

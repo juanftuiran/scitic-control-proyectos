@@ -222,63 +222,63 @@ html[data-theme="light"] {
     --primary-blue: #0284c7;
     --secondary: #0284c7;
 
-    /* Superficies y Fondos Claras */
-    --bg-main: #f8fafc;
-    --bg-dark: #f8fafc;
-    --bg-darker: #f1f5f9;
-    --bg-light: #ffffff;
-    --ds-bg-canvas: #f8fafc;
+    /* Superficies y Fondos Claras (Tono Azul Hielo Suave para máximo contraste) */
+    --bg-main: #eaf1fb;
+    --bg-dark: #eaf1fb;
+    --bg-darker: #e1ebf8;
+    --bg-light: #f4f8fe;
+    --ds-bg-canvas: #eaf1fb;
 
-    --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%),
-                      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(16, 185, 129, 0.04) 0%, transparent 65%);
-    --ds-bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%);
+    --bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #f5f9ff 0%, #eaf1fb 58%, #dce7f7 100%),
+                      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(16, 185, 129, 0.05) 0%, transparent 65%);
+    --ds-bg-gradient: radial-gradient(ellipse 90% 70% at 20% -10%, #f5f9ff 0%, #eaf1fb 58%, #dce7f7 100%);
 
-    --card-bg: #ffffff;
-    --card-header-bg: #f8fafc;
-    --card-border: #e2e8f0;
-    --panel-bg: #ffffff;
-    --panel-subtle: #f8fafc;
-    --ds-surface-1: #ffffff;
-    --ds-surface-2: #f8fafc;
-    --ds-surface-elevated: #ffffff;
-    --ds-surface-input: #ffffff;
+    --card-bg: #f6faff;
+    --card-header-bg: #edf4fc;
+    --card-border: #c9d9ee;
+    --panel-bg: #f6faff;
+    --panel-subtle: #edf4fc;
+    --ds-surface-1: #f6faff;
+    --ds-surface-2: #edf4fc;
+    --ds-surface-elevated: #f8fbff;
+    --ds-surface-input: #f8fbff;
 
-    --input-bg: #ffffff;
-    --input-border: #cbd5e1;
-    --input-focus: rgba(16, 185, 129, 0.2);
+    --input-bg: #f8fbff;
+    --input-border: #b8cbe4;
+    --input-focus: rgba(16, 185, 129, 0.22);
     --input-focus-bg: #ffffff;
 
-    --header-bg: rgba(255, 255, 255, 0.92);
-    --nav-container-bg: #f1f5f9;
-    --mode-selector-bg: #f1f5f9;
-    --floating-bar-bg: rgba(255, 255, 255, 0.96);
-    --table-header-bg: #f1f5f9;
-    --table-header-text: #0f172a;
-    --table-row-hover: rgba(16, 185, 129, 0.04);
-    --table-row-hover-text: #0f172a;
+    --header-bg: rgba(237, 244, 252, 0.92);
+    --nav-container-bg: #e2ecf8;
+    --mode-selector-bg: #e2ecf8;
+    --floating-bar-bg: rgba(242, 247, 254, 0.96);
+    --table-header-bg: #e2ecf8;
+    --table-header-text: #0b1324;
+    --table-row-hover: rgba(5, 150, 105, 0.06);
+    --table-row-hover-text: #060b16;
 
-    --btn-secondary-bg: #ffffff;
-    --btn-secondary-border: #cbd5e1;
-    --btn-secondary-color: #0f172a;
-    --btn-secondary-hover: #f8fafc;
+    --btn-secondary-bg: #f4f8fe;
+    --btn-secondary-border: #b8cbe4;
+    --btn-secondary-color: #0b1324;
+    --btn-secondary-hover: #e7f0fc;
 
-    --border: #e2e8f0;
-    --border-subtle: #f1f5f9;
-    --border-solid: #cbd5e1;
-    --ds-border: #e2e8f0;
-    --ds-border-strong: #cbd5e1;
+    --border: #c9d9ee;
+    --border-subtle: #dde8f6;
+    --border-solid: #b8cbe4;
+    --ds-border: #c9d9ee;
+    --ds-border-strong: #b8cbe4;
 
-    /* Textos en Claro */
-    --text-main: #0f172a;
-    --text-heading: #0f172a;
-    --text-muted: #475569;
-    --text-subtle: #64748b;
-    --scitic-dark: #0f172a;
-    --scitic-gray: #64748b;
-    --ds-text-primary: #0f172a;
-    --ds-text-secondary: #334155;
-    --ds-text-muted: #475569;
-    --ds-text-subtle: #64748b;
+    /* Textos en Claro con mayor profundidad y contraste */
+    --text-main: #0b1324;
+    --text-heading: #060b16;
+    --text-muted: #293548;
+    --text-subtle: #475569;
+    --scitic-dark: #060b16;
+    --scitic-gray: #334155;
+    --ds-text-primary: #0b1324;
+    --ds-text-secondary: #1e293b;
+    --ds-text-muted: #293548;
+    --ds-text-subtle: #475569;
     --stat-number-color: #059669;
 
     /* Semántica en Claro */
@@ -531,6 +531,27 @@ html[data-theme="light"] .watermark-name {
 .scitic-tool-nav-btn:hover {
     transform: translateY(-1px);
     filter: brightness(1.06);
+}
+
+.scitic-tool-theme-btn {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--btn-secondary-border);
+    background: var(--btn-secondary-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.scitic-tool-theme-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--primary);
+    background: var(--primary-soft);
 }
 
 @media print {

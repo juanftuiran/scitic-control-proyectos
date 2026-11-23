@@ -145,8 +145,14 @@
         nav.innerHTML = `
             <a href="/herramientas" class="scitic-tool-nav-btn is-primary">← Herramientas</a>
             <a href="/" class="scitic-tool-nav-btn">Selector de Módulos</a>
+            <button type="button" id="btnThemeToggle" class="scitic-tool-theme-btn" title="Alternar Modo Oscuro / Modo Claro" aria-label="Alternar Modo Oscuro / Modo Claro"></button>
         `;
         document.body.prepend(nav);
+        const toggleBtn = nav.querySelector('#btnThemeToggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => toggleTheme());
+            updateToggleButton(getTheme() === 'light');
+        }
     }
 
     function init() {
