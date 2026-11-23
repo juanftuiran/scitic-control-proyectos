@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="color-scheme" content="dark light">
-    <title>Centro de Ayuda y Guías | SCITIC S.A.S</title>
+    <title>Wiki y Centro de Ayuda | SCITIC S.A.S</title>
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="apple-touch-icon" href="/assets/logo.png">
     <link rel="expect" href="#main-content" blocking="render">
@@ -26,41 +26,47 @@
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/src/theme/theme.css?v=20">
-    <link rel="stylesheet" href="/src/css/design-system.css?v=20">
-    <link rel="stylesheet" href="/src/css/styles.css?v=20">
-    <script src="/src/theme/theme.js?v=20"></script>
-    <script src="/src/theme/icons.js?v=20"></script>
+    <link rel="stylesheet" href="/src/theme/theme.css?v=21">
+    <link rel="stylesheet" href="/src/css/design-system.css?v=21">
+    <link rel="stylesheet" href="/src/css/styles.css?v=21">
+    <script src="/src/theme/theme.js?v=21"></script>
+    <script src="/src/theme/icons.js?v=21"></script>
 
     <style>
-        .help-grid {
+        /* Hub de tarjetas clicables de la Wiki (/help) */
+        .wiki-hub-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
+            gap: 1.35rem;
             margin-top: 1.5rem;
         }
-        .help-card {
-            padding: 1.75rem;
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
+        .wiki-topic-btn {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            scroll-margin-top: 90px;
-            transition: transform 0.25s var(--ios-ease), border-color 0.25s ease;
+            justify-content: space-between;
+            gap: 1.15rem;
+            padding: 1.65rem;
+            border-radius: 20px;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid var(--card-border);
+            transition: transform 0.25s var(--ios-ease), border-color 0.25s ease, box-shadow 0.25s var(--ios-ease);
         }
-        .help-card:target,
-        .help-card:hover {
+        .wiki-topic-btn:hover,
+        .wiki-topic-btn:focus-visible {
+            transform: translateY(-4px);
             border-color: var(--primary);
+            box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.45), 0 0 22px rgba(16, 185, 129, 0.16);
         }
-        .help-card-head {
+        .wiki-topic-top {
             display: flex;
             align-items: center;
-            gap: 0.9rem;
+            justify-content: space-between;
+            gap: 0.75rem;
         }
-        .help-icon-box {
-            width: 48px;
-            height: 48px;
+        .wiki-icon-box {
+            width: 50px;
+            height: 50px;
             border-radius: 14px;
             display: grid;
             place-items: center;
@@ -69,45 +75,191 @@
             border: 1px solid var(--primary-border);
             flex-shrink: 0;
         }
-        .help-card-head h2 {
-            margin: 0;
+        .wiki-topic-btn h2 {
+            margin: 0.9rem 0 0.45rem;
             font-size: 1.2rem;
             font-weight: 800;
+            color: var(--text-heading);
         }
-        .help-steps {
+        .wiki-topic-btn p {
             margin: 0;
-            padding-left: 1.2rem;
+            font-size: 0.89rem;
+            line-height: 1.55;
             color: var(--text-muted);
-            font-size: 0.9rem;
-            line-height: 1.6;
         }
-        .help-steps li { margin-bottom: 0.4rem; }
-        .help-example-box {
+        .wiki-topic-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.9rem;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Layout Wiki Artículo (/help/<slug>) */
+        .wiki-layout {
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 1.5rem;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .wiki-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .wiki-sidebar {
+            position: sticky;
+            top: 86px;
+            padding: 1.25rem;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+        .wiki-sidebar-title {
+            font-size: 0.74rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin: 0 0 0.85rem;
+        }
+        .wiki-sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .wiki-side-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .wiki-side-link:hover {
+            background: var(--primary-soft);
+            border-color: var(--primary-border);
+        }
+        .wiki-side-link[aria-current="page"] {
+            background: var(--primary-soft);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .wiki-article {
+            padding: 2rem;
+            border-radius: 22px;
+            border: 1px solid var(--card-border);
+        }
+        .wiki-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 1.1rem;
+        }
+        .wiki-breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .wiki-article-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 1.5rem;
+        }
+        .wiki-article-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .wiki-article-title-wrap h1 {
+            margin: 0 0 0.25rem;
+            font-size: clamp(1.4rem, 1.15rem + 1vw, 1.95rem);
+        }
+        .wiki-section {
+            margin-bottom: 1.85rem;
+        }
+        .wiki-section h2 {
+            font-size: 1.12rem;
+            font-weight: 800;
+            margin: 0 0 0.75rem;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .wiki-section p,
+        .wiki-section li {
+            font-size: 0.93rem;
+            line-height: 1.65;
+            color: var(--text-muted);
+        }
+        .wiki-section ul,
+        .wiki-section ol {
+            padding-left: 1.25rem;
+            margin: 0.4rem 0 0;
+        }
+        .wiki-section li { margin-bottom: 0.45rem; }
+        .wiki-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-top: 0.75rem;
+        }
+        .wiki-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+        }
+        .wiki-table th,
+        .wiki-table td {
+            padding: 0.75rem 0.95rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .wiki-table th {
+            background: var(--table-header-bg);
+            color: var(--table-header-text);
+            font-weight: 700;
+        }
+        .wiki-callout {
             background: var(--panel-subtle);
             border: 1px solid var(--border);
-            border-left: 3px solid var(--primary);
-            border-radius: 12px;
-            padding: 0.9rem 1rem;
-            font-size: 0.85rem;
-            line-height: 1.55;
+            border-left: 4px solid var(--primary);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            margin-top: 0.85rem;
+            font-size: 0.88rem;
+            line-height: 1.6;
         }
-        .help-example-box code {
+        .wiki-callout.is-tip {
+            border-left-color: #ffb703;
+        }
+        .wiki-callout code,
+        .wiki-table code {
             font-family: var(--font-mono);
             background: var(--primary-soft);
             color: var(--primary);
-            padding: 0.12rem 0.4rem;
-            border-radius: 5px;
+            padding: 0.14rem 0.42rem;
+            border-radius: 6px;
             font-size: 0.82rem;
         }
-        .help-quick-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            margin-top: 1.1rem;
-        }
         .help-search-wrap {
-            max-width: 520px;
+            max-width: 540px;
             margin: 1.25rem auto 0;
             position: relative;
         }
@@ -124,7 +276,7 @@
             pointer-events: none;
         }
         @supports (corner-shape: squircle) {
-            .help-card, .help-example-box { corner-shape: squircle; }
+            .wiki-topic-btn, .wiki-sidebar, .wiki-article, .wiki-callout { corner-shape: squircle; }
         }
     </style>
 </head>
@@ -135,7 +287,7 @@
             <img src="/assets/logo.png" alt="Logo SCITIC" class="logo-header">
             <div style="display: flex; flex-direction: column; line-height: 1.15;">
                 <span>SCITIC S.A.S</span>
-                <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">Centro de Ayuda y Capacitación</span>
+                <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">Wiki &amp; Centro de Ayuda</span>
             </div>
         </a>
         <div class="user-info">
@@ -154,176 +306,445 @@
                 <span>Volver al Selector de Módulos</span>
             </a>
             <div class="module-quick-links">
+                <a href="/help" class="module-pill-link" id="btnHelpIndex">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>Índice Wiki</span>
+                </a>
                 <a href="/horas" class="module-pill-link"><span data-icon="clock" data-size="16"></span><span>Horas</span></a>
                 <a href="/gastos" class="module-pill-link"><span data-icon="dollar" data-size="16"></span><span>Gastos</span></a>
                 <a href="/herramientas" class="module-pill-link"><span data-icon="tools" data-size="16"></span><span>Herramientas</span></a>
             </div>
         </nav>
 
-        <section class="hub-hero" style="margin-bottom: 1.5rem;">
-            <span class="hub-eyebrow">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                <span>Guía de Uso SCITIC</span>
-            </span>
-            <h1 class="hub-greeting-title">Centro de Ayuda de la Plataforma</h1>
-            <p class="hub-greeting-subtitle">Aprende paso a paso cómo operar cada módulo y herramienta con ejemplos prácticos de diligenciamiento.</p>
+        <!-- VISTA 1: ÍNDICE WIKI DE AYUDA (/help) -->
+        <section id="wikiHubView" style="display: none;">
+            <div class="hub-hero" style="margin-bottom: 1.5rem;">
+                <span class="hub-eyebrow">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>Documentación Interactiva SCITIC</span>
+                </span>
+                <h1 class="hub-greeting-title">Wiki y Centro de Ayuda</h1>
+                <p class="hub-greeting-subtitle">Selecciona un módulo o herramienta para abrir su manual completo con explicación de campos, ejemplos reales y consejos de uso.</p>
 
-            <div class="help-search-wrap">
-                <svg class="help-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="search" id="helpSearchInput" placeholder="Buscar guía (ej. atípica, SETI, horas, gastos, clonar, fibra)..." oninput="filtrarAyuda(this.value)" aria-label="Buscar tema de ayuda">
+                <div class="help-search-wrap">
+                    <svg class="help-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="search" id="helpSearchInput" placeholder="Buscar guía o tema (ej. atípica, SETI, horas, clonar, fibra, viáticos)..." oninput="filtrarWikiHub(this.value)" aria-label="Buscar guía en la wiki">
+                </div>
             </div>
 
-            <div class="help-quick-nav">
-                <a href="#horas" class="module-pill-link">Horas</a>
-                <a href="#gastos" class="module-pill-link">Gastos</a>
-                <a href="#calculadora-tubos" class="module-pill-link">Tubos RITEL</a>
-                <a href="#loss-gen-app" class="module-pill-link">Pérdidas TDT Coaxial</a>
-                <a href="#loss-fiber-app" class="module-pill-link">Fibra Óptica</a>
-                <a href="#informes-obra" class="module-pill-link">Registro Obra TDT</a>
-            </div>
+            <div class="wiki-hub-grid" id="wikiHubGrid"></div>
         </section>
 
-        <div class="help-grid" id="helpCardsGrid">
-            <!-- Módulo de Horas -->
-            <article id="horas" class="help-card glass-panel" data-keywords="horas registro actividad novedades filtros presupuesto auditoria excel">
-                <div class="help-card-head">
-                    <div class="help-icon-box"><span data-icon="clock" data-size="24"></span></div>
-                    <div>
-                        <h2>Módulo de Horas</h2>
-                        <span class="badge bg-blue">Control Operativo</span>
-                    </div>
-                </div>
-                <ol class="help-steps">
-                    <li>Elige el modo <strong>Registro Laboral</strong> o <strong>Novedad</strong> (permisos, incapacidades, vacaciones o festivos).</li>
-                    <li>Selecciona o escribe el <strong>Proyecto</strong>, <strong>Cliente</strong>, <strong>Fecha</strong> y la <strong>Actividad</strong> ejecutada.</li>
-                    <li>Ingresa las horas trabajadas y haz clic en <strong>Guardar Actividad</strong>.</li>
-                    <li>Usa los filtros superiores (Mes, Cliente, Trabajador, Proyecto) para analizar métricas o exportar a Excel.</li>
-                </ol>
-                <div class="help-example-box">
-                    <strong>Ejemplo de llenado:</strong><br>
-                    • Cliente: <code>INELECT</code> &nbsp;|&nbsp; Proyecto: <code>TORRE MIRADOR</code><br>
-                    • Horas: acepta formato reloj <code>1:30</code> (= 1.5 h) o decimal <code>2.5</code><br>
-                    • Novedad por rango: selecciona fecha inicio/fin y marca <em>Omitir domingos</em>.
-                </div>
-            </article>
-
-            <!-- Módulo de Gastos -->
-            <article id="gastos" class="help-card glass-panel" data-keywords="gastos viaticos liquidacion pago saldo favor comprobante excel">
-                <div class="help-card-head">
-                    <div class="help-icon-box" style="background: rgba(0, 229, 255, 0.12); color: #00e5ff; border-color: rgba(0, 229, 255, 0.3);"><span data-icon="dollar" data-size="24"></span></div>
-                    <div>
-                        <h2>Módulo de Gastos</h2>
-                        <span class="badge bg-blue">Finanzas &amp; Viáticos</span>
-                    </div>
-                </div>
-                <ol class="help-steps">
-                    <li>Registra viáticos individuales o activa el modo de <strong>Rango de Días</strong> para gastos diarios repetitivos.</li>
-                    <li>Indica concepto, cantidad, valor unitario y proyecto asociado.</li>
-                    <li>Los administradores pueden seleccionar gastos pendientes y usar <strong>Liquidar / Registrar Pago</strong> para generar comprobante PDF.</li>
-                </ol>
-                <div class="help-example-box">
-                    <strong>Ejemplo de llenado:</strong><br>
-                    • Concepto: <code>Alimentación obra</code> &nbsp;|&nbsp; Cantidad: <code>3</code> &nbsp;|&nbsp; Valor Unit.: <code>25000</code><br>
-                    • El sistema calcula automáticamente el total (<code>$75.000</code>) y controla el saldo a favor.
-                </div>
-            </article>
-
-            <!-- Calculadora de Tubos RITEL -->
-            <article id="calculadora-tubos" class="help-card glass-panel" data-keywords="tubos ritel bandejas atipica estandar seti sets parcelaciones rangos">
-                <div class="help-card-head">
-                    <div class="help-icon-box"><span data-icon="pipe" data-size="24"></span></div>
-                    <div>
-                        <h2>Calculadora de Tubos RITEL</h2>
-                        <span class="badge bg-blue">Torres &amp; Parcelaciones</span>
-                    </div>
-                </div>
-                <ol class="help-steps">
-                    <li>Elige <strong>Edificio Estándar (1 a N)</strong> o <strong>Torre Atípica (Pisos Especiales)</strong> y haz clic en <strong>Generar Infraestructura</strong>.</li>
-                    <li>En modo <strong>Atípica</strong>, escribe los pisos de arriba hacia abajo usando <code>-</code> para rangos y <code>,</code> para saltos.</li>
-                    <li>Si el salón <strong>SETI</strong> no está en la misma vertical, activa el check <strong>Tramo Extra SETI (Fuera de Vertical)</strong> para agregar el tramo horizontal con el total de PAUs solo en SETI.</li>
-                    <li>Cambia entre <strong>Tubería</strong> y <strong>Bandeja Portacables</strong>, guarda en el servidor y exporta a Excel o PDF.</li>
-                </ol>
-                <div class="help-example-box">
-                    <strong>Ejemplo Torre Atípica (Secuencia de Pisos):</strong><br>
-                    • Pisos del 15 al 10, salto al 8, del 5 al 1 y sótanos: <code>15-10, 8, 5-1, S1, S2</code><br>
-                    • Piso del SETI: <code>S1</code> &nbsp;|&nbsp; Aptos/Piso: <code>6</code><br>
-                    • En la columna <em>Tramo</em> verás en amarillo el piso al que pertenece cada línea, ej.: <code>Piso 4 a Piso 3 &nbsp;&nbsp;(Piso 3)</code>.
-                </div>
-            </article>
-
-            <!-- Calculadora Pérdidas TDT Coaxial -->
-            <article id="loss-gen-app" class="help-card glass-panel" data-keywords="perdidas tdt coaxial rf derivadores splitter crc 5405 dbuv">
-                <div class="help-card-head">
-                    <div class="help-icon-box" style="background: rgba(16, 185, 129, 0.14); color: #34d399; border-color: rgba(16, 185, 129, 0.3);"><span data-icon="antenna" data-size="24"></span></div>
-                    <div>
-                        <h2>Calculadora de Pérdidas TDT (Coaxial)</h2>
-                        <span class="badge bg-blue">Balance RF • CRC 5405</span>
-                    </div>
-                </div>
-                <ol class="help-steps">
-                    <li>Configura la potencia de salida de cabecera (dBµV) y el rango de pisos en <strong>Config. Pisos</strong>.</li>
-                    <li>Haz clic en <strong>Generar Tabla</strong> y asigna derivadores/repartidores y longitudes de cable coaxial por piso.</li>
-                    <li>Verifica que todas las tomas estén dentro de la ventana normativa <strong>47 a 70 dBµV</strong> (470 y 698 MHz).</li>
-                </ol>
-                <div class="help-example-box">
-                    <strong>Ejemplo de parámetros:</strong><br>
-                    • Salida Amplificador: <code>110 dBµV</code> &nbsp;|&nbsp; Cable vertical: <code>RG-11</code> &nbsp;|&nbsp; Dispersión: <code>RG-6</code><br>
-                    • Distancia típica entre pisos: <code>3.0 m</code> &nbsp;|&nbsp; Derivador piso alto: <code>24 dB</code> → piso bajo: <code>12 dB</code>.
-                </div>
-            </article>
-
-            <!-- Calculadora Pérdidas Fibra Óptica -->
-            <article id="loss-fiber-app" class="help-card glass-panel" data-keywords="fibra optica urbanizaciones casas nap splitter drop dbm">
-                <div class="help-card-head">
-                    <div class="help-icon-box" style="background: rgba(2, 132, 199, 0.14); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);"><span data-icon="fiber" data-size="24"></span></div>
-                    <div>
-                        <h2>Calculadora de Pérdidas Fibra Óptica</h2>
-                        <span class="badge bg-blue">Urbanizaciones &amp; NAPs</span>
-                    </div>
-                </div>
-                <ol class="help-steps">
-                    <li>Crea una nueva urbanización y define los transmisores ópticos o sectores independientes.</li>
-                    <li>Agrega las <strong>Cajas NAP</strong> por sector indicando distancia troncal, splitter de cabecera y splitter de NAP.</li>
-                    <li>Ingresa la cantidad de casas por NAP y distancia de cable drop G.657, luego pulsa <strong>Calcular Todo</strong>.</li>
-                </ol>
-                <div class="help-example-box">
-                    <strong>Ejemplo de balance óptico:</strong><br>
-                    • Potencia TX: <code>+6 dBm</code> &nbsp;|&nbsp; Splitter cabecera: <code>1x4</code> &nbsp;|&nbsp; Splitter NAP: <code>1x8</code><br>
-                    • Ventana operativa válida en micro-nodo TV: <code>-15 dBm</code> a <code>+4 dBm</code>.
-                </div>
-            </article>
-
-            <!-- Registro de Instalación TDT (Obra) -->
-            <article id="informes-obra" class="help-card glass-panel" data-keywords="informes obra registro tdt dispersion internas clonar pisos">
-                <div class="help-card-head">
-                    <div class="help-icon-box" style="background: rgba(139, 92, 246, 0.14); color: #a78bfa; border-color: rgba(139, 92, 246, 0.3);"><span data-icon="file-text" data-size="24"></span></div>
-                    <div>
-                        <h2>Registro de Instalación TDT (Obra)</h2>
-                        <span class="badge bg-blue">Avance de Obra</span>
-                    </div>
-                </div>
-                <ol class="help-steps">
-                    <li>En <strong>Configuración</strong>, define torre, piso inicial/final, sufijos de apartamentos y espacios interiores.</li>
-                    <li>Registra avance en las pestañas <strong>SETS</strong>, <strong>Vertical</strong>, <strong>Dispersión</strong> e <strong>Internas</strong>.</li>
-                    <li>Para acelerar torres repetitivas, llena un piso plantilla y usa <strong>Clonar a Rango de Pisos</strong> eligiendo si deseas copiar <em>todo</em> o solo parámetros específicos (ej. solo metros de cable y tomas).</li>
-                </ol>
-                <div class="help-example-box">
-                    <strong>Ejemplo de clonación rápida:</strong><br>
-                    • Piso Origen: <code>Piso 2</code> &nbsp;|&nbsp; Rango Destino: <code>Piso 3</code> a <code>Piso 12</code><br>
-                    • Desmarca <code>Estado</code> si los pisos superiores aún siguen <em>Pendiente</em>.
-                </div>
-            </article>
-        </div>
+        <!-- VISTA 2: ARTÍCULO WIKI DETALLADO (/help/<slug>) -->
+        <section id="wikiArticleView" class="wiki-layout" style="display: none;">
+            <aside class="wiki-sidebar glass-panel" aria-label="Índice de guías">
+                <p class="wiki-sidebar-title">Guías de la Plataforma</p>
+                <nav class="wiki-sidebar-nav" id="wikiSidebarNav"></nav>
+            </aside>
+            <article class="wiki-article glass-panel" id="wikiArticleContent"></article>
+        </section>
     </main>
 
     <script>
-        function filtrarAyuda(texto) {
+        const WIKI_GUIDES = [
+            {
+                slug: 'horas',
+                titulo: 'Módulo de Horas',
+                categoria: 'Control Operativo',
+                appUrl: '/horas',
+                appLabel: 'Abrir Módulo de Horas',
+                icon: 'clock',
+                color: '#10b981',
+                descripcion: 'Registro diario de horas trabajadas, novedades laborales, control de presupuesto por proyecto, alertas y reportes Excel.',
+                keywords: 'horas registro actividad novedades filtros presupuesto auditoria excel tiempo',
+                proposito: 'Permite a colaboradores, moderadores y administradores registrar el tiempo invertido en cada proyecto, controlar el cumplimiento de horas presupuestadas y auditar todos los movimientos en zona horaria de Bogotá, Colombia.',
+                pasos: [
+                    'Ingresa desde el Selector de Módulos o la URL directa <code>/horas</code>.',
+                    'En el panel izquierdo elige <strong>Registro Laboral</strong> (trabajo en proyecto) o <strong>Novedad</strong> (permiso, incapacidad, vacaciones o festivo).',
+                    'Selecciona o escribe el <strong>Trabajador</strong>, <strong>Proyecto</strong> y <strong>Cliente</strong>. Si el proyecto ya existe, el sistema autocompleta el cliente y las horas presupuestadas.',
+                    'Ingresa la <strong>Fecha</strong> y las <strong>Horas</strong> trabajadas (acepta formato reloj <code>1:30</code> o decimal <code>1.5</code>).',
+                    'Selecciona la <strong>Actividad</strong> (Diseño, Instalación, Revisión, Documentación, etc.) y pulsa <strong>Guardar Actividad</strong>.',
+                    'Usa los filtros superiores (Mes, Cliente, Trabajador, Proyecto, Búsqueda rápida) para consultar el historial, ver gráficas o exportar a Excel.'
+                ],
+                campos: [
+                    { campo: 'Modo Registro', ejemplo: 'Laboral / Novedad', desc: 'Laboral suma al proyecto; Novedad registra ausencias o festivos.' },
+                    { campo: 'Horas', ejemplo: '1:30 o 2.5', desc: 'Convierte automáticamente HH:MM a decimal para cálculos de costo.' },
+                    { campo: 'Rango Novedad', ejemplo: '2026-11-01 a 2026-11-05', desc: 'Genera múltiples días en lote con opción de omitir domingos.' },
+                    { campo: 'H. Presup. / Valor', ejemplo: '120 h / $45.000', desc: 'Solo visible para administradores; calcula % de avance y alertas.' }
+                ],
+                ejemplos: [
+                    {
+                        titulo: 'Ejemplo 1: Registro de jornada en proyecto',
+                        texto: 'Proyecto: <code>TORRE MIRADOR</code> | Cliente: <code>INELECT</code> | Fecha: <code>2026-11-23</code> | Horas: <code>4:30</code> (= 4.5 h) | Actividad: <code>DISEÑO</code>.'
+                    },
+                    {
+                        titulo: 'Ejemplo 2: Carga de vacaciones por rango',
+                        texto: 'Cambia a modo <strong>Novedad</strong> → Tipo: <code>VACACIONES</code> → Duración: <code>Rango de días</code> → Desde <code>lunes</code> hasta <code>viernes</code> → Mantén marcado <em>Omitir domingos</em> → Guardar.'
+                    }
+                ],
+                consejos: [
+                    'Si superas el 100% de las horas presupuestadas en un proyecto, el sistema mostrará una alerta automática en el panel administrativo.',
+                    'Los reportes de Excel se descargan con la fecha actual de Bogotá y respetan los filtros activos en pantalla.'
+                ]
+            },
+            {
+                slug: 'gastos',
+                titulo: 'Módulo de Gastos',
+                categoria: 'Finanzas & Viáticos',
+                appUrl: '/gastos',
+                appLabel: 'Abrir Módulo de Gastos',
+                icon: 'dollar',
+                color: '#00e5ff',
+                descripcion: 'Control de viáticos, transporte, materiales menores, liquidaciones, saldo a favor y generación de comprobantes de pago.',
+                keywords: 'gastos viaticos liquidacion pago saldo favor comprobante excel reembolso',
+                proposito: 'Centraliza los gastos operativos y viáticos reportados en campo por cada trabajador, permitiendo liquidar cuentas pendientes, aplicar saldos a favor y emitir recibos de pago imprimibles.',
+                pasos: [
+                    'Accede desde el Hub o por <code>/gastos</code>.',
+                    'Elige si el gasto es de <strong>Día Único</strong> o <strong>Rango de Días</strong> (ideal para alimentación o transporte diario).',
+                    'Diligencia Trabajador, Proyecto, Concepto/Ítem, Cantidad y Valor Unitario. El sistema calcula el Total automáticamente.',
+                    'Guarda el gasto; quedará con estado <code>PENDIENTE</code> hasta que administración lo liquide.',
+                    'En administración, usa <strong>Liquidar / Registrar Pago</strong> para abonar o pagar la selección y generar el comprobante PDF.'
+                ],
+                campos: [
+                    { campo: 'Concepto / Ítem', ejemplo: 'Alimentación / Transporte', desc: 'Descripción clara del gasto ejecutado en obra.' },
+                    { campo: 'Cantidad × Valor', ejemplo: '3 × 25000', desc: 'Calcula el subtotal automático ($75.000).' },
+                    { campo: 'Modo Rango', ejemplo: '5 días', desc: 'Crea un registro diario por cada fecha del rango elegido.' },
+                    { campo: 'Saldo a Favor', ejemplo: 'Aplicado en liquidación', desc: 'Descuenta anticipos previos del trabajador al momento de pagar.' }
+                ],
+                ejemplos: [
+                    {
+                        titulo: 'Ejemplo 1: Viáticos de 4 días en obra',
+                        texto: 'Activa <strong>Rango de días</strong> → Del <code>2026-11-18</code> al <code>2026-11-21</code> → Concepto: <code>Almuerzo obra</code> → Cantidad: <code>1</code> → Valor: <code>22000</code>. Se crean 4 registros de $22.000 c/u.'
+                    },
+                    {
+                        titulo: 'Ejemplo 2: Liquidación con comprobante',
+                        texto: 'Filtra por trabajador pendiente → Marca las casillas de los gastos → Pulsa <strong>Liquidar Selección</strong> → Confirma el método de pago y descarga/imprime el recibo.'
+                    }
+                ],
+                consejos: [
+                    'Puedes exportar el listado filtrado a Excel en cualquier momento para contabilidad.',
+                    'Usa el campo de Observaciones para anotar número de factura o soporte.'
+                ]
+            },
+            {
+                slug: 'calculadora-tubos',
+                titulo: 'Calculadora de Tubos RITEL',
+                categoria: 'Canalizaciones • RITEL 2025',
+                appUrl: '/herramientas/calculadora-tubos',
+                appLabel: 'Abrir Calculadora de Tubos',
+                icon: 'pipe',
+                color: '#10b981',
+                descripcion: 'Dimensionamiento de tuberías verticales y bandejas portacables para torres (Estándar y Atípica) y parcelaciones SETU.',
+                keywords: 'tubos ritel bandejas atipica estandar seti sets parcelaciones rangos horizontal',
+                proposito: 'Calcula la cantidad exacta de tubos físicos (SCH40, PVC, EMT) y el ancho comercial de bandejas portacables según la norma RITEL 2025, considerando el área útil, factor de llenado y reducción por curvas mayores a 60°.',
+                pasos: [
+                    'Al abrir <code>/herramientas/calculadora-tubos</code>, crea un proyecto nuevo (Estándar, Atípica o Parcelación) o abre uno guardado en el servidor.',
+                    '<strong>Edificio Estándar:</strong> ingresa el piso más alto, el piso del SETI y los apartamentos por piso.',
+                    '<strong>Torre Atípica:</strong> escribe la secuencia de pisos de arriba hacia abajo usando <code>-</code> para rangos y <code>,</code> para saltos o sótanos.',
+                    'Si el salón SETI está fuera de la vertical principal, activa el check <strong>Tramo Extra SETI (Fuera de Vertical)</strong>.',
+                    'Pulsa <strong>Generar Infraestructura</strong>, ajusta material, diámetro o curvas por tramo, alterna entre <em>Tubería</em> y <em>Bandeja</em>, guarda en el servidor y exporta a Excel/PDF.'
+                ],
+                campos: [
+                    { campo: 'Secuencia Atípica', ejemplo: '15-10, 8, 5-1, S1, S2', desc: 'Usa guion (-) para rangos continuos y coma (,) para saltos o niveles especiales.' },
+                    { campo: 'Piso del SETI', ejemplo: 'S1 o 3', desc: 'Indica en qué nivel se ubica el salón inferior (SETI).' },
+                    { campo: 'Tramo Extra SETI', ejemplo: 'Checkbox activado', desc: 'Agrega una fila resaltada en ámbar con el total de PAUs solo en SETI y 0 en SETS.' },
+                    { campo: 'Directo SETI', ejemplo: 'Check en fila SETI', desc: 'Si los PAUs del piso SETI conectan directo, no suman tubos verticales adicionales.' }
+                ],
+                ejemplos: [
+                    {
+                        titulo: 'Ejemplo 1: Torre Atípica con salto de piso y sótanos',
+                        texto: 'Secuencia: <code>15-10, 8, 5-1, S1, S2</code> | Piso SETI: <code>S1</code> | Aptos/Piso: <code>6</code>. En la columna <em>Tramo</em> verás en amarillo la referencia exacta de cada fila, por ejemplo: <code>Piso 4 a Piso 3 &nbsp;&nbsp;(Piso 3)</code>.'
+                    },
+                    {
+                        titulo: 'Ejemplo 2: SETI fuera de la vertical',
+                        texto: 'Marca <strong>Tramo Extra SETI (Fuera de Vertical)</strong>. Se agregará al final una fila resaltada en dorado que acumula los PAUs totales del edificio solo en SETI (SETS = 0) para dimensionar la canalización horizontal hacia el salón.'
+                    }
+                ],
+                consejos: [
+                    'Cuando el proyecto sea nuevo en modo Atípica, el campo de secuencia inicia en blanco para que escribas directamente tu distribución.',
+                    'Usa <strong>Guardar en Servidor</strong> para conservar tus proyectos en la nube y abrirlos desde cualquier equipo.'
+                ]
+            },
+            {
+                slug: 'loss-gen-app',
+                titulo: 'Calculadora de Pérdidas TDT (Coaxial)',
+                categoria: 'Radiofrecuencia • CRC 5405',
+                appUrl: '/herramientas/loss-gen-app',
+                appLabel: 'Abrir Calculadora TDT Coaxial',
+                icon: 'antenna',
+                color: '#34d399',
+                descripcion: 'Balance de potencia RF en 470 y 698 MHz, selección de derivadores por piso y verificación normativa 47–70 dBµV.',
+                keywords: 'perdidas tdt coaxial rf derivadores splitter crc 5405 dbuv 470 698 mhz',
+                proposito: 'Simula la atenuación de señal TDT desde la cabecera (amplificador/central programable) hasta la toma más desfavorable de cada piso, asegurando cumplimiento con la ventana 47 a 70 dBµV de la norma.',
+                pasos: [
+                    'Crea un proyecto nuevo o carga uno del servidor en <code>/herramientas/loss-gen-app</code>.',
+                    'Define la potencia de salida de cabecera (dBµV), cantidad de pisos y tipo de cable vertical/dispersión.',
+                    'En <strong>Config. Pisos</strong> detalla longitudes de cable y derivadores/repartidores por nivel.',
+                    'Pulsa <strong>Generar Tabla</strong> y verifica que todos los pisos aparezcan en estado conforme (verde).'
+                ],
+                campos: [
+                    { campo: 'Salida Cabecera', ejemplo: '108 a 115 dBµV', desc: 'Nivel de señal entregado por la central programable en SETS.' },
+                    { campo: 'Frecuencias', ejemplo: '470 MHz / 698 MHz', desc: 'Evalúa el peor caso en banda UHF baja y alta.' },
+                    { campo: 'Derivadores', ejemplo: '24 dB → 20 dB → 12 dB', desc: 'Valores mayores arriba y menores abajo para equilibrar la red.' },
+                    { campo: 'Rango Admisible', ejemplo: '47 – 70 dBµV', desc: 'Ventana normativa en toma de usuario final.' }
+                ],
+                ejemplos: [
+                    {
+                        titulo: 'Ejemplo: Torre de 12 pisos con RG-11 vertical',
+                        texto: 'Cabecera: <code>110 dBµV</code> | Cable vertical: <code>RG-11</code> (3 m por piso) | Dispersión: <code>RG-6</code> (18 m) | Pisos 12–9: derivador <code>24 dB</code>; Pisos 8–5: <code>16 dB</code>; Pisos 4–1: <code>12 dB</code>.'
+                    }
+                ],
+                consejos: [
+                    'Si un piso alto supera 70 dBµV, aumenta el valor de derivación o reduce la ganancia de cabecera.',
+                    'Si un piso bajo cae por debajo de 47 dBµV, usa cable RG-11 en la vertical o reduce pérdidas de paso.'
+                ]
+            },
+            {
+                slug: 'loss-fiber-app',
+                titulo: 'Calculadora de Pérdidas Fibra Óptica',
+                categoria: 'Urbanizaciones & NAPs',
+                appUrl: '/herramientas/loss-fiber-app',
+                appLabel: 'Abrir Calculadora Fibra',
+                icon: 'fiber',
+                color: '#38bdf8',
+                descripcion: 'Balance óptico en dBm para urbanizaciones de casas, múltiples sectores/transmisores, cajas NAP y cable drop G.657.',
+                keywords: 'fibra optica urbanizaciones casas nap splitter drop dbm transmisor sector',
+                proposito: 'Diseña redes ópticas FTTH/TDT para urbanizaciones horizontales con múltiples sectores o transmisores independientes, verificando que cada casa reciba entre -15 dBm y +4 dBm en el micro-nodo.',
+                pasos: [
+                    'Abre <code>/herramientas/loss-fiber-app</code> y crea una nueva urbanización.',
+                    'Agrega uno o más <strong>Sectores / Transmisores</strong> indicando la potencia TX en dBm y splitter de cabecera.',
+                    'Añade las <strong>Cajas NAP</strong> del sector con distancia troncal, splitter de NAP, número de casas y metros de drop G.657.',
+                    'Pulsa <strong>Calcular Todo</strong> para revisar el desbalance óptico y cumplimiento global, luego guarda o exporta a Excel/PDF.'
+                ],
+                campos: [
+                    { campo: 'Potencia TX', ejemplo: '+6 dBm', desc: 'Potencia óptica de salida del transmisor o EDFA.' },
+                    { campo: 'Splitter Cabecera / NAP', ejemplo: '1x4 y 1x8', desc: 'Suma la pérdida por inserción óptica de cada divisor.' },
+                    { campo: 'Cable Drop G.657', ejemplo: '35 m', desc: 'Longitud de acometida desde la NAP hasta la vivienda.' },
+                    { campo: 'Ventana RX Válida', ejemplo: '-15 a +4 dBm', desc: 'Rango operativo del receptor óptico en casa del usuario.' }
+                ],
+                ejemplos: [
+                    {
+                        titulo: 'Ejemplo: Urbanización de 2 sectores (64 casas)',
+                        texto: 'Sector Norte: TX <code>+6 dBm</code> → Splitter cabecera <code>1x4</code> → Troncal <code>250 m</code> → 4 Cajas NAP con splitter <code>1x8</code> (8 casas c/u) y drop promedio de <code>40 m</code> → Recepción esperada ≈ <code>-11.2 dBm</code> (CONFORME).'
+                    }
+                ],
+                consejos: [
+                    'Puedes duplicar sectores completos para acelerar urbanizaciones simétricas.',
+                    'Revisa el indicador de desbalance óptico global para mantener niveles parejos entre casas cercanas y lejanas.'
+                ]
+            },
+            {
+                slug: 'informes-obra',
+                titulo: 'Registro de Instalación TDT (Obra)',
+                categoria: 'Bitácora y Avance en Terreno',
+                appUrl: '/herramientas/informes-obra',
+                appLabel: 'Abrir Registro de Obra TDT',
+                icon: 'file-text',
+                color: '#a78bfa',
+                descripcion: 'Control integral de avance de obra (SETS, Vertical, Dispersión e Internas) con clonación por rango de pisos e informes.',
+                keywords: 'informes obra registro tdt dispersion internas clonar pisos avance excel pdf',
+                proposito: 'Lleva el inventario y porcentaje de avance real instalado en torre: equipos de cabecera SETS, bajantes verticales, red de dispersión por apartamento y red interior por espacios, generando el informe consolidado.',
+                pasos: [
+                    'En <strong>Configuración</strong>, ingresa nombre del proyecto, torre, piso inicial, piso final, sufijos de aptos (ej. <code>01, 02, 03, 04</code>) y espacios interiores (ej. <code>Sala, Alcoba 1, Alcoba 2</code>).',
+                    'Registra equipos en <strong>SETS</strong> y longitudes/conectores en <strong>Vertical</strong>.',
+                    'En <strong>Dispersión</strong> e <strong>Internas</strong>, llena un piso modelo y usa <strong>Clonar a Rango de Pisos</strong> marcando <em>Copiar todo</em> o solo los parámetros que necesites.',
+                    'Consulta la pestaña <strong>Informe</strong> para ver totales consolidados y exporta a Excel o PDF.'
+                ],
+                campos: [
+                    { campo: 'Sufijos Aptos', ejemplo: '01, 02, 03, 04', desc: 'Genera automáticamente Aptos 101–104, 201–204, etc.' },
+                    { campo: 'Clonar Dispersión', ejemplo: 'Piso 2 → Pisos 3 a 12', desc: 'Copia tipo de cable, metros, conectores, etiquetas, estado u obs según elijas.' },
+                    { campo: 'Clonar Internas', ejemplo: 'Piso 2 → Pisos 3 a 12', desc: 'Permite clonar repartidor, metros de cable, tomas TDT y/o estado de espacios.' },
+                    { campo: 'Estado No Aplica', ejemplo: 'No Aplica', desc: 'Excluye ese apartamento o espacio del conteo total de obra.' }
+                ],
+                ejemplos: [
+                    {
+                        titulo: 'Ejemplo: Clonar solo distancias dejando el estado Pendiente',
+                        texto: 'Llena el <code>Piso 2</code> con las medidas reales de cable y conectores → En <strong>Clonar a Rango</strong> elige Origen: <code>Piso 2</code>, Destino: <code>Piso 3</code> a <code>Piso 10</code> → Desmarca <code>Estado</code> → Pulsa <strong>Clonar al Rango</strong>.'
+                    }
+                ],
+                consejos: [
+                    'En Dispersión puedes pulsar el botón <strong>📋 Clonar este piso</strong> en el encabezado de cualquier piso para seleccionarlo al instante.',
+                    'Guarda periódicamente en el servidor para sincronizar el avance con la oficina.'
+                ]
+            }
+        ];
+
+        function getGuideSlugFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const qTopic = (params.get('tema') || '').toLowerCase();
+            if (qTopic && WIKI_GUIDES.some(g => g.slug === qTopic)) return qTopic;
+
+            const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+            const match = path.match(/^\/help\/([^/]+)$/);
+            if (match && WIKI_GUIDES.some(g => g.slug === match[1])) return match[1];
+
+            const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+            if (hash && WIKI_GUIDES.some(g => g.slug === hash)) return hash;
+
+            return null;
+        }
+
+        function renderIconHtml(iconName, size) {
+            if (window.SCITIC_ICONS && typeof window.SCITIC_ICONS.get === 'function') {
+                return window.SCITIC_ICONS.get(iconName, { size: size || 24 });
+            }
+            return `<span data-icon="${iconName}" data-size="${size || 24}"></span>`;
+        }
+
+        function renderWikiHub() {
+            const hubView = document.getElementById('wikiHubView');
+            const articleView = document.getElementById('wikiArticleView');
+            const grid = document.getElementById('wikiHubGrid');
+            const btnIdx = document.getElementById('btnHelpIndex');
+
+            if (hubView) hubView.style.display = 'block';
+            if (articleView) articleView.style.display = 'none';
+            if (btnIdx) btnIdx.setAttribute('aria-current', 'page');
+
+            document.title = 'Wiki y Centro de Ayuda | SCITIC S.A.S';
+
+            grid.innerHTML = WIKI_GUIDES.map(g => `
+                <a href="/help/${g.slug}" class="wiki-topic-btn glass-panel" data-keywords="${g.keywords} ${g.titulo.toLowerCase()} ${g.descripcion.toLowerCase()}">
+                    <div>
+                        <div class="wiki-topic-top">
+                            <div class="wiki-icon-box" style="color: ${g.color}; border-color: ${g.color}44; background: ${g.color}1a;">
+                                ${renderIconHtml(g.icon, 26)}
+                            </div>
+                            <span class="hub-card-tag">${g.categoria}</span>
+                        </div>
+                        <h2>${g.titulo}</h2>
+                        <p>${g.descripcion}</p>
+                    </div>
+                    <div class="wiki-topic-foot">
+                        <span class="hub-route-badge">/help/${g.slug}</span>
+                        <span>Ver guía completa →</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function renderWikiArticle(slug) {
+            const guide = WIKI_GUIDES.find(g => g.slug === slug);
+            if (!guide) {
+                renderWikiHub();
+                return;
+            }
+
+            const hubView = document.getElementById('wikiHubView');
+            const articleView = document.getElementById('wikiArticleView');
+            const sidebar = document.getElementById('wikiSidebarNav');
+            const content = document.getElementById('wikiArticleContent');
+            const btnIdx = document.getElementById('btnHelpIndex');
+
+            if (hubView) hubView.style.display = 'none';
+            if (articleView) articleView.style.display = 'grid';
+            if (btnIdx) btnIdx.removeAttribute('aria-current');
+
+            document.title = `${guide.titulo} — Ayuda | SCITIC S.A.S`;
+
+            sidebar.innerHTML = WIKI_GUIDES.map(g => `
+                <a href="/help/${g.slug}" class="wiki-side-link" ${g.slug === slug ? 'aria-current="page"' : ''}>
+                    ${renderIconHtml(g.icon, 16)}
+                    <span>${g.titulo}</span>
+                </a>
+            `).join('');
+
+            content.innerHTML = `
+                <div class="wiki-breadcrumb">
+                    <a href="/help">Centro de Ayuda</a>
+                    <span aria-hidden="true">/</span>
+                    <span>${guide.titulo}</span>
+                </div>
+
+                <div class="wiki-article-header">
+                    <div class="wiki-article-title-wrap">
+                        <div class="wiki-icon-box" style="color: ${guide.color}; border-color: ${guide.color}44; background: ${guide.color}1a;">
+                            ${renderIconHtml(guide.icon, 26)}
+                        </div>
+                        <div>
+                            <h1>${guide.titulo}</h1>
+                            <span class="badge bg-blue">${guide.categoria}</span>
+                        </div>
+                    </div>
+                    <a href="${guide.appUrl}" class="btn-back-hub" style="padding: 0.65rem 1.25rem; font-size: 0.9rem; min-block-size: 42px;">
+                        <span>${guide.appLabel}</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <div class="wiki-section">
+                    <h2>📌 Propósito y Alcance</h2>
+                    <p>${guide.proposito}</p>
+                </div>
+
+                <div class="wiki-section">
+                    <h2>🧭 Cómo usarlo paso a paso</h2>
+                    <ol>
+                        ${guide.pasos.map(p => `<li>${p}</li>`).join('')}
+                    </ol>
+                </div>
+
+                <div class="wiki-section">
+                    <h2>🧩 Guía de Campos Principales</h2>
+                    <div class="wiki-table-wrap">
+                        <table class="wiki-table">
+                            <thead>
+                                <tr>
+                                    <th>Campo / Control</th>
+                                    <th>Ejemplo de Valor</th>
+                                    <th>Función</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${guide.campos.map(c => `
+                                    <tr>
+                                        <td><strong>${c.campo}</strong></td>
+                                        <td><code>${c.ejemplo}</code></td>
+                                        <td>${c.desc}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="wiki-section">
+                    <h2>💡 Ejemplos Prácticos de Uso</h2>
+                    ${guide.ejemplos.map(ej => `
+                        <div class="wiki-callout">
+                            <strong>${ej.titulo}:</strong><br>
+                            ${ej.texto}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="wiki-section" style="margin-bottom: 0;">
+                    <h2>⚡ Consejos y Buenas Prácticas</h2>
+                    <div class="wiki-callout is-tip">
+                        <ul style="margin: 0;">
+                            ${guide.consejos.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filtrarWikiHub(texto) {
             const q = String(texto || '').toLowerCase().trim();
-            document.querySelectorAll('#helpCardsGrid .help-card').forEach(card => {
-                const contenido = (card.textContent + ' ' + (card.dataset.keywords || '')).toLowerCase();
-                card.style.display = (!q || contenido.includes(q)) ? 'flex' : 'none';
+            document.querySelectorAll('#wikiHubGrid .wiki-topic-btn').forEach(btn => {
+                const hay = (btn.textContent + ' ' + (btn.dataset.keywords || '')).toLowerCase();
+                btn.style.display = (!q || hay.includes(q)) ? 'flex' : 'none';
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const slug = getGuideSlugFromUrl();
+            if (slug) {
+                renderWikiArticle(slug);
+            } else {
+                renderWikiHub();
+            }
+        });
     </script>
 </body>
 </html>

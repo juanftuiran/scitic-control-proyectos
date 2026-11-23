@@ -139,7 +139,7 @@
         if (document.getElementById('sciticStandaloneToolNav')) return;
 
         const slug = path.replace(/^\/herramientas\/?/, '').replace(/\/+$/, '');
-        const helpHref = slug ? `/help#${slug}` : '/help';
+        const helpHref = slug ? `/help/${slug}` : '/help';
 
         const nav = document.createElement('nav');
         nav.id = 'sciticStandaloneToolNav';
