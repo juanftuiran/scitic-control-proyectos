@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
+    <title>Centro de Ayuda y Guías | SCITIC S.A.S</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
+    <link rel="expect" href="#main-content" blocking="render">
+
+    <script blocking="render">
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/theme/theme.css?v=20">
+    <link rel="stylesheet" href="/src/css/design-system.css?v=20">
+    <link rel="stylesheet" href="/src/css/styles.css?v=20">
+    <script src="/src/theme/theme.js?v=20"></script>
+    <script src="/src/theme/icons.js?v=20"></script>
+
+    <style>
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .help-card {
+            padding: 1.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-margin-top: 90px;
+            transition: transform 0.25s var(--ios-ease), border-color 0.25s ease;
+        }
+        .help-card:target,
+        .help-card:hover {
+            border-color: var(--primary);
+        }
+        .help-card-head {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+        .help-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: var(--primary-soft);
+            color: var(--primary);
+            border: 1px solid var(--primary-border);
+            flex-shrink: 0;
+        }
+        .help-card-head h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        .help-steps {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .help-steps li { margin-bottom: 0.4rem; }
+        .help-example-box {
+            background: var(--panel-subtle);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+            font-size: 0.85rem;
+            line-height: 1.55;
+        }
+        .help-example-box code {
+            font-family: var(--font-mono);
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 0.12rem 0.4rem;
+            border-radius: 5px;
+            font-size: 0.82rem;
+        }
+        .help-quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1.1rem;
+        }
+        .help-search-wrap {
+            max-width: 520px;
+            margin: 1.25rem auto 0;
+            position: relative;
+        }
+        .help-search-wrap input {
+            padding-left: 2.6rem;
+            border-radius: 14px;
+        }
+        .help-search-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        @supports (corner-shape: squircle) {
+            .help-card, .help-example-box { corner-shape: squircle; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link visually-hidden">Saltar al contenido principal</a>
+    <header>
+        <a href="/" class="header-title" style="text-decoration: none; color: inherit;" title="Ir al Selector de Módulos">
+            <img src="/assets/logo.png" alt="Logo SCITIC" class="logo-header">
+            <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                <span>SCITIC S.A.S</span>
+                <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">Centro de Ayuda y Capacitación</span>
+            </div>
+        </a>
+        <div class="user-info">
+            <a href="/sitios" class="module-pill-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Sitios de Interés</span>
+            </a>
+            <button type="button" id="btnThemeToggle" onclick="window.SCITICTheme && window.SCITICTheme.toggle()" title="Alternar Modo Oscuro / Modo Claro" aria-label="Alternar Modo Oscuro / Modo Claro"></button>
+        </div>
+    </header>
+
+    <main id="main-content" class="container" tabindex="-1">
+        <nav class="module-top-bar glass-panel" aria-label="Navegación de retorno">
+            <a href="/" class="btn-back-hub">
+                <span data-icon="arrow-left" data-size="20"></span>
+                <span>Volver al Selector de Módulos</span>
+            </a>
+            <div class="module-quick-links">
+                <a href="/horas" class="module-pill-link"><span data-icon="clock" data-size="16"></span><span>Horas</span></a>
+                <a href="/gastos" class="module-pill-link"><span data-icon="dollar" data-size="16"></span><span>Gastos</span></a>
+                <a href="/herramientas" class="module-pill-link"><span data-icon="tools" data-size="16"></span><span>Herramientas</span></a>
+            </div>
+        </nav>
+
+        <section class="hub-hero" style="margin-bottom: 1.5rem;">
+            <span class="hub-eyebrow">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Guía de Uso SCITIC</span>
+            </span>
+            <h1 class="hub-greeting-title">Centro de Ayuda de la Plataforma</h1>
+            <p class="hub-greeting-subtitle">Aprende paso a paso cómo operar cada módulo y herramienta con ejemplos prácticos de diligenciamiento.</p>
+
+            <div class="help-search-wrap">
+                <svg class="help-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="search" id="helpSearchInput" placeholder="Buscar guía (ej. atípica, SETI, horas, gastos, clonar, fibra)..." oninput="filtrarAyuda(this.value)" aria-label="Buscar tema de ayuda">
+            </div>
+
+            <div class="help-quick-nav">
+                <a href="#horas" class="module-pill-link">Horas</a>
+                <a href="#gastos" class="module-pill-link">Gastos</a>
+                <a href="#calculadora-tubos" class="module-pill-link">Tubos RITEL</a>
+                <a href="#loss-gen-app" class="module-pill-link">Pérdidas TDT Coaxial</a>
+                <a href="#loss-fiber-app" class="module-pill-link">Fibra Óptica</a>
+                <a href="#informes-obra" class="module-pill-link">Registro Obra TDT</a>
+            </div>
+        </section>
+
+        <div class="help-grid" id="helpCardsGrid">
+            <!-- Módulo de Horas -->
+            <article id="horas" class="help-card glass-panel" data-keywords="horas registro actividad novedades filtros presupuesto auditoria excel">
+                <div class="help-card-head">
+                    <div class="help-icon-box"><span data-icon="clock" data-size="24"></span></div>
+                    <div>
+                        <h2>Módulo de Horas</h2>
+                        <span class="badge bg-blue">Control Operativo</span>
+                    </div>
+                </div>
+                <ol class="help-steps">
+                    <li>Elige el modo <strong>Registro Laboral</strong> o <strong>Novedad</strong> (permisos, incapacidades, vacaciones o festivos).</li>
+                    <li>Selecciona o escribe el <strong>Proyecto</strong>, <strong>Cliente</strong>, <strong>Fecha</strong> y la <strong>Actividad</strong> ejecutada.</li>
+                    <li>Ingresa las horas trabajadas y haz clic en <strong>Guardar Actividad</strong>.</li>
+                    <li>Usa los filtros superiores (Mes, Cliente, Trabajador, Proyecto) para analizar métricas o exportar a Excel.</li>
+                </ol>
+                <div class="help-example-box">
+                    <strong>Ejemplo de llenado:</strong><br>
+                    • Cliente: <code>INELECT</code> &nbsp;|&nbsp; Proyecto: <code>TORRE MIRADOR</code><br>
+                    • Horas: acepta formato reloj <code>1:30</code> (= 1.5 h) o decimal <code>2.5</code><br>
+                    • Novedad por rango: selecciona fecha inicio/fin y marca <em>Omitir domingos</em>.
+                </div>
+            </article>
+
+            <!-- Módulo de Gastos -->
+            <article id="gastos" class="help-card glass-panel" data-keywords="gastos viaticos liquidacion pago saldo favor comprobante excel">
+                <div class="help-card-head">
+                    <div class="help-icon-box" style="background: rgba(0, 229, 255, 0.12); color: #00e5ff; border-color: rgba(0, 229, 255, 0.3);"><span data-icon="dollar" data-size="24"></span></div>
+                    <div>
+                        <h2>Módulo de Gastos</h2>
+                        <span class="badge bg-blue">Finanzas &amp; Viáticos</span>
+                    </div>
+                </div>
+                <ol class="help-steps">
+                    <li>Registra viáticos individuales o activa el modo de <strong>Rango de Días</strong> para gastos diarios repetitivos.</li>
+                    <li>Indica concepto, cantidad, valor unitario y proyecto asociado.</li>
+                    <li>Los administradores pueden seleccionar gastos pendientes y usar <strong>Liquidar / Registrar Pago</strong> para generar comprobante PDF.</li>
+                </ol>
+                <div class="help-example-box">
+                    <strong>Ejemplo de llenado:</strong><br>
+                    • Concepto: <code>Alimentación obra</code> &nbsp;|&nbsp; Cantidad: <code>3</code> &nbsp;|&nbsp; Valor Unit.: <code>25000</code><br>
+                    • El sistema calcula automáticamente el total (<code>$75.000</code>) y controla el saldo a favor.
+                </div>
+            </article>
+
+            <!-- Calculadora de Tubos RITEL -->
+            <article id="calculadora-tubos" class="help-card glass-panel" data-keywords="tubos ritel bandejas atipica estandar seti sets parcelaciones rangos">
+                <div class="help-card-head">
+                    <div class="help-icon-box"><span data-icon="pipe" data-size="24"></span></div>
+                    <div>
+                        <h2>Calculadora de Tubos RITEL</h2>
+                        <span class="badge bg-blue">Torres &amp; Parcelaciones</span>
+                    </div>
+                </div>
+                <ol class="help-steps">
+                    <li>Elige <strong>Edificio Estándar (1 a N)</strong> o <strong>Torre Atípica (Pisos Especiales)</strong> y haz clic en <strong>Generar Infraestructura</strong>.</li>
+                    <li>En modo <strong>Atípica</strong>, escribe los pisos de arriba hacia abajo usando <code>-</code> para rangos y <code>,</code> para saltos.</li>
+                    <li>Si el salón <strong>SETI</strong> no está en la misma vertical, activa el check <strong>Tramo Extra SETI (Fuera de Vertical)</strong> para agregar el tramo horizontal con el total de PAUs solo en SETI.</li>
+                    <li>Cambia entre <strong>Tubería</strong> y <strong>Bandeja Portacables</strong>, guarda en el servidor y exporta a Excel o PDF.</li>
+                </ol>
+                <div class="help-example-box">
+                    <strong>Ejemplo Torre Atípica (Secuencia de Pisos):</strong><br>
+                    • Pisos del 15 al 10, salto al 8, del 5 al 1 y sótanos: <code>15-10, 8, 5-1, S1, S2</code><br>
+                    • Piso del SETI: <code>S1</code> &nbsp;|&nbsp; Aptos/Piso: <code>6</code><br>
+                    • En la columna <em>Tramo</em> verás en amarillo el piso al que pertenece cada línea, ej.: <code>Piso 4 a Piso 3 &nbsp;&nbsp;(Piso 3)</code>.
+                </div>
+            </article>
+
+            <!-- Calculadora Pérdidas TDT Coaxial -->
+            <article id="loss-gen-app" class="help-card glass-panel" data-keywords="perdidas tdt coaxial rf derivadores splitter crc 5405 dbuv">
+                <div class="help-card-head">
+                    <div class="help-icon-box" style="background: rgba(16, 185, 129, 0.14); color: #34d399; border-color: rgba(16, 185, 129, 0.3);"><span data-icon="antenna" data-size="24"></span></div>
+                    <div>
+                        <h2>Calculadora de Pérdidas TDT (Coaxial)</h2>
+                        <span class="badge bg-blue">Balance RF • CRC 5405</span>
+                    </div>
+                </div>
+                <ol class="help-steps">
+                    <li>Configura la potencia de salida de cabecera (dBµV) y el rango de pisos en <strong>Config. Pisos</strong>.</li>
+                    <li>Haz clic en <strong>Generar Tabla</strong> y asigna derivadores/repartidores y longitudes de cable coaxial por piso.</li>
+                    <li>Verifica que todas las tomas estén dentro de la ventana normativa <strong>47 a 70 dBµV</strong> (470 y 698 MHz).</li>
+                </ol>
+                <div class="help-example-box">
+                    <strong>Ejemplo de parámetros:</strong><br>
+                    • Salida Amplificador: <code>110 dBµV</code> &nbsp;|&nbsp; Cable vertical: <code>RG-11</code> &nbsp;|&nbsp; Dispersión: <code>RG-6</code><br>
+                    • Distancia típica entre pisos: <code>3.0 m</code> &nbsp;|&nbsp; Derivador piso alto: <code>24 dB</code> → piso bajo: <code>12 dB</code>.
+                </div>
+            </article>
+
+            <!-- Calculadora Pérdidas Fibra Óptica -->
+            <article id="loss-fiber-app" class="help-card glass-panel" data-keywords="fibra optica urbanizaciones casas nap splitter drop dbm">
+                <div class="help-card-head">
+                    <div class="help-icon-box" style="background: rgba(2, 132, 199, 0.14); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);"><span data-icon="fiber" data-size="24"></span></div>
+                    <div>
+                        <h2>Calculadora de Pérdidas Fibra Óptica</h2>
+                        <span class="badge bg-blue">Urbanizaciones &amp; NAPs</span>
+                    </div>
+                </div>
+                <ol class="help-steps">
+                    <li>Crea una nueva urbanización y define los transmisores ópticos o sectores independientes.</li>
+                    <li>Agrega las <strong>Cajas NAP</strong> por sector indicando distancia troncal, splitter de cabecera y splitter de NAP.</li>
+                    <li>Ingresa la cantidad de casas por NAP y distancia de cable drop G.657, luego pulsa <strong>Calcular Todo</strong>.</li>
+                </ol>
+                <div class="help-example-box">
+                    <strong>Ejemplo de balance óptico:</strong><br>
+                    • Potencia TX: <code>+6 dBm</code> &nbsp;|&nbsp; Splitter cabecera: <code>1x4</code> &nbsp;|&nbsp; Splitter NAP: <code>1x8</code><br>
+                    • Ventana operativa válida en micro-nodo TV: <code>-15 dBm</code> a <code>+4 dBm</code>.
+                </div>
+            </article>
+
+            <!-- Registro de Instalación TDT (Obra) -->
+            <article id="informes-obra" class="help-card glass-panel" data-keywords="informes obra registro tdt dispersion internas clonar pisos">
+                <div class="help-card-head">
+                    <div class="help-icon-box" style="background: rgba(139, 92, 246, 0.14); color: #a78bfa; border-color: rgba(139, 92, 246, 0.3);"><span data-icon="file-text" data-size="24"></span></div>
+                    <div>
+                        <h2>Registro de Instalación TDT (Obra)</h2>
+                        <span class="badge bg-blue">Avance de Obra</span>
+                    </div>
+                </div>
+                <ol class="help-steps">
+                    <li>En <strong>Configuración</strong>, define torre, piso inicial/final, sufijos de apartamentos y espacios interiores.</li>
+                    <li>Registra avance en las pestañas <strong>SETS</strong>, <strong>Vertical</strong>, <strong>Dispersión</strong> e <strong>Internas</strong>.</li>
+                    <li>Para acelerar torres repetitivas, llena un piso plantilla y usa <strong>Clonar a Rango de Pisos</strong> eligiendo si deseas copiar <em>todo</em> o solo parámetros específicos (ej. solo metros de cable y tomas).</li>
+                </ol>
+                <div class="help-example-box">
+                    <strong>Ejemplo de clonación rápida:</strong><br>
+                    • Piso Origen: <code>Piso 2</code> &nbsp;|&nbsp; Rango Destino: <code>Piso 3</code> a <code>Piso 12</code><br>
+                    • Desmarca <code>Estado</code> si los pisos superiores aún siguen <em>Pendiente</em>.
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <script>
+        function filtrarAyuda(texto) {
+            const q = String(texto || '').toLowerCase().trim();
+            document.querySelectorAll('#helpCardsGrid .help-card').forEach(card => {
+                const contenido = (card.textContent + ' ' + (card.dataset.keywords || '')).toLowerCase();
+                card.style.display = (!q || contenido.includes(q)) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

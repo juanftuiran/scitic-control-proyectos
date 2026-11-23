@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
+    <title>Sitios de Interés, Normatividad y Proveedores | SCITIC S.A.S</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
+    <link rel="expect" href="#main-content" blocking="render">
+
+    <script blocking="render">
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
+                if (savedTheme === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/theme/theme.css?v=20">
+    <link rel="stylesheet" href="/src/css/design-system.css?v=20">
+    <link rel="stylesheet" href="/src/css/styles.css?v=20">
+    <script src="/src/theme/theme.js?v=20"></script>
+    <script src="/src/theme/icons.js?v=20"></script>
+
+    <style>
+        .sites-section {
+            margin-bottom: 2.25rem;
+        }
+        .sites-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin: 0 0 1rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .sites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+            gap: 1.25rem;
+        }
+        .site-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 1.1rem;
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid var(--card-border);
+            transition: transform 0.25s var(--ios-ease), border-color 0.25s ease, box-shadow 0.25s var(--ios-ease);
+        }
+        .site-card:hover,
+        .site-card:focus-visible {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.45), 0 0 22px rgba(16, 185, 129, 0.16);
+        }
+        .site-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        .site-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: var(--primary-soft);
+            color: var(--primary);
+            border: 1px solid var(--primary-border);
+        }
+        .site-icon.is-norm {
+            background: rgba(255, 183, 3, 0.14);
+            color: #ffb703;
+            border-color: rgba(255, 183, 3, 0.35);
+        }
+        .site-icon.is-cov {
+            background: rgba(0, 229, 255, 0.12);
+            color: #00e5ff;
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+        .site-icon.is-prov {
+            background: rgba(139, 92, 246, 0.14);
+            color: #a78bfa;
+            border-color: rgba(139, 92, 246, 0.32);
+        }
+        html[data-theme="light"] .site-icon.is-norm {
+            color: #b45309;
+        }
+        html[data-theme="light"] .site-icon.is-cov {
+            color: #0284c7;
+        }
+        html[data-theme="light"] .site-icon.is-prov {
+            color: #6d28d9;
+        }
+        .site-card h3 {
+            margin: 0 0 0.4rem;
+            padding: 0;
+            border: none;
+            font-size: 1.12rem;
+            font-weight: 800;
+        }
+        .site-card p {
+            margin: 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+        .site-card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.85rem;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        @supports (corner-shape: squircle) {
+            .site-card { corner-shape: squircle; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link visually-hidden">Saltar al contenido principal</a>
+    <header>
+        <a href="/" class="header-title" style="text-decoration: none; color: inherit;" title="Ir al Selector de Módulos">
+            <img src="/assets/logo.png" alt="Logo SCITIC" class="logo-header">
+            <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                <span>SCITIC S.A.S</span>
+                <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">Normatividad, Cobertura y Proveedores</span>
+            </div>
+        </a>
+        <div class="user-info">
+            <a href="/help" class="module-pill-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Ayuda</span>
+            </a>
+            <button type="button" id="btnThemeToggle" onclick="window.SCITICTheme && window.SCITICTheme.toggle()" title="Alternar Modo Oscuro / Modo Claro" aria-label="Alternar Modo Oscuro / Modo Claro"></button>
+        </div>
+    </header>
+
+    <main id="main-content" class="container" tabindex="-1">
+        <nav class="module-top-bar glass-panel" aria-label="Navegación de retorno">
+            <a href="/" class="btn-back-hub">
+                <span data-icon="arrow-left" data-size="20"></span>
+                <span>Volver al Selector de Módulos</span>
+            </a>
+            <div class="module-quick-links">
+                <a href="/horas" class="module-pill-link"><span data-icon="clock" data-size="16"></span><span>Horas</span></a>
+                <a href="/gastos" class="module-pill-link"><span data-icon="dollar" data-size="16"></span><span>Gastos</span></a>
+                <a href="/herramientas" class="module-pill-link"><span data-icon="tools" data-size="16"></span><span>Herramientas</span></a>
+            </div>
+        </nav>
+
+        <section class="hub-hero" style="margin-bottom: 2rem;">
+            <span class="hub-eyebrow">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Directorio Técnico SCITIC</span>
+            </span>
+            <h1 class="hub-greeting-title">Sitios de Interés</h1>
+            <p class="hub-greeting-subtitle">Acceso directo a resoluciones oficiales RITEL, mapas de cobertura TDT y catálogos de proveedores certificados.</p>
+        </section>
+
+        <!-- Normatividad RITEL -->
+        <section class="sites-section">
+            <h2 class="sites-section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>Normatividad RITEL y Resoluciones CRC</span>
+            </h2>
+            <div class="sites-grid">
+                <a href="https://www.crcom.gov.co/sites/default/files/normatividad/00007930.pdf" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-norm">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            </div>
+                            <span class="hub-card-tag">PDF Oficial • 2025</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Norma RITEL 2025</h3>
+                        <p>Reglamento Técnico para Redes Internas de Telecomunicaciones vigente (Resolución CRC 7930).</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Abrir documento PDF</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+
+                <a href="https://www.crcom.gov.co/sites/default/files/normatividad/resolucion-crc-6771-de-2022.pdf" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-norm">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <span class="hub-card-tag">PDF Oficial • 2022</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Resolución CRC 6771 de 2022</h3>
+                        <p>Actualización técnica y disposiciones reglamentarias RITEL expedidas en 2022.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Abrir documento PDF</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+
+                <a href="https://www.crcom.gov.co/sites/default/files/normatividad/Resoluci%C3%B3n%20CRC%205993%20de%202020%20%281%29.pdf" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-norm">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <span class="hub-card-tag">PDF Oficial • 2020</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Resolución CRC 5993 de 2020</h3>
+                        <p>Normatividad histórica de referencia RITEL 2020 de la Comisión de Regulación de Comunicaciones.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Abrir documento PDF</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Cobertura TDT -->
+        <section class="sites-section">
+            <h2 class="sites-section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+                <span>Consulta de Cobertura TDT</span>
+            </h2>
+            <div class="sites-grid">
+                <a href="https://www.tdtparatodos.tv/cobertura" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-cov">
+                                <span data-icon="antenna" data-size="24"></span>
+                            </div>
+                            <span class="hub-card-tag">Mapa Oficial TDT</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">TDT Para Todos — Cobertura</h3>
+                        <p>Consulta frecuencias, estaciones transmisoras, azimut y cobertura de señal TDT en Colombia por municipio.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Consultar cobertura</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Proveedores -->
+        <section class="sites-section">
+            <h2 class="sites-section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <span>Proveedores y Catálogos RITEL / RF</span>
+            </h2>
+            <div class="sites-grid">
+                <a href="https://tecnesya.com/ritel" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-prov">
+                                <span data-icon="layers" data-size="24"></span>
+                            </div>
+                            <span class="hub-card-tag">Proveedor RITEL</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Tecnesya</h3>
+                        <p>Soluciones, gabinetes, elementos pasivos y equipamiento para redes RITEL.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Visitar sitio</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+
+                <a href="https://riverline.com.co/" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-prov">
+                                <span data-icon="fiber" data-size="24"></span>
+                            </div>
+                            <span class="hub-card-tag">Proveedor Colombia</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Riverline</h3>
+                        <p>Distribución de cableado, fibra óptica, conectores y materiales para infraestructura.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Visitar sitio</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+
+                <a href="https://johansson.be/en/catalogue" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-prov">
+                                <span data-icon="antenna" data-size="24"></span>
+                            </div>
+                            <span class="hub-card-tag">Fabricante RF</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Johansson</h3>
+                        <p>Catálogo de centrales programables, amplificadores de cabecera y distribución de TV.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Ver catálogo</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+
+                <a href="https://www.televes.com/lm/distribucion-tv.html" target="_blank" rel="noopener noreferrer" class="site-card glass-panel">
+                    <div>
+                        <div class="site-card-top">
+                            <div class="site-icon is-prov">
+                                <span data-icon="tools" data-size="24"></span>
+                            </div>
+                            <span class="hub-card-tag">Fabricante TDT / Fibra</span>
+                        </div>
+                        <h3 style="margin-top: 1rem;">Televés</h3>
+                        <p>Equipos de distribución TV, cabeceras, derivadores, splitters y soluciones ópticas.</p>
+                    </div>
+                    <div class="site-card-foot">
+                        <span>Ver catálogo</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

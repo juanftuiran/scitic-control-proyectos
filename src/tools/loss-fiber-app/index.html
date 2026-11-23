@@ -517,9 +517,6 @@
                 <button type="button" class="btn-hub-new" onclick="crearNuevaUrbanizacion()">
                     ➕ Iniciar Nueva Urbanización
                 </button>
-                <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('input-cargar-json').click()">
-                    📂 Cargar Archivo (.json)
-                </button>
             </div>
         </div>
 
@@ -548,9 +545,6 @@
             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 <button type="button" class="btn-calc" onclick="generarBalanceUrbanizacion()" title="Calcular balance óptico de todos los sectores">⚡ Calcular Todo</button>
                 <button type="button" class="btn-save" onclick="abrirModalGuardar()" title="Guardar proyecto en base de datos">☁️ Guardar</button>
-                <button type="button" class="btn-json-save" onclick="guardarJSON()">💾 Guardar JSON</button>
-                <button type="button" class="btn-json-load" onclick="document.getElementById('input-cargar-json').click()">📂 Cargar JSON</button>
-                <input type="file" id="input-cargar-json" accept=".json" style="display:none" onchange="cargarJSON(event)">
                 <button type="button" class="btn-excel" onclick="exportarExcel()">📊 Exportar Excel</button>
                 <button type="button" class="btn-pdf" onclick="exportarPDF()">📄 Exportar PDF</button>
                 <button type="button" class="btn-config" onclick="mostrarHubProyectos()">📂 Proyectos</button>

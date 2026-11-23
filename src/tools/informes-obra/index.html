@@ -938,10 +938,6 @@
                 <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
-                <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('hub-input-cargar-json').click()">
-                    📂 Cargar Archivo Local (.json / .html)
-                </button>
-                <input type="file" id="hub-input-cargar-json" accept=".json,.html" style="display: none;" onchange="cargarProyecto(event)">
             </div>
         </div>
 
@@ -1459,9 +1455,6 @@
             
             <button class="btn btn-secondary" id="btn-save-html">
                 💾 Guardar Proyecto
-            </button>
-            <button class="btn btn-secondary" id="btn-save-json">
-                JSON Backup
             </button>
         </div>
         <div class="flex items-center gap-4">
@@ -2758,9 +2751,9 @@
         function setupExportListeners() {
             document.getElementById('btn-export-excel').addEventListener('click', exportExcel);
             document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
-            document.getElementById('btn-save-html').addEventListener('click', guardarHTML);
-            document.getElementById('btn-save-json').addEventListener('click', guardarJSON);
-            document.getElementById('file-upload').addEventListener('change', cargarProyecto);
+            document.getElementById('btn-save-html')?.addEventListener('click', guardarHTML);
+            document.getElementById('btn-save-json')?.addEventListener('click', guardarJSON);
+            document.getElementById('file-upload')?.addEventListener('change', cargarProyecto);
         }
 
         function exportExcel() {

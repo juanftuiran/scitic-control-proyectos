@@ -369,11 +369,52 @@
             top: 0;
             z-index: 4;
         }
+        #tabla-calculo-torres th:first-child,
+        #tabla-calculo-torres tbody td:first-child,
+        #tabla-bandeja-torres th:first-child,
+        #tabla-bandeja-torres tbody td:first-child {
+            width: 1%;
+            white-space: nowrap;
+        }
         #tabla-calculo-torres tbody td:first-child {
             position: sticky;
             left: 0;
             z-index: 2;
             background: #0f172a;
+        }
+        .tramo-cell-wrap {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            gap: 2px;
+        }
+        .in-tramo-nombre {
+            field-sizing: content;
+            width: auto !important;
+            min-width: 10ch;
+            padding: 4px 6px;
+        }
+        .tramo-piso-ref {
+            color: rgb(255, 183, 3) !important;
+            font-weight: 700;
+            font-size: 11.5px;
+            white-space: nowrap;
+        }
+        tr.row-tramo-extra-seti td {
+            background: rgba(255, 183, 3, 0.14) !important;
+            border-top: 1px solid rgba(255, 183, 3, 0.45) !important;
+            border-bottom: 1px solid rgba(255, 183, 3, 0.45) !important;
+        }
+        tr.row-tramo-extra-seti td:first-child {
+            background: #231b08 !important;
+            border-left: 4px solid rgb(255, 183, 3) !important;
+        }
+        html[data-theme="light"] tr.row-tramo-extra-seti td {
+            background: rgba(255, 183, 3, 0.16) !important;
+        }
+        html[data-theme="light"] tr.row-tramo-extra-seti td:first-child {
+            background: #fef3c7 !important;
+            border-left: 4px solid rgb(255, 183, 3) !important;
         }
         th.sub-th {
             background-color: #1e293b;
@@ -1026,10 +1067,6 @@
                 <button type="button" class="btn-hub-new" onclick="abrirModalNuevoProyecto()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
-                <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('hub-input-import-json').click()">
-                    📂 Cargar Archivo Local (.json)
-                </button>
-                <input type="file" id="hub-input-import-json" accept=".json,application/json" onchange="cargarBackupJSON(event)" style="display: none;">
             </div>
         </div>
 
@@ -1146,8 +1183,6 @@
             <button class="btn-server-save" onclick="abrirModalGuardar()" title="Guardar o actualizar este proyecto en el servidor de la empresa">☁️ Guardar en Servidor</button>
             <button class="btn-server-load" onclick="abrirModalProyectos()" title="Consultar y cargar proyectos guardados en el servidor">📂 Proyectos Servidor</button>
             <button class="btn-toggle" onclick="toggleVistaTorres()">🔄 Vista (Tubería/Bandeja)</button>
-            <button class="btn-backup" onclick="descargarBackupJSON()" title="Descargar copia de seguridad con todos los datos en archivo JSON">💾 Guardar (.json)</button>
-            <button class="btn-import" onclick="document.getElementById('input-import-json').click()" title="Cargar copia de seguridad desde un archivo JSON">📂 Cargar (.json)</button>
             <button class="btn-excel" onclick="exportarExcelTorres()">📊 Excel</button>
             <button class="btn-pdf" onclick="exportarPDFTorres()">📄 PDF</button>
         </div>
@@ -1235,8 +1270,6 @@
 
             <button class="btn-server-save" onclick="abrirModalGuardar()" title="Guardar o actualizar este proyecto en el servidor de la empresa">☁️ Guardar en Servidor</button>
             <button class="btn-server-load" onclick="abrirModalProyectos()" title="Consultar y cargar proyectos guardados en el servidor">📂 Proyectos Servidor</button>
-            <button class="btn-backup" onclick="descargarBackupJSON()" title="Descargar copia de seguridad con todos los datos en archivo JSON">💾 Guardar (.json)</button>
-            <button class="btn-import" onclick="document.getElementById('input-import-json').click()" title="Cargar copia de seguridad desde un archivo JSON">📂 Cargar (.json)</button>
             <button class="btn-excel" onclick="exportarExcelParcelacion()">📊 Excel</button>
             <button class="btn-pdf" onclick="exportarPDFParcelacion()">📄 PDF</button>
         </div>
@@ -1397,16 +1430,27 @@
                 `<input type="checkbox" class="chk-directo-seti" ${directoSetiVal ? 'checked' : ''} onchange="recalcularTorres()" title="Marcar si los PAUs del piso SETI conectan directamente en SETI (no requieren tubos verticales adicionales en SETI)" style="width: 16px; height: 16px; cursor: pointer;">` :
                 `<span style="color: var(--text-muted); font-weight: bold;">-</span>`;
 
-            const pisoLimpio = String(pisoNombre || '').replace(/-SETI$/, '');
-            let tramoVisible = String(tramoNombre || '');
-            if (pisoLimpio && !tramoVisible.includes(`(Piso ${pisoLimpio}`)) {
-                tramoVisible = `${tramoVisible} (Piso ${pisoLimpio})`;
+            const esExtraSeti = String(pisoNombre || '').endsWith('-SETI');
+            if (esExtraSeti) {
+                trTubo.classList.add('row-tramo-extra-seti');
+                trBandeja.classList.add('row-tramo-extra-seti');
             }
+
+            const pisoLimpio = String(pisoNombre || '').replace(/-SETI$/, '');
+            let tramoBase = String(tramoNombre || '').replace(/\s*\(Piso\s+[^)]+\)\s*$/i, '').trim();
+            if (!tramoBase) tramoBase = String(tramoNombre || '');
+            const pisoRefTexto = esExtraSeti
+                ? `Piso ${pisoLimpio} - Extra SETI`
+                : (isSeti ? `Piso ${pisoLimpio} - SETI` : `Piso ${pisoLimpio}`);
+            const spanRefHtml = pisoLimpio ? `<span class="tramo-piso-ref">&nbsp;&nbsp;(${pisoRefTexto})</span>` : '';
 
             trTubo.innerHTML = `
                 <td style="text-align: left; padding-left: 8px;">
-                    <input type="text" class="input-tramo in-tramo-nombre" value="${tramoVisible}" style="width: 245px; max-width: 100%; text-align: left; font-size: 11.5px;" onchange="actualizarNombreTramo(this)">
-                    ${badgeSeti}
+                    <div class="tramo-cell-wrap">
+                        <input type="text" class="input-tramo in-tramo-nombre" value="${tramoBase}" size="${Math.max(12, tramoBase.length + 1)}" style="text-align: left; font-size: 11.5px;" onchange="actualizarNombreTramo(this)">
+                        ${spanRefHtml}
+                        ${badgeSeti}
+                    </div>
                 </td>
                 <td><input type="number" class="input-mini in-pau-piso" value="${pauVal}" min="0" onchange="recalcularTorres()"></td>
                 <td style="text-align: center;">${celdaDirectoSeti}</td>
@@ -1447,7 +1491,7 @@
             tbodyTubos.appendChild(trTubo);
 
             trBandeja.innerHTML = `
-                <td style="text-align: left; padding-left: 8px;"><strong>${tramoNombre}</strong></td>
+                <td style="text-align: left; padding-left: 8px;"><strong>${tramoBase}</strong>${spanRefHtml}</td>
                 <td class="ban-calc-seti">0.00</td>
                 <td class="ban-calc-sets">0.00</td>
                 <td class="ban-ancho-seti">0.00</td>
@@ -1459,11 +1503,14 @@
         }
 
         function actualizarNombreTramo(input) {
+            input.size = Math.max(12, (input.value || '').length + 1);
             let tr = input.closest('tr');
             let idx = Array.from(tr.parentElement.children).indexOf(tr);
             let tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
+            const refSpan = tr.querySelector('.tramo-piso-ref');
+            const refHtml = refSpan ? refSpan.outerHTML : '';
             if (tbodyBandeja.children[idx]) {
-                tbodyBandeja.children[idx].querySelector('td:first-child').innerHTML = `<strong>${input.value}</strong>`;
+                tbodyBandeja.children[idx].querySelector('td:first-child').innerHTML = `<strong>${input.value}</strong>${refHtml}`;
             }
         }
 

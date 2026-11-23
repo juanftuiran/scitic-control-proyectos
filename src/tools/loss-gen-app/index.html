@@ -863,9 +863,6 @@
                 <button type="button" class="btn-hub-new" onclick="crearNuevaPlantilla()">
                     ➕ Crear Nuevo Proyecto (Plantilla en Blanco)
                 </button>
-                <button type="button" class="btn-hub-new btn-hub-secondary" onclick="document.getElementById('input-cargar-json').click()">
-                    📂 Cargar Archivo Local (.json)
-                </button>
             </div>
         </div>
 
@@ -1008,9 +1005,6 @@
         <button class="btn-calc" onclick="generarTabla()">⚡ Generar Tabla</button>
         <button class="btn-server-save" onclick="abrirModalGuardar()" style="background-color: #0284c7;">☁️ Guardar en Servidor</button>
         <button class="btn-server-load" onclick="mostrarHubProyectos()" style="background-color: #7c3aed;">📂 Proyectos</button>
-        <button class="btn-json-save" onclick="guardarJSON()">💾 Guardar JSON</button>
-        <button class="btn-json-load" onclick="document.getElementById('input-cargar-json').click()">📂 Cargar JSON</button>
-        <input type="file" id="input-cargar-json" accept=".json" style="display:none" onchange="cargarJSON(event)">
         <button class="btn-save" onclick="guardarHTML()">💾 HTML</button>
         <button class="btn-excel" onclick="exportarExcel()">📊 Excel</button>
         <button class="btn-pdf" onclick="exportarPDF()">📄 PDF</button>

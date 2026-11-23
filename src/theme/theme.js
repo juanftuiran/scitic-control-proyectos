@@ -138,13 +138,30 @@
         if (!path.startsWith('/herramientas/')) return;
         if (document.getElementById('sciticStandaloneToolNav')) return;
 
+        const slug = path.replace(/^\/herramientas\/?/, '').replace(/\/+$/, '');
+        const helpHref = slug ? `/help#${slug}` : '/help';
+
         const nav = document.createElement('nav');
         nav.id = 'sciticStandaloneToolNav';
         nav.className = 'scitic-standalone-tool-nav';
         nav.setAttribute('aria-label', 'Navegación de herramienta');
         nav.innerHTML = `
-            <a href="/herramientas" class="scitic-tool-nav-btn is-primary">← Herramientas</a>
-            <a href="/" class="scitic-tool-nav-btn">Selector de Módulos</a>
+            <a href="/herramientas" class="scitic-tool-nav-btn is-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <span>Herramientas</span>
+            </a>
+            <a href="/" class="scitic-tool-nav-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Módulos</span>
+            </a>
+            <a href="/sitios" class="scitic-tool-nav-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Sitios</span>
+            </a>
+            <a href="${helpHref}" class="scitic-tool-nav-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Ayuda</span>
+            </a>
             <button type="button" id="btnThemeToggle" class="scitic-tool-theme-btn" title="Alternar Modo Oscuro / Modo Claro" aria-label="Alternar Modo Oscuro / Modo Claro"></button>
         `;
         document.body.prepend(nav);
