@@ -849,6 +849,165 @@
         .ios-view-in {
             animation: iosViewIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        /* ═══════════════ PESTAÑAS ESTILO NAVEGADOR PARA VERTICALES ═══════════════ */
+        .verticales-browser-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding: 8px 10px 0 10px;
+            margin-bottom: 12px;
+            background: var(--nav-container-bg, rgba(10, 15, 12, 0.85));
+            border: 1px solid var(--card-border);
+            border-bottom: 2px solid var(--primary);
+            border-radius: 14px 14px 0 0;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        .vertical-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 10px 10px 0 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            color: var(--text-muted);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            user-select: none;
+        }
+        .vertical-tab:hover {
+            background: var(--primary-soft);
+            color: var(--text-heading);
+        }
+        .vertical-tab.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 -2px 10px rgba(16, 185, 129, 0.14);
+        }
+        .vertical-tab-action {
+            background: transparent;
+            border: none;
+            color: inherit;
+            opacity: 0.65;
+            cursor: pointer;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1;
+        }
+        .vertical-tab-action:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .vertical-tab-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 12px;
+            margin-bottom: 4px;
+            margin-left: 4px;
+            border-radius: 9px;
+            background: var(--primary-soft);
+            border: 1px dashed var(--primary);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+        .vertical-tab-add:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        html[data-theme="light"] .vertical-tab {
+            background: rgba(15, 23, 42, 0.04);
+        }
+        html[data-theme="light"] .vertical-tab.active {
+            background: #f6faff;
+            color: #047857;
+        }
+
+        /* Diálogos nativos Top-Layer para Nuevo Proyecto / Nueva Vertical */
+        dialog.scitic-v-dialog {
+            padding: 0;
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            max-inline-size: min(92vw, 440px);
+            inline-size: 100%;
+            margin: auto;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transition-property: opacity, transform, display, overlay;
+            transition-duration: 0.22s;
+            transition-timing-function: ease-out;
+            transition-behavior: allow-discrete;
+        }
+        dialog.scitic-v-dialog[open] {
+            opacity: 1;
+        }
+        @starting-style {
+            dialog.scitic-v-dialog[open] {
+                opacity: 0;
+            }
+        }
+        dialog.scitic-v-dialog:modal {
+            overscroll-behavior: contain;
+        }
+        dialog.scitic-v-dialog::backdrop {
+            background: rgba(2, 6, 4, 0.65);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+            overscroll-behavior: contain;
+        }
+        .v-dialog-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .v-dialog-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+        .v-dialog-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .v-dialog-field label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .v-dialog-field input,
+        .v-dialog-field select {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 0.92rem;
+            box-sizing: border-box;
+        }
+        .v-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -902,6 +1061,9 @@
                 <button type="button" class="btn-clear" onclick="desvincularProyectoActivo()" style="padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; cursor: pointer;">Desvincular</button>
             </div>
         </div>
+
+        <!-- BARRA DE PESTAÑAS ESTILO NAVEGADOR PARA MÚLTIPLES VERTICALES -->
+        <div id="verticales-tabs-bar" class="verticales-browser-bar" role="tablist" aria-label="Verticales del proyecto"></div>
 
         <input type="text" class="project-title" id="project-title" value="Nuevo Proyecto TDT" spellcheck="false">
 
@@ -1005,7 +1167,6 @@
         <button class="btn-calc" onclick="generarTabla()">⚡ Generar Tabla</button>
         <button class="btn-server-save" onclick="abrirModalGuardar()" style="background-color: #0284c7;">☁️ Guardar en Servidor</button>
         <button class="btn-server-load" onclick="mostrarHubProyectos()" style="background-color: #7c3aed;">📂 Proyectos</button>
-        <button class="btn-save" onclick="guardarHTML()">💾 HTML</button>
         <button class="btn-excel" onclick="exportarExcel()">📊 Excel</button>
         <button class="btn-pdf" onclick="exportarPDF()">📄 PDF</button>
     </div>
@@ -1141,6 +1302,8 @@
         actualizarMatrizCableadoUI();
         generarConfigPisos();
         generarTabla(); // Cargue automático por defecto de la tabla llena con estos valores!
+        plantillaDefaultVertical = obtenerDatosVerticalIndividual();
+        renderizarPestanasVerticales();
         mostrarHubProyectos();
     }
 
@@ -1887,15 +2050,11 @@
     }
 
     // ════════════════════════════════════════
-    // EXPORTAR EXCEL CON FORMATO
+    // EXPORTAR EXCEL CON FORMATO (UNA HOJA POR VERTICAL)
     // ════════════════════════════════════════
-    function exportarExcel() {
-        if (typeof XLSX === 'undefined') { notificarToast('Librería XLSX no disponible', 'error'); return; }
-
-        const projectName = document.getElementById('project-title').value || 'Proyecto TDT';
-        const wb = XLSX.utils.book_new();
+    function construirHojaExcelVertical(projectName, verticalLabel) {
         const rows = document.querySelectorAll('#results-body tr');
-        if (rows.length === 0) { notificarToast('Genera la tabla primero', 'warning'); return; }
+        if (rows.length === 0) return null;
 
         const useRG11 = document.getElementById('use-rg11').checked;
         const cableTroncal = CONSTANTES.cables[document.getElementById('cable-troncal').value] || CONSTANTES.cables['RG6/100X'];
@@ -1905,7 +2064,7 @@
 
         const sheetData = [];
 
-        sheetData.push([projectName]);
+        sheetData.push([`${projectName} — ${verticalLabel}`]);
         
         const r2 = ['PISO', 'APARTAMENTO', 'TOMA#'];
         if (useRG11) r2.push('Cable ' + document.getElementById('cable-troncal').value, '', '');
@@ -2170,8 +2329,61 @@
             if (ws[aDiff]) ws[aDiff].s = (C < idxPerdB) ? styleDiffLabel : (C === idxDesc ? styleDiffDesc : styleDiff);
         }
 
-        XLSX.utils.book_append_sheet(wb, ws, 'TORRE 1');
+        return ws;
+    }
+
+    function exportarExcel() {
+        if (typeof XLSX === 'undefined') { notificarToast('Librería XLSX no disponible', 'error'); return; }
+
+        const projectName = document.getElementById('project-title').value || 'Proyecto TDT';
+        guardarVerticalActivaEnMemoria();
+
+        const wb = XLSX.utils.book_new();
+        const lista = (Array.isArray(verticalesProyecto) && verticalesProyecto.length > 0)
+            ? verticalesProyecto
+            : [{ id: 'v-1', nombre: 'Vertical 1', datos: obtenerDatosVerticalIndividual() }];
+        const origIdx = verticalActivaIdx;
+        const usados = new Set();
+        let hojasCreadas = 0;
+
+        lista.forEach((vert, idx) => {
+            if (vert.datos) {
+                restaurarVerticalIndividual(vert.datos);
+            }
+            if (document.querySelectorAll('#results-body tr').length === 0) {
+                generarTabla();
+            }
+            const ws = construirHojaExcelVertical(projectName, vert.nombre || `Vertical ${idx + 1}`);
+            if (!ws) return;
+
+            let baseName = String(vert.nombre || `Vertical ${idx + 1}`)
+                .replace(/[\\/*?:[\]]/g, '')
+                .trim()
+                .slice(0, 28) || `Vertical ${idx + 1}`;
+            let sheetName = baseName;
+            let n = 2;
+            while (usados.has(sheetName.toUpperCase())) {
+                sheetName = `${baseName.slice(0, 26)} ${n++}`;
+            }
+            usados.add(sheetName.toUpperCase());
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            hojasCreadas++;
+        });
+
+        // Restaurar la vertical activa que estaba viendo el usuario
+        if (verticalesProyecto[origIdx] && verticalesProyecto[origIdx].datos) {
+            verticalActivaIdx = origIdx;
+            restaurarVerticalIndividual(verticalesProyecto[origIdx].datos);
+            renderizarPestanasVerticales();
+        }
+
+        if (hojasCreadas === 0) {
+            notificarToast('Genera la tabla primero', 'warning');
+            return;
+        }
+
         XLSX.writeFile(wb, projectName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '.xlsx');
+        notificarToast(`Excel exportado con ${hojasCreadas} hoja(s) (1 por vertical).`, 'success');
     }
 
     function exportarPDF() {
@@ -2264,20 +2476,188 @@
         return null;
     }
 
+    let verticalesProyecto = [];
+    let verticalActivaIdx = 0;
+    let plantillaDefaultVertical = null;
+
+    function crearPlantillaVerticalEnBlanco(projectTitle) {
+        if (plantillaDefaultVertical) {
+            const copia = structuredClone(plantillaDefaultVertical);
+            copia.proyecto = projectTitle || copia.proyecto || 'Nuevo Proyecto TDT';
+            return copia;
+        }
+        return obtenerDatosVerticalIndividual();
+    }
+
+    function guardarVerticalActivaEnMemoria() {
+        if (!Array.isArray(verticalesProyecto) || verticalesProyecto.length === 0) return;
+        if (!verticalesProyecto[verticalActivaIdx]) return;
+        verticalesProyecto[verticalActivaIdx].datos = obtenerDatosVerticalIndividual();
+    }
+
+    function renderizarPestanasVerticales() {
+        const bar = document.getElementById('verticales-tabs-bar');
+        if (!bar) return;
+        if (!Array.isArray(verticalesProyecto) || verticalesProyecto.length === 0) {
+            verticalesProyecto = [{ id: 'v-1', nombre: 'Vertical 1', datos: obtenerDatosVerticalIndividual() }];
+            verticalActivaIdx = 0;
+        }
+
+        const nodes = verticalesProyecto.map((v, idx) => {
+            const tab = document.createElement('div');
+            tab.className = 'vertical-tab' + (idx === verticalActivaIdx ? ' active' : '');
+            tab.setAttribute('role', 'tab');
+            tab.setAttribute('aria-selected', idx === verticalActivaIdx ? 'true' : 'false');
+            tab.tabIndex = 0;
+            tab.onclick = () => cambiarVerticalActiva(idx);
+            tab.ondblclick = (e) => { e.stopPropagation(); renombrarVertical(idx); };
+
+            const lbl = document.createElement('span');
+            lbl.textContent = v.nombre || `Vertical ${idx + 1}`;
+            tab.appendChild(lbl);
+
+            const btnEdit = document.createElement('button');
+            btnEdit.type = 'button';
+            btnEdit.className = 'vertical-tab-action';
+            btnEdit.title = 'Renombrar vertical';
+            btnEdit.textContent = '✎';
+            btnEdit.onclick = (e) => { e.stopPropagation(); renombrarVertical(idx); };
+            tab.appendChild(btnEdit);
+
+            if (verticalesProyecto.length > 1) {
+                const btnDel = document.createElement('button');
+                btnDel.type = 'button';
+                btnDel.className = 'vertical-tab-action';
+                btnDel.title = 'Eliminar vertical';
+                btnDel.textContent = '×';
+                btnDel.onclick = (e) => { e.stopPropagation(); eliminarVertical(idx); };
+                tab.appendChild(btnDel);
+            }
+            return tab;
+        });
+
+        const btnAdd = document.createElement('button');
+        btnAdd.type = 'button';
+        btnAdd.className = 'vertical-tab-add';
+        btnAdd.textContent = '+ Nueva Vertical';
+        btnAdd.onclick = () => abrirDialogoNuevaVertical();
+        nodes.push(btnAdd);
+
+        bar.replaceChildren(...nodes);
+    }
+
+    function cambiarVerticalActiva(nuevoIdx) {
+        if (nuevoIdx === verticalActivaIdx) return;
+        if (nuevoIdx < 0 || nuevoIdx >= verticalesProyecto.length) return;
+        guardarVerticalActivaEnMemoria();
+        verticalActivaIdx = nuevoIdx;
+        const target = verticalesProyecto[verticalActivaIdx];
+        if (target && target.datos) {
+            restaurarVerticalIndividual(target.datos);
+        }
+        renderizarPestanasVerticales();
+    }
+
+    function abrirDialogoNuevaVertical() {
+        guardarVerticalActivaEnMemoria();
+        const dlg = document.getElementById('dlg-nueva-vertical');
+        const inNom = document.getElementById('in-nueva-vert-nombre');
+        const selOrig = document.getElementById('sel-nueva-vert-origen');
+        if (!dlg || !inNom || !selOrig) return;
+
+        inNom.value = `Vertical ${verticalesProyecto.length + 1}`;
+        const opts = [];
+        const optBlank = document.createElement('option');
+        optBlank.value = '__blank__';
+        optBlank.textContent = '📄 Crear en blanco (valores por defecto)';
+        opts.push(optBlank);
+
+        verticalesProyecto.forEach((v, idx) => {
+            const opt = document.createElement('option');
+            opt.value = String(idx);
+            opt.textContent = `📋 Copiar de "${v.nombre || 'Vertical ' + (idx + 1)}"`;
+            opts.push(opt);
+        });
+        selOrig.replaceChildren(...opts);
+        dlg.showModal();
+    }
+
+    function confirmarAgregarVertical(e) {
+        if (e) e.preventDefault();
+        const dlg = document.getElementById('dlg-nueva-vertical');
+        const nombre = (document.getElementById('in-nueva-vert-nombre')?.value || '').trim() || `Vertical ${verticalesProyecto.length + 1}`;
+        const origenVal = document.getElementById('sel-nueva-vert-origen')?.value || '__blank__';
+        const projectTitle = document.getElementById('project-title')?.value || 'Nuevo Proyecto TDT';
+
+        guardarVerticalActivaEnMemoria();
+        let datosNueva;
+        if (origenVal !== '__blank__' && verticalesProyecto[Number(origenVal)]?.datos) {
+            datosNueva = structuredClone(verticalesProyecto[Number(origenVal)].datos);
+        } else {
+            datosNueva = crearPlantillaVerticalEnBlanco(projectTitle);
+        }
+
+        verticalesProyecto.push({
+            id: 'v-' + Date.now(),
+            nombre: nombre,
+            datos: datosNueva
+        });
+        verticalActivaIdx = verticalesProyecto.length - 1;
+        restaurarVerticalIndividual(datosNueva);
+        renderizarPestanasVerticales();
+        if (dlg && dlg.open) dlg.close();
+        notificarToast(`Pestaña "${nombre}" agregada.`, 'success');
+    }
+
+    function renombrarVertical(idx) {
+        const actual = verticalesProyecto[idx]?.nombre || `Vertical ${idx + 1}`;
+        const nuevo = prompt('Nombre de la vertical / pestaña:', actual);
+        if (nuevo && nuevo.trim()) {
+            verticalesProyecto[idx].nombre = nuevo.trim();
+            renderizarPestanasVerticales();
+        }
+    }
+
+    async function eliminarVertical(idx) {
+        if (verticalesProyecto.length <= 1) return;
+        const nombre = verticalesProyecto[idx]?.nombre || `Vertical ${idx + 1}`;
+        const ok = window.SCITICModal
+            ? await window.SCITICModal.confirm({
+                title: 'Eliminar Vertical',
+                message: `¿Seguro que deseas eliminar la pestaña "${nombre}" y sus cálculos?`,
+                confirmText: 'Sí, Eliminar',
+                cancelText: 'Cancelar',
+                type: 'danger'
+            })
+            : confirm(`¿Eliminar "${nombre}"?`);
+        if (!ok) return;
+
+        guardarVerticalActivaEnMemoria();
+        verticalesProyecto.splice(idx, 1);
+        if (verticalActivaIdx >= verticalesProyecto.length) {
+            verticalActivaIdx = verticalesProyecto.length - 1;
+        }
+        restaurarVerticalIndividual(verticalesProyecto[verticalActivaIdx].datos);
+        renderizarPestanasVerticales();
+        notificarToast(`Vertical "${nombre}" eliminada.`, 'info');
+    }
+
     function generarResumenLossGen(data) {
         if (!data) return { tipo: 'Torre TDT', detalle: 'Cálculo TDT', icono: '📡' };
-        const numPisos = data.torre?.numPisos || 0;
-        const aptosPiso = data.torre?.aptosPiso || 0;
-        const tomasApto = data.torre?.tomasApto || 0;
-        const nivelSalida = data.sistema?.nivelSalida || 110;
+        const base = (Array.isArray(data.verticales) && data.verticales[0]?.datos) ? data.verticales[0].datos : data;
+        const cantVert = Array.isArray(data.verticales) ? data.verticales.length : 1;
+        const numPisos = base.torre?.numPisos || 0;
+        const aptosPiso = base.torre?.aptosPiso || 0;
+        const tomasApto = base.torre?.tomasApto || 0;
+        const nivelSalida = base.sistema?.nivelSalida || 110;
         return {
             tipo: 'Torre TDT',
-            detalle: `📶 ${numPisos} Pisos • ${aptosPiso} Aptos/Piso • ${tomasApto} Tomas/Apto • Salida: ${nivelSalida} dBµV`,
+            detalle: `📶 ${cantVert} Vertical(es) • ${numPisos} Pisos • ${aptosPiso} Aptos/Piso • ${tomasApto} Tomas • Salida: ${nivelSalida} dBµV`,
             icono: '📡'
         };
     }
 
-    function obtenerDatosProyectoLossGen() {
+    function obtenerDatosVerticalIndividual() {
         const projectName = document.getElementById('project-title').value.trim() || 'Nuevo Proyecto TDT';
         
         // 1. Configuración del Sistema
@@ -2440,7 +2820,50 @@
         return dataExport;
     }
 
+    function obtenerDatosProyectoLossGen() {
+        const projectName = document.getElementById('project-title').value.trim() || 'Nuevo Proyecto TDT';
+        guardarVerticalActivaEnMemoria();
+        if (!Array.isArray(verticalesProyecto) || verticalesProyecto.length === 0) {
+            verticalesProyecto = [{ id: 'v-1', nombre: 'Vertical 1', datos: obtenerDatosVerticalIndividual() }];
+            verticalActivaIdx = 0;
+        }
+        const payload = {
+            version: '2.0-multi-vertical',
+            formato: 'SCITIC_LOSS_CALC_BACKUP',
+            fechaExportacion: new Date().toISOString(),
+            proyecto: projectName,
+            verticalActivaIdx: verticalActivaIdx,
+            verticales: structuredClone(verticalesProyecto)
+        };
+        payload.resumen = generarResumenLossGen(payload);
+        return payload;
+    }
+
     function restaurarDatosLossGen(data) {
+        if (!data || typeof data !== 'object') {
+            throw new Error('El objeto de datos no es válido.');
+        }
+
+        if (data.proyecto) {
+            document.getElementById('project-title').value = data.proyecto;
+        }
+
+        if (Array.isArray(data.verticales) && data.verticales.length > 0) {
+            verticalesProyecto = structuredClone(data.verticales);
+            verticalActivaIdx = Math.min(Math.max(0, Number(data.verticalActivaIdx) || 0), verticalesProyecto.length - 1);
+            restaurarVerticalIndividual(verticalesProyecto[verticalActivaIdx].datos);
+            renderizarPestanasVerticales();
+            return;
+        }
+
+        // Retrocompatibilidad con proyectos antiguos de una sola vertical
+        verticalesProyecto = [{ id: 'v-1', nombre: 'Vertical 1', datos: structuredClone(data) }];
+        verticalActivaIdx = 0;
+        restaurarVerticalIndividual(data);
+        renderizarPestanasVerticales();
+    }
+
+    function restaurarVerticalIndividual(data) {
         if (!data || typeof data !== 'object') {
             throw new Error('El objeto de datos no es válido.');
         }
@@ -2990,12 +3413,47 @@
     }
 
     function crearNuevaPlantilla() {
+        if (!plantillaDefaultVertical) {
+            plantillaDefaultVertical = obtenerDatosVerticalIndividual();
+        }
+        const dlg = document.getElementById('dlg-nuevo-proyecto-tdt');
+        const inNom = document.getElementById('in-nuevo-proy-nombre');
+        const inVerts = document.getElementById('in-nuevo-proy-verticales');
+        if (inNom) inNom.value = 'Nuevo Proyecto TDT';
+        if (inVerts) inVerts.value = '2';
+        if (dlg && typeof dlg.showModal === 'function') {
+            dlg.showModal();
+        } else {
+            confirmarNuevoProyectoTDT();
+        }
+    }
+
+    function confirmarNuevoProyectoTDT(e) {
+        if (e) e.preventDefault();
+        const dlg = document.getElementById('dlg-nuevo-proyecto-tdt');
+        const nombre = (document.getElementById('in-nuevo-proy-nombre')?.value || '').trim() || 'Nuevo Proyecto TDT';
+        const numVerts = Math.min(20, Math.max(1, parseInt(document.getElementById('in-nuevo-proy-verticales')?.value, 10) || 1));
+
         proyectoActivoId = null;
         proyectoActivoNombre = '';
-        document.getElementById('project-title').value = 'Nuevo Proyecto TDT';
+        document.getElementById('project-title').value = nombre;
         actualizarIndicadorProyecto();
+
+        verticalesProyecto = [];
+        for (let i = 1; i <= numVerts; i++) {
+            verticalesProyecto.push({
+                id: `v-${Date.now()}-${i}`,
+                nombre: `Vertical ${i}`,
+                datos: crearPlantillaVerticalEnBlanco(nombre)
+            });
+        }
+        verticalActivaIdx = 0;
+        restaurarVerticalIndividual(verticalesProyecto[0].datos);
+        renderizarPestanasVerticales();
+
+        if (dlg && dlg.open) dlg.close();
         mostrarEditor();
-        notificarToast("Nueva plantilla en blanco cargada.", "info");
+        notificarToast(`Proyecto "${nombre}" creado con ${numVerts} vertical(es).`, 'success');
     }
 
     async function abrirProyectoHub(id) {
@@ -3241,5 +3699,45 @@
 
     <!-- TOAST FLOTANTE INLINE -->
     <div id="toast-calc" class="toast-calc"></div>
+    <!-- DIÁLOGO NATIVO: CREAR NUEVO PROYECTO MULTI-VERTICAL -->
+    <dialog id="dlg-nuevo-proyecto-tdt" class="scitic-v-dialog" closedby="any" aria-labelledby="dlg-nuevo-proy-title">
+        <form method="dialog" class="v-dialog-body" onsubmit="confirmarNuevoProyectoTDT(event)">
+            <h3 id="dlg-nuevo-proy-title" class="v-dialog-title">📡 Nuevo Proyecto de Pérdidas TDT</h3>
+            <div class="v-dialog-field">
+                <label for="in-nuevo-proy-nombre">Nombre del Proyecto</label>
+                <input type="text" id="in-nuevo-proy-nombre" value="Nuevo Proyecto TDT" required autofocus>
+            </div>
+            <div class="v-dialog-field">
+                <label for="in-nuevo-proy-verticales">Número de Verticales (pestañas independientes)</label>
+                <input type="number" id="in-nuevo-proy-verticales" value="2" min="1" max="20" required>
+            </div>
+            <div class="v-dialog-actions">
+                <button type="button" class="btn-clear" onclick="document.getElementById('dlg-nuevo-proyecto-tdt').close()" style="padding: 8px 14px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+                <button type="submit" class="btn-calc" style="padding: 8px 16px; border-radius: 8px; cursor: pointer;">Crear Proyecto</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- DIÁLOGO NATIVO: AGREGAR NUEVA VERTICAL (EN BLANCO O COPIAR EXISTENTE) -->
+    <dialog id="dlg-nueva-vertical" class="scitic-v-dialog" closedby="any" aria-labelledby="dlg-nueva-vert-title">
+        <form method="dialog" class="v-dialog-body" onsubmit="confirmarAgregarVertical(event)">
+            <h3 id="dlg-nueva-vert-title" class="v-dialog-title">➕ Agregar Nueva Vertical</h3>
+            <div class="v-dialog-field">
+                <label for="in-nueva-vert-nombre">Nombre de la pestaña / vertical</label>
+                <input type="text" id="in-nueva-vert-nombre" placeholder="Ej. Vertical 3 o Torre B" required autofocus>
+            </div>
+            <div class="v-dialog-field">
+                <label for="sel-nueva-vert-origen">Base inicial</label>
+                <select id="sel-nueva-vert-origen">
+                    <option value="__blank__">📄 Crear en blanco (valores por defecto)</option>
+                </select>
+            </div>
+            <div class="v-dialog-actions">
+                <button type="button" class="btn-clear" onclick="document.getElementById('dlg-nueva-vertical').close()" style="padding: 8px 14px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+                <button type="submit" class="btn-calc" style="padding: 8px 16px; border-radius: 8px; cursor: pointer;">Agregar Pestaña</button>
+            </div>
+        </form>
+    </dialog>
+
 </body>
 </html>
