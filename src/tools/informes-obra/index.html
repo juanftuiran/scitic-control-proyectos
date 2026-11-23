@@ -873,6 +873,56 @@
         .ios-view-in {
             animation: iosViewIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        /* Panel de Clonación por Rango de Pisos */
+        .clone-range-card {
+            background: var(--card-bg);
+            border: 1px solid var(--primary-border, rgba(16, 185, 129, 0.3));
+            border-left: 4px solid var(--primary);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .clone-range-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+        }
+        .clone-range-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            align-items: end;
+            margin-bottom: 0.85rem;
+        }
+        .clone-params-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+            align-items: center;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .clone-param-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 0.28rem 0.65rem;
+            border-radius: 8px;
+            background: var(--panel-subtle, rgba(255,255,255,0.04));
+            border: 1px solid var(--border);
+            user-select: none;
+        }
+        .clone-param-chip:has(input:checked) {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+        }
     </style>
 </head>
 <body>
@@ -1119,6 +1169,41 @@
                     </div>
                 </div>
 
+                <div id="disp-clone-panel" class="clone-range-card">
+                    <div class="clone-range-header">
+                        <strong style="font-size: 0.95rem;">📋 Clonar Dispersión de un Piso a Rango de Pisos</strong>
+                        <label class="clone-param-chip" style="font-weight: 700;">
+                            <input type="checkbox" id="disp-clone-all" checked onchange="toggleTodosParamsClon('disp', this.checked)">
+                            <span>Copiar todo</span>
+                        </label>
+                    </div>
+                    <div class="clone-range-controls">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="disp-clone-origen">Piso Origen (Plantilla)</label>
+                            <select id="disp-clone-origen" class="form-select"></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="disp-clone-desde">Desde Piso Destino</label>
+                            <select id="disp-clone-desde" class="form-select"></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="disp-clone-hasta">Hasta Piso Destino</label>
+                            <select id="disp-clone-hasta" class="form-select"></select>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="clonarDispersionRango()" style="min-height: 38px;">
+                            ⚡ Clonar al Rango
+                        </button>
+                    </div>
+                    <div class="clone-params-row">
+                        <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase;">Parámetros:</span>
+                        <label class="clone-param-chip"><input type="checkbox" class="disp-clone-param" value="cableTipo" checked onchange="sincronizarCheckTodoClon('disp')"><span>Tipo de cable</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="disp-clone-param" value="cable" checked onchange="sincronizarCheckTodoClon('disp')"><span>Metros de cable</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="disp-clone-param" value="conectores" checked onchange="sincronizarCheckTodoClon('disp')"><span>Conectores y Etiquetas</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="disp-clone-param" value="estado" checked onchange="sincronizarCheckTodoClon('disp')"><span>Estado</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="disp-clone-param" value="obs" checked onchange="sincronizarCheckTodoClon('disp')"><span>Observaciones</span></label>
+                    </div>
+                </div>
+
                 <div class="card mb-4">
                     <h3 class="mb-4">Red de Dispersión (Gabinete de Piso → PAU Apartamento)</h3>
                     <div class="table-responsive">
@@ -1173,6 +1258,42 @@
                         <button class="btn btn-secondary btn-sm" onclick="expandAll(false)">Colapsar Todos</button>
                         <button class="btn btn-primary btn-sm" onclick="copiarPrimerApto()">📋 Copiar 1er Apto a Todos</button>
                         <button class="btn btn-primary btn-sm" onclick="marcarInteriorInstalado()" style="background: #10b981; border-color: #10b981;">✅ Todo Instalado</button>
+                    </div>
+                </div>
+
+                <div id="int-clone-panel" class="clone-range-card">
+                    <div class="clone-range-header">
+                        <strong style="font-size: 0.95rem;">📋 Clonar Internas de un Piso a Rango de Pisos</strong>
+                        <label class="clone-param-chip" style="font-weight: 700;">
+                            <input type="checkbox" id="int-clone-all" checked onchange="toggleTodosParamsClon('int', this.checked)">
+                            <span>Copiar todo</span>
+                        </label>
+                    </div>
+                    <div class="clone-range-controls">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="int-clone-origen">Piso Origen (Plantilla)</label>
+                            <select id="int-clone-origen" class="form-select"></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="int-clone-desde">Desde Piso Destino</label>
+                            <select id="int-clone-desde" class="form-select"></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="int-clone-hasta">Hasta Piso Destino</label>
+                            <select id="int-clone-hasta" class="form-select"></select>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="clonarInteriorRango()" style="min-height: 38px;">
+                            ⚡ Clonar al Rango
+                        </button>
+                    </div>
+                    <div class="clone-params-row">
+                        <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase;">Parámetros:</span>
+                        <label class="clone-param-chip"><input type="checkbox" class="int-clone-param" value="repartidor" checked onchange="sincronizarCheckTodoClon('int')"><span>Repartidor / Splitter</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="int-clone-param" value="cableTipo" checked onchange="sincronizarCheckTodoClon('int')"><span>Tipo de cable</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="int-clone-param" value="cable" checked onchange="sincronizarCheckTodoClon('int')"><span>Metros de cable</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="int-clone-param" value="toma" checked onchange="sincronizarCheckTodoClon('int')"><span>Tomas TDT</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="int-clone-param" value="conectores" checked onchange="sincronizarCheckTodoClon('int')"><span>Conectores y Etiquetas</span></label>
+                        <label class="clone-param-chip"><input type="checkbox" class="int-clone-param" value="estado" checked onchange="sincronizarCheckTodoClon('int')"><span>Estado de espacios</span></label>
                     </div>
                 </div>
 
@@ -1928,7 +2049,7 @@
 
             for (let p = maxP; p >= minP; p--) {
                 // Header piso
-                tbody.innerHTML += `<tr class="group-header"><td colspan="7">PISO ${p}</td></tr>`;
+                tbody.innerHTML += `<tr class="group-header"><td colspan="7"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span>PISO ${p}</span><button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px;font-size:0.74rem;" onclick="prepararClonDispersion(${p})">📋 Clonar este piso</button></div></td></tr>`;
                 
                 c.sufijos.forEach(suf => {
                     const aptoId = getAptoId(p, suf);
@@ -1990,7 +2111,185 @@
             document.getElementById('sum-disp-aptos').innerText = `${tInst} / ${tAptos}`;
             document.getElementById('sum-disp-cable').innerText = tCab.toFixed(1) + ' m';
             document.getElementById('sum-disp-con').innerText = tCon;
+            poblarSelectoresClonPisos();
         }
+
+        function poblarSelectoresClonPisos() {
+            const c = state.config;
+            if (!c || !c.generado) return;
+            const minP = Math.min(c.pisoInicial, c.pisoFinal);
+            const maxP = Math.max(c.pisoInicial, c.pisoFinal);
+            const pisos = [];
+            for (let p = minP; p <= maxP; p++) pisos.push(p);
+
+            const ids = [
+                'disp-clone-origen', 'disp-clone-desde', 'disp-clone-hasta',
+                'int-clone-origen', 'int-clone-desde', 'int-clone-hasta'
+            ];
+
+            ids.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const prev = sel.value;
+                const opts = pisos.map(p => {
+                    const opt = document.createElement('option');
+                    opt.value = String(p);
+                    opt.textContent = `Piso ${p}`;
+                    return opt;
+                });
+                sel.replaceChildren(...opts);
+                if (prev && pisos.includes(Number(prev))) {
+                    sel.value = prev;
+                } else if (id.endsWith('-hasta')) {
+                    sel.value = String(maxP);
+                } else if (id.endsWith('-desde')) {
+                    sel.value = String(Math.min(minP + 1, maxP));
+                } else {
+                    sel.value = String(minP);
+                }
+            });
+        }
+
+        window.prepararClonDispersion = function(piso) {
+            const sel = document.getElementById('disp-clone-origen');
+            const panel = document.getElementById('disp-clone-panel');
+            if (sel) sel.value = String(piso);
+            if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
+        window.toggleTodosParamsClon = function(tipo, checked) {
+            document.querySelectorAll(`.${tipo}-clone-param`).forEach(cb => {
+                cb.checked = checked;
+            });
+            const master = document.getElementById(`${tipo}-clone-all`);
+            if (master) master.indeterminate = false;
+        };
+
+        window.sincronizarCheckTodoClon = function(tipo) {
+            const cbs = Array.from(document.querySelectorAll(`.${tipo}-clone-param`));
+            const master = document.getElementById(`${tipo}-clone-all`);
+            if (!master || cbs.length === 0) return;
+            const checkedCount = cbs.filter(cb => cb.checked).length;
+            master.checked = checkedCount === cbs.length;
+            master.indeterminate = checkedCount > 0 && checkedCount < cbs.length;
+        };
+
+        window.clonarDispersionRango = async function() {
+            const origen = Number(document.getElementById('disp-clone-origen')?.value);
+            const desde = Number(document.getElementById('disp-clone-desde')?.value);
+            const hasta = Number(document.getElementById('disp-clone-hasta')?.value);
+            const seleccionados = Array.from(document.querySelectorAll('.disp-clone-param:checked')).map(cb => cb.value);
+
+            if (seleccionados.length === 0) {
+                showToast('Selecciona al menos un parámetro de dispersión para copiar.', 'error');
+                return;
+            }
+            const minR = Math.min(desde, hasta);
+            const maxR = Math.max(desde, hasta);
+            const pisosDestino = [];
+            for (let p = minR; p <= maxR; p++) {
+                if (p !== origen) pisosDestino.push(p);
+            }
+            if (pisosDestino.length === 0) {
+                showToast('El rango destino no incluye pisos distintos al piso origen.', 'error');
+                return;
+            }
+
+            const ok = await confirmarDialogoObra({
+                title: 'Clonar Dispersión al Rango',
+                message: `Se copiarán ${seleccionados.length} parámetro(s) del Piso ${origen} hacia los pisos ${minR} al ${maxR} (${pisosDestino.length} piso(s)). ¿Deseas continuar?`,
+                confirmText: 'Sí, Clonar',
+                variant: 'warning'
+            });
+            if (!ok) return;
+
+            let actualizados = 0;
+            pisosDestino.forEach(p => {
+                state.config.sufijos.forEach(suf => {
+                    const src = state.dispersion[getAptoId(origen, suf)];
+                    const dst = state.dispersion[getAptoId(p, suf)];
+                    if (!src || !dst) return;
+                    if (seleccionados.includes('cableTipo')) dst.cableTipo = src.cableTipo;
+                    if (seleccionados.includes('cable')) dst.cable = src.cable;
+                    if (seleccionados.includes('conectores')) {
+                        dst.conectores = src.conectores;
+                        dst.etiq = src.etiq;
+                    }
+                    if (seleccionados.includes('estado')) dst.estado = src.estado;
+                    if (seleccionados.includes('obs')) dst.obs = src.obs;
+                    actualizados++;
+                });
+            });
+
+            saveState();
+            renderDispersion();
+            if (typeof renderInforme === 'function') renderInforme();
+            showToast(`Dispersión clonada: ${actualizados} apartamentos en ${pisosDestino.length} piso(s).`);
+        };
+
+        window.clonarInteriorRango = async function() {
+            const origen = Number(document.getElementById('int-clone-origen')?.value);
+            const desde = Number(document.getElementById('int-clone-desde')?.value);
+            const hasta = Number(document.getElementById('int-clone-hasta')?.value);
+            const seleccionados = Array.from(document.querySelectorAll('.int-clone-param:checked')).map(cb => cb.value);
+
+            if (seleccionados.length === 0) {
+                showToast('Selecciona al menos un parámetro de red interior para copiar.', 'error');
+                return;
+            }
+            const minR = Math.min(desde, hasta);
+            const maxR = Math.max(desde, hasta);
+            const pisosDestino = [];
+            for (let p = minR; p <= maxR; p++) {
+                if (p !== origen) pisosDestino.push(p);
+            }
+            if (pisosDestino.length === 0) {
+                showToast('El rango destino no incluye pisos distintos al piso origen.', 'error');
+                return;
+            }
+
+            const ok = await confirmarDialogoObra({
+                title: 'Clonar Red Interior al Rango',
+                message: `Se copiarán ${seleccionados.length} parámetro(s) de internas del Piso ${origen} hacia los pisos ${minR} al ${maxR} (${pisosDestino.length} piso(s)). ¿Deseas continuar?`,
+                confirmText: 'Sí, Clonar',
+                variant: 'warning'
+            });
+            if (!ok) return;
+
+            let actualizados = 0;
+            pisosDestino.forEach(p => {
+                state.config.sufijos.forEach(suf => {
+                    const src = state.interior[getAptoId(origen, suf)];
+                    const dst = state.interior[getAptoId(p, suf)];
+                    if (!src || !dst) return;
+
+                    if (seleccionados.includes('repartidor') && src.repartidor) {
+                        dst.repartidor = structuredClone(src.repartidor);
+                    }
+                    if (src.espacios && dst.espacios) {
+                        Object.keys(src.espacios).forEach(esp => {
+                            const sEsp = src.espacios[esp];
+                            const dEsp = dst.espacios[esp];
+                            if (!sEsp || !dEsp) return;
+                            if (seleccionados.includes('cableTipo')) dEsp.cableTipo = sEsp.cableTipo;
+                            if (seleccionados.includes('cable')) dEsp.cable = sEsp.cable;
+                            if (seleccionados.includes('toma')) dEsp.toma = sEsp.toma;
+                            if (seleccionados.includes('conectores')) {
+                                dEsp.conectores = sEsp.conectores;
+                                dEsp.etiq = sEsp.etiq;
+                            }
+                            if (seleccionados.includes('estado')) dEsp.estado = sEsp.estado;
+                        });
+                    }
+                    actualizados++;
+                });
+            });
+
+            saveState();
+            renderInterior();
+            if (typeof renderInforme === 'function') renderInforme();
+            showToast(`Internas clonadas: ${actualizados} apartamentos en ${pisosDestino.length} piso(s).`);
+        };
 
         // --- INTERIOR RENDER ---
         function renderInterior() {
@@ -2138,6 +2437,7 @@
             document.getElementById('sum-int-cable').innerText = tCab.toFixed(1) + ' m';
             document.getElementById('sum-int-con').innerText = tCon;
             document.getElementById('sum-int-tomas').innerText = tTom;
+            poblarSelectoresClonPisos();
         }
 
         window.expandAll = function(expand) {
