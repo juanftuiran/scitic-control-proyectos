@@ -26,9 +26,9 @@
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" integrity="sha384-OUW9euuUyxyHcAhTqbhI+Iyb8LMssXt/cpz0yXhs9UWG2/R/uaWdakx/4cfww7Vb" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" integrity="sha384-OUW9euuUyxyHcAhTqbhI+Iyb8LMssXt/cpz0yXhs9UWG2/R/uaWdakx/4cfww7Vb" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <!-- Integración con Base de Datos SCITIC y Tema Central (Single Source of Truth) -->
     <link rel="stylesheet" href="../../theme/theme.css?v=14">
     <link rel="stylesheet" href="../../css/design-system.css?v=14">
@@ -2046,10 +2046,11 @@
             const minP = Math.min(c.pisoInicial, c.pisoFinal);
             
             let tCab = 0, tCon = 0, tInst = 0, tAptos = 0;
+            const dispHtmlParts = [];
 
             for (let p = maxP; p >= minP; p--) {
                 // Header piso
-                tbody.innerHTML += `<tr class="group-header"><td colspan="7"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span>PISO ${p}</span><button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px;font-size:0.74rem;" onclick="prepararClonDispersion(${p})">📋 Clonar este piso</button></div></td></tr>`;
+                dispHtmlParts.push(`<tr class="group-header"><td colspan="7"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span>PISO ${p}</span><button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px;font-size:0.74rem;" onclick="prepararClonDispersion(${p})">📋 Clonar este piso</button></div></td></tr>`);
                 
                 c.sufijos.forEach(suf => {
                     const aptoId = getAptoId(p, suf);
@@ -2064,7 +2065,7 @@
                         if(row.estado === 'Instalado') tInst++;
                     }
 
-                    tbody.innerHTML += `
+                    dispHtmlParts.push(`
                         <tr class="${isNA ? 'row-no-aplica' : ''}">
                             <td>${p}</td>
                             <td class="font-bold">Apto ${aptoId}</td>
@@ -2084,9 +2085,10 @@
                             </td>
                             <td><input type="text" class="table-input" value="${row.obs}" onchange="updateDispersion('${aptoId}', 'obs', this.value)"></td>
                         </tr>
-                    `;
+                    `);
                 });
             }
+            tbody.innerHTML = dispHtmlParts.join('');
 
             window.updateDispersionSum = function() {
                 let c = 0, cn = 0, tInst = 0, tActivos = 0;
@@ -2309,6 +2311,7 @@
             const minP = Math.min(c.pisoInicial, c.pisoFinal);
             
             let tCab = 0, tCon = 0, tTom = 0, tAptos = 0, tAptosInstalados = 0;
+            const intHtmlParts = [];
 
             for (let p = maxP; p >= minP; p--) {
                 c.sufijos.forEach(suf => {
@@ -2356,7 +2359,7 @@
 
                     const isCardExpanded = expandedCardIds.has(`card-${aptoId}`) ? ' expanded' : '';
 
-                    container.innerHTML += `
+                    intHtmlParts.push(`
                         <div class="apto-card${isCardExpanded}" id="card-${aptoId}">
                             <div class="apto-header" onclick="this.parentElement.classList.toggle('expanded')">
                                 <div class="font-bold">Apto ${aptoId}</div>
@@ -2398,9 +2401,10 @@
                                 </div>
                             </div>
                         </div>
-                    `;
+                    `);
                 });
             }
+            container.innerHTML = intHtmlParts.join('');
 
             window.updateIntSum = function() {
                 let c = 0, cn = 0, t = 0;

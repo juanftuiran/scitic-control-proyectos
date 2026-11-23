@@ -357,14 +357,14 @@ class APIService {
         try {
             const { data, error } = await this.db
                 .from('proyectos_calculadoras')
-                .select('id, nombre_proyecto, modo, usuario_nombre, usuario_email, user_id, updated_at, created_at, resumen, datos_json')
+                .select('id, nombre_proyecto, modo, usuario_nombre, usuario_email, user_id, updated_at, created_at, resumen')
                 .eq('herramienta', herramienta)
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;
             return (data || []).map(p => ({
                 ...p,
-                resumen: p.resumen || (p.datos_json && p.datos_json.resumen) || {}
+                resumen: p.resumen || {}
             }));
         } catch (error) {
             console.error("Error al obtener proyectos de calculadora:", error);
