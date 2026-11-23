@@ -1069,7 +1069,7 @@ function generarDesgloseAdmin(lista) {
 function mostrar(lista) {
     let totalH = 0; let totalP = 0; const proyActivos = new Set(); let htmlTabla = "";
 
-    const listaOrdenada = [...lista].sort((a, b) => {
+    const listaOrdenada = lista.toSorted((a, b) => {
         const fechaA = new Date(a.fecha || 0); const fechaB = new Date(b.fecha || 0);
         if (fechaB.getTime() === fechaA.getTime()) return (b.id || '').localeCompare(a.id || '');
         return fechaB - fechaA;
@@ -1884,48 +1884,73 @@ function switchModule(moduleName) {
         { name: 'herramientas', el: herramientasModule, tab: tabHerramientas }
     ];
 
-    modules.forEach(m => {
-        if (m.el) {
-            m.el.style.display = 'none';
-            m.el.classList.remove('ios-view-enter');
-        }
-        if (m.tab) m.tab.classList.remove('active');
-    });
+    const applyModuleSwitch = () => {
+        modules.forEach(m => {
+            if (m.el) {
+                m.el.style.display = 'none';
+                m.el.classList.remove('ios-view-enter');
+            }
+            if (m.tab) {
+                m.tab.classList.remove('active');
+                m.tab.removeAttribute('aria-current');
+            }
+        });
 
-    const activeMod = modules.find(m => m.name === moduleName);
-    if (activeMod && activeMod.el) {
-        activeMod.el.style.display = 'block';
-        void activeMod.el.offsetWidth; // Forzar reflow para animación suave iOS
-        activeMod.el.classList.add('ios-view-enter');
-        if (activeMod.tab) activeMod.tab.classList.add('active');
-    }
-
-    if (moduleName === 'gastos') {
-        if (usuarioActual && usuarioActual.role === 'colaborador') {
-            const inTrab = document.getElementById('gastoTrabajador');
-            if (inTrab) {
-                inTrab.value = usuarioActual.name;
-                inTrab.setAttribute('readonly', 'true');
+        const activeMod = modules.find(m => m.name === moduleName);
+        if (activeMod && activeMod.el) {
+            activeMod.el.style.display = 'block';
+            if (!document.startViewTransition) {
+                void activeMod.el.offsetWidth;
+                activeMod.el.classList.add('ios-view-enter');
+            }
+            if (activeMod.tab) {
+                activeMod.tab.classList.add('active');
+                activeMod.tab.setAttribute('aria-current', 'page');
             }
         }
-        const gFecha = document.getElementById('gastoFecha');
-        if (gFecha && !gFecha.value) {
-            gFecha.value = getFechaColombiaString();
+    };
+
+    const runPostSwitch = () => {
+        if (moduleName === 'gastos') {
+            if (usuarioActual && usuarioActual.role === 'colaborador') {
+                const inTrab = document.getElementById('gastoTrabajador');
+                if (inTrab) {
+                    inTrab.value = usuarioActual.name;
+                    inTrab.setAttribute('readonly', 'true');
+                }
+            }
+            const gFecha = document.getElementById('gastoFecha');
+            if (gFecha && !gFecha.value) {
+                gFecha.value = getFechaColombiaString();
+            }
+            const gInicio = document.getElementById('gastoFechaInicio');
+            if (gInicio && !gInicio.value) {
+                gInicio.value = getFechaColombiaString();
+            }
+            const gFin = document.getElementById('gastoFechaFin');
+            if (gFin && !gFin.value) {
+                gFin.value = getFechaColombiaString();
+            }
+            filtrarGastos();
+        } else if (moduleName === 'horas') {
+            setTimeout(() => {
+                graficar(listaFiltradaGlobal);
+            }, 50);
         }
-        const gInicio = document.getElementById('gastoFechaInicio');
-        if (gInicio && !gInicio.value) {
-            gInicio.value = getFechaColombiaString();
-        }
-        const gFin = document.getElementById('gastoFechaFin');
-        if (gFin && !gFin.value) {
-            gFin.value = getFechaColombiaString();
-        }
-        filtrarGastos();
-    } else if (moduleName === 'horas') {
-        setTimeout(() => {
-            graficar(listaFiltradaGlobal);
-        }, 50);
+    };
+
+    if (!document.startViewTransition) {
+        applyModuleSwitch();
+        runPostSwitch();
+        return;
     }
+
+    const transition = document.startViewTransition(() => {
+        applyModuleSwitch();
+    });
+    transition.finished.finally(() => {
+        runPostSwitch();
+    });
 }
 
 let toolTransitionTimeout = null;

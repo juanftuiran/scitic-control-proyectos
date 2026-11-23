@@ -9,6 +9,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&family=Syne:wght@700;800&display=swap');
 
 :root {
+    color-scheme: light dark;
+
+    &:has(> head > meta[name="color-scheme"][content="dark"]) {
+        color-scheme: dark;
+    }
+
+    &:has(> head > meta[name="color-scheme"][content="light"]) {
+        color-scheme: light;
+    }
+
+    --scrollbar-thumb: rgba(16, 185, 129, 0.35);
+    --scrollbar-track: rgba(6, 9, 7, 0.4);
+
     /* -------------------------------------------------------------
        1. PALETA DE COLOR PRINCIPAL: EMERALD TECH (#10b981)
        ------------------------------------------------------------- */
@@ -186,6 +199,8 @@
    Esquema de alto contraste, alta legibilidad para campo / oficina diurna
    ========================================================================= */
 html[data-theme="light"] {
+    --scrollbar-thumb: rgba(5, 150, 105, 0.4);
+    --scrollbar-track: rgba(241, 245, 249, 0.8);
     --primary: #059669;
     --primary-hover: #047857;
     --primary-contrast: #ffffff;
@@ -416,4 +431,66 @@ html[data-theme="light"] .watermark-text {
 html[data-theme="light"] .watermark-name {
     color: #059669;
     text-shadow: none;
+}
+
+/* =========================================================================
+   6. ESTÁNDARES MODERNOS DE PLATAFORMA WEB (SCROLLBARS, FOCUS, SQUIRCLE, MOTION)
+   ========================================================================= */
+:root,
+.table-container,
+.table-wrapper,
+.scroller {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+@supports not (scrollbar-color: auto) {
+    :root,
+    .table-container,
+    .table-wrapper,
+    .scroller {
+        scrollbar-width: auto;
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+    }
+}
+
+/* Indicador de foco accesible de alto contraste solo por teclado */
+:where(a:any-link, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Curvas orgánicas progresivas (Squircle) en navegadores compatibles */
+@supports (corner-shape: squircle) {
+    .card,
+    .glass-panel,
+    .stat-card,
+    .tool-card,
+    .btn-primary,
+    .btn-secondary,
+    dialog.scitic-dialog {
+        corner-shape: squircle;
+    }
+}
+
+/* Respeto a preferencia de movimiento reducido en View Transitions */
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+    }
 }

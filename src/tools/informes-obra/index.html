@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
     <title>SCITIC - Registro TDT Obra</title>
     <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
     <script>
         (function() {
             try {
                 var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
                 if (savedTheme === 'light') {
                     document.documentElement.setAttribute('data-theme', 'light');
                 } else {
@@ -19,8 +23,8 @@
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" integrity="sha384-OUW9euuUyxyHcAhTqbhI+Iyb8LMssXt/cpz0yXhs9UWG2/R/uaWdakx/4cfww7Vb" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <!-- Integración con Base de Datos SCITIC y Tema Central (Single Source of Truth) -->
     <link rel="stylesheet" href="../../theme/theme.css?v=14">
@@ -40,16 +44,21 @@
         body {
             background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
             color: var(--text-main);
-            min-height: 100vh;
+            min-height: 100dvh;
             padding-bottom: 140px; /* Espacio de seguridad generoso para evitar corte por export-bar fija */
             overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 14px; height: 14px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-left: 1px solid var(--border-solid); }
-        ::-webkit-scrollbar-thumb { background: var(--primary-soft); border-radius: 7px; border: 3px solid rgba(0,0,0,0.4); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        /* Scrollbar fallback para WebKit antiguos */
+        @supports not (scrollbar-color: auto) {
+            body { scrollbar-width: auto; }
+            ::-webkit-scrollbar { width: 12px; height: 12px; }
+            ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-left: 1px solid var(--border-solid); }
+            ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 7px; border: 3px solid rgba(0,0,0,0.4); }
+            ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        }
 
         /* Typography */
         h1, h2, h3, h4 { font-weight: 600; }
@@ -1524,7 +1533,7 @@
 
         function renderEspaciosList() {
             const list = document.getElementById('espacios-list');
-            list.innerHTML = '';
+            list.replaceChildren();
             if (!state.config) state.config = {};
             if (!Array.isArray(state.config.espacios)) state.config.espacios = [];
             state.config.espacios.forEach((esp, idx) => {
@@ -1802,7 +1811,7 @@
         // --- SETS & VERTICAL RENDER ---
         function renderSets() {
             const tbody = document.getElementById('tbody-sets');
-            tbody.innerHTML = '';
+            tbody.replaceChildren();
             Object.keys(state.sets).forEach(key => {
                 const row = state.sets[key];
                 const isNA = (row.estado === 'No Aplica');
@@ -1856,7 +1865,7 @@
 
         function renderVertical() {
             const tbody = document.getElementById('tbody-vertical');
-            tbody.innerHTML = '';
+            tbody.replaceChildren();
             
             // Sort vertical by piso desc
             state.vertical.sort((a, b) => b.piso - a.piso);
@@ -1906,7 +1915,7 @@
         // --- DISPERSIÓN RENDER ---
         function renderDispersion() {
             const tbody = document.getElementById('tbody-dispersion');
-            tbody.innerHTML = '';
+            tbody.replaceChildren();
             
             const c = state.config;
             const maxP = Math.max(c.pisoInicial, c.pisoFinal);
@@ -1991,7 +2000,7 @@
                 if (card.id) expandedCardIds.add(card.id);
             });
 
-            container.innerHTML = '';
+            container.replaceChildren();
             
             const c = state.config;
             const maxP = Math.max(c.pisoInicial, c.pisoFinal);
@@ -2217,7 +2226,7 @@
             };
             
             const tbodyMaestro = document.getElementById('inf-tbody-maestro');
-            tbodyMaestro.innerHTML = '';
+            tbodyMaestro.replaceChildren();
             
             const appendMaestro = (origen, piso, apto, espacio, equipo, ref, cTipo, metros, con, eti, cargas, estado) => {
                 const etiquetas = parseInt(eti || 0);
@@ -2382,7 +2391,7 @@
             document.getElementById('tot-car-t').innerText = sCar + vCar + iCar;
 
             const eqTbody = document.getElementById('inf-tbody-totales-eq');
-            eqTbody.innerHTML = '';
+            eqTbody.replaceChildren();
             Object.keys(eqData).sort().forEach(eq => {
                 const data = eqData[eq];
                 const total = data.totalS + data.totalV + data.totalI;
@@ -2718,7 +2727,7 @@
             if (!datos || typeof datos !== 'object') {
                 throw new Error('Datos del proyecto no válidos.');
             }
-            state = JSON.parse(JSON.stringify(datos));
+            state = structuredClone(datos);
             if (!state.config) state.config = {};
             if (!state.sets) state.sets = {};
             if (!Array.isArray(state.vertical)) state.vertical = [];
@@ -2857,7 +2866,7 @@
 
             const idDestino = esNuevo ? null : proyectoActivoId;
             state.config.nombre = nombreProyecto;
-            const datos = JSON.parse(JSON.stringify(state));
+            const datos = structuredClone(state);
             const resumen = generarResumenObra(datos);
             datos.resumen = resumen;
 

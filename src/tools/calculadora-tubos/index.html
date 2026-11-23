@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
     <title>Calculadora de Canalizaciones y Tubería RITEL 2025 | SCITIC</title>
 
     <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
@@ -10,6 +12,8 @@
         (function() {
             try {
                 var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
                 if (savedTheme === 'light') {
                     document.documentElement.setAttribute('data-theme', 'light');
                 } else {
@@ -20,8 +24,8 @@
     </script>
 
     <!-- Librerías desde la nube (CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" integrity="sha384-TKzdYxq/t9UpLrJcIQu2hpfQg+oSoJVDkhWcS4zuzQmzQTBx5gSMhINXD2uGv0jw" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1506,8 +1510,8 @@
 
             const tbodyTubos = document.getElementById('tabla-body-torres');
             const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
-            tbodyTubos.innerHTML = '';
-            tbodyBandeja.innerHTML = '';
+            tbodyTubos.replaceChildren();
+            tbodyBandeja.replaceChildren();
 
             let N = listaPisos.length;
             let k = listaPisos.indexOf(setiPisoNombre);
@@ -1825,7 +1829,7 @@
                 type: 'danger'
             });
             if (ok) {
-                document.getElementById('tabla-body-parcelaciones').innerHTML = '';
+                document.getElementById('tabla-body-parcelaciones').replaceChildren();
                 document.getElementById('empty-state-parc').classList.remove('hidden');
                 recalcularParcelacion();
             }
@@ -1833,7 +1837,7 @@
 
         function cargarEjemploParcelacion() {
             const tbody = document.getElementById('tabla-body-parcelaciones');
-            tbody.innerHTML = '';
+            tbody.replaceChildren();
 
             const ejemplo = [
                 { desde: 'SETU',  hasta: 'CD-01', pau: 60, mat: 'PVC', dia: '3"', curvas: 0 },
@@ -2074,8 +2078,8 @@
                 // Limpiar torres para que no queden tablas dobles
                 const tbodyTubos = document.getElementById('tabla-body-torres');
                 const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
-                if (tbodyTubos) tbodyTubos.innerHTML = '';
-                if (tbodyBandeja) tbodyBandeja.innerHTML = '';
+                if (tbodyTubos) tbodyTubos.replaceChildren();
+                if (tbodyBandeja) tbodyBandeja.replaceChildren();
 
                 cambiarModoApp('parcelaciones');
 
@@ -2085,14 +2089,14 @@
 
                 let tramosParc = data.parcelaciones.tramos || [];
                 const tbody = document.getElementById('tabla-body-parcelaciones');
-                tbody.innerHTML = '';
+                tbody.replaceChildren();
                 tramosParc.forEach(t => {
                     agregarFilaParcelacion(t.desde, t.hasta, t.pau, t.material, t.diametro, t.curvas);
                 });
             } else if (data.torres) {
                 // Limpiar parcelaciones para que no queden tablas dobles
                 const tbodyParc = document.getElementById('tabla-body-parcelaciones');
-                if (tbodyParc) tbodyParc.innerHTML = '';
+                if (tbodyParc) tbodyParc.replaceChildren();
 
                 cambiarModoApp('torres');
 
@@ -2127,8 +2131,8 @@
                 if (Array.isArray(data.torres.filas) && data.torres.filas.length > 0) {
                     const tbodyTubos = document.getElementById('tabla-body-torres');
                     const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
-                    tbodyTubos.innerHTML = '';
-                    tbodyBandeja.innerHTML = '';
+                    tbodyTubos.replaceChildren();
+                    tbodyBandeja.replaceChildren();
 
                     data.torres.filas.forEach(f => {
                         crearFilaTorresDOM(
@@ -2951,7 +2955,7 @@
             if (opcion === 'estandar') {
                 // Modo Torres Estándar únicamente (limpiar parcelaciones)
                 const tbodyParc = document.getElementById('tabla-body-parcelaciones');
-                if (tbodyParc) tbodyParc.innerHTML = '';
+                if (tbodyParc) tbodyParc.replaceChildren();
                 cambiarModoApp('torres');
                 const selTipo = document.getElementById('sel-tipo-torre');
                 if (selTipo) selTipo.value = 'estandar';
@@ -2960,7 +2964,7 @@
             } else if (opcion === 'atipica') {
                 // Modo Torres Atípica únicamente (limpiar parcelaciones)
                 const tbodyParc = document.getElementById('tabla-body-parcelaciones');
-                if (tbodyParc) tbodyParc.innerHTML = '';
+                if (tbodyParc) tbodyParc.replaceChildren();
                 cambiarModoApp('torres');
                 const selTipo = document.getElementById('sel-tipo-torre');
                 if (selTipo) selTipo.value = 'atipica';
@@ -2970,11 +2974,11 @@
                 // Modo Parcelación únicamente (limpiar torres)
                 const tbodyTubos = document.getElementById('tabla-body-torres');
                 const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
-                if (tbodyTubos) tbodyTubos.innerHTML = '';
-                if (tbodyBandeja) tbodyBandeja.innerHTML = '';
+                if (tbodyTubos) tbodyTubos.replaceChildren();
+                if (tbodyBandeja) tbodyBandeja.replaceChildren();
                 cambiarModoApp('parcelaciones');
                 const tbody = document.getElementById('tabla-body-parcelaciones');
-                tbody.innerHTML = '';
+                tbody.replaceChildren();
                 agregarFilaParcelacion("SETU", "CD-01", 10, "PVC", '2"', 0);
             }
 

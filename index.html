@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
     <title>SCITIC S.A.S | Suite de Ingeniería y Control de Proyectos</title>
 
     <!-- Prevención inmediata de destello de tema (Zero-FOUC) -->
@@ -10,6 +12,8 @@
         (function() {
             try {
                 var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
                 if (savedTheme === 'light') {
                     document.documentElement.setAttribute('data-theme', 'light');
                 } else {
@@ -19,7 +23,7 @@
         })();
     </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -64,6 +68,7 @@
 </div>
 
 <div id="appView" style="display: none;">
+    <a href="#main-content" class="skip-link visually-hidden">Saltar al contenido principal</a>
     <header>
         <div class="header-title">
             <img src="./assets/logo.png" alt="Logo SCITIC" class="logo-header">
@@ -89,22 +94,22 @@
         </div>
     </header>
 
-    <div class="container">
+    <main id="main-content" class="container" tabindex="-1">
         <!-- Navegación moderna entre módulos (Segmented Bar) -->
-        <div class="module-nav-container">
-            <button class="module-tab-btn active" id="tabHoras" onclick="switchModule('horas')">
+        <nav class="module-nav-container" aria-label="Módulos principales">
+            <button type="button" class="module-tab-btn active" id="tabHoras" aria-current="page" onclick="switchModule('horas')">
                 <span data-icon="clock" data-size="18"></span>
                 <span>Módulo de Horas</span>
             </button>
-            <button class="module-tab-btn" id="tabGastos" onclick="switchModule('gastos')">
+            <button type="button" class="module-tab-btn" id="tabGastos" onclick="switchModule('gastos')">
                 <span data-icon="dollar" data-size="18"></span>
                 <span>Módulo de Gastos</span>
             </button>
-            <button class="module-tab-btn" id="tabHerramientas" onclick="switchModule('herramientas')">
+            <button type="button" class="module-tab-btn" id="tabHerramientas" onclick="switchModule('herramientas')">
                 <span data-icon="tools" data-size="18"></span>
                 <span>Herramientas</span>
             </button>
-        </div>
+        </nav>
 
         <div id="horasModule">
             <section class="dashboard-grid" id="statsContainer">
@@ -341,8 +346,8 @@
                     </section>
 
                     <section class="card glass-panel">
-                        <h3>Historial de Registros</h3>
-                        <div class="table-container custom-scroll">
+                        <h3 id="tituloHistorialHoras">Historial de Registros</h3>
+                        <div class="table-container custom-scroll" tabindex="0" role="region" aria-labelledby="tituloHistorialHoras">
                             <table>
                                 <thead>
                                     <tr>
@@ -555,7 +560,7 @@
                             </div>
                         </div>
 
-                        <div class="table-container custom-scroll" style="max-height: 480px; overflow-y: auto;">
+                        <div class="table-container custom-scroll" tabindex="0" role="region" aria-label="Historial de gastos y liquidaciones" style="max-height: 480px; overflow-y: auto;">
                             <table>
                                 <thead>
                                     <tr>
@@ -742,7 +747,7 @@
                         </div>
                         <p class="ios-loader-text" id="iframeLoaderText">Iniciando aplicación...</p>
                     </div>
-                    <iframe id="iframeHerramienta" src="" class="ios-iframe-app"></iframe>
+                    <iframe id="iframeHerramienta" src="" title="Visor de herramienta de ingeniería SCITIC" class="ios-iframe-app"></iframe>
                 </div>
             </div>
         </div>
@@ -755,7 +760,7 @@
             </div>
         </footer>
 
-    </div>
+    </main>
 </div>
 
 <div id="detalleModal" class="modal">

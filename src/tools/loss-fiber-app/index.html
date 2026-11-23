@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
     <meta name="description" content="Calculadora de Pérdidas de Fibra Óptica para Urbanizaciones de Casas — Múltiples Transmisores / Sectores TDT / TV — SCITIC">
     <title>Calculadora de Pérdidas Fibra Óptica (Casas / TDT Multi-Sector) — SCITIC</title>
 
@@ -11,6 +13,8 @@
         (function() {
             try {
                 var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
                 if (savedTheme === 'light') {
                     document.documentElement.setAttribute('data-theme', 'light');
                 } else {
@@ -981,6 +985,8 @@
         window.addEventListener('storage', (e) => {
             if (e.key === 'scitic_ui_theme') {
                 const isLight = e.newValue === 'light';
+                const meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = isLight ? 'light' : 'dark';
                 if (isLight) document.documentElement.setAttribute('data-theme', 'light');
                 else document.documentElement.removeAttribute('data-theme');
                 sincronizarBotonTema();
@@ -1069,7 +1075,7 @@
         if (!contLista) return;
 
         contCounter.textContent = `${lista.length} urbanización(es) disponible(s)`;
-        contLista.innerHTML = '';
+        contLista.replaceChildren();
 
         if (lista.length === 0) {
             contLista.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No se encontraron urbanizaciones.</div>';
@@ -1242,7 +1248,7 @@
 
         // Carga de sectores
         if (Array.isArray(d.sectores) && d.sectores.length > 0) {
-            listaSectores = JSON.parse(JSON.stringify(d.sectores));
+            listaSectores = structuredClone(d.sectores);
         } else if (Array.isArray(d.naps) && d.naps.length > 0) {
             // Conversión de formato mono-sector a multi-sector
             listaSectores = [{
@@ -1252,10 +1258,10 @@
                 splitterCabecera: (d.splitterCabecera !== undefined) ? d.splitterCabecera : 7.2,
                 fusionLoss: (d.fusionLoss !== undefined) ? d.fusionLoss : 0.10,
                 connectorLoss: (d.connectorLoss !== undefined) ? d.connectorLoss : 1.00,
-                naps: JSON.parse(JSON.stringify(d.naps))
+                naps: structuredClone(d.naps)
             }];
         } else {
-            listaSectores = JSON.parse(JSON.stringify(PLANTILLAS_URBANIZACIONES[0].datos_json.sectores));
+            listaSectores = structuredClone(PLANTILLAS_URBANIZACIONES[0].datos_json.sectores);
         }
 
         // Asegurar que cada sector tenga valores por defecto solicitados
@@ -1297,7 +1303,7 @@
     function generarPestañasSectores() {
         const cont = document.getElementById('sector-tabs-container');
         if (!cont) return;
-        cont.innerHTML = '';
+        cont.replaceChildren();
 
         listaSectores.forEach((sec, idx) => {
             const btn = document.createElement('button');
@@ -1499,7 +1505,7 @@
     function duplicarSectorActivo() {
         const sec = listaSectores.find(s => s.id === sectorActivoId);
         if (!sec) return;
-        const copia = JSON.parse(JSON.stringify(sec));
+        const copia = structuredClone(sec);
         copia.id = 'sec-' + Date.now();
         copia.nombre = copia.nombre + ' (Copia)';
         listaSectores.push(copia);
@@ -1533,7 +1539,7 @@
 
     function renderizarTablaNapsSectorActivo() {
         const tbody = document.getElementById('body-naps-config');
-        tbody.innerHTML = '';
+        tbody.replaceChildren();
 
         const sec = listaSectores.find(s => s.id === sectorActivoId);
         if (!sec || !sec.naps || sec.naps.length === 0) {
@@ -1783,7 +1789,7 @@
 
     function renderizarTablaDetalladaResultados(rxMin, rxMax) {
         const resultsBody = document.getElementById('results-body');
-        resultsBody.innerHTML = '';
+        resultsBody.replaceChildren();
 
         let filasAMostrar = [];
 
@@ -1918,7 +1924,7 @@
 
         // Tabla comparativa de sectores
         const bodySectores = document.getElementById('body-resumen-sectores');
-        bodySectores.innerHTML = '';
+        bodySectores.replaceChildren();
 
         cacheResultadosSectores.forEach(s => {
             const tr = document.createElement('tr');
@@ -1999,7 +2005,7 @@
             attenDropKm: parseFloat(document.getElementById('atten-drop-km').value),
             rxMin: parseFloat(document.getElementById('rx-min-dbm').value),
             rxMax: parseFloat(document.getElementById('rx-max-dbm').value),
-            sectores: JSON.parse(JSON.stringify(listaSectores))
+            sectores: structuredClone(listaSectores)
         };
     }
 

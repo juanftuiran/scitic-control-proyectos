@@ -3,6 +3,9 @@ class Toast {
         if (!document.getElementById('toast-container')) {
             const container = document.createElement('div');
             container.id = 'toast-container';
+            container.setAttribute('role', 'status');
+            container.setAttribute('aria-live', 'polite');
+            container.setAttribute('aria-atomic', 'false');
             document.body.appendChild(container);
         }
     }
@@ -52,52 +55,120 @@ class Toast {
 
 /**
  * SCITICModal — Diálogos corporativos asíncronos (Confirmación y Alerta)
- * Reemplaza confirm() y alert() nativos del navegador con estética Frosted Glass.
+ * Implementado con <dialog> nativo en Top Layer, closedby="any" y animaciones @starting-style.
  */
 class SCITICModal {
+    static _supportsDisplayTransition;
+
+    static _canTransitionDisplay() {
+        if (this._supportsDisplayTransition !== undefined) return this._supportsDisplayTransition;
+        if (!window.CSS?.supports?.('transition-behavior', 'allow-discrete') || !document.body) {
+            return false;
+        }
+        const probe = document.createElement('div');
+        probe.style.cssText = 'transition: display 1s allow-discrete !important; display: block;';
+        document.body.appendChild(probe);
+        getComputedStyle(probe).display;
+        probe.style.display = 'none';
+        this._supportsDisplayTransition = getComputedStyle(probe).display === 'block';
+        probe.remove();
+        return this._supportsDisplayTransition;
+    }
+
+    static _supportsTopLayerExit() {
+        return Boolean(window.CSS?.supports?.('overlay', 'auto') && this._canTransitionDisplay());
+    }
+
+    static async _closeTopLayer(dialog, returnValue = '') {
+        if (!dialog.open) return;
+        if (!this._supportsTopLayerExit()) {
+            dialog.setAttribute('data-closing', '');
+            const animations = dialog.getAnimations({ subtree: true });
+            if (animations.length > 0) {
+                await Promise.race([
+                    Promise.allSettled(animations.map((a) => a.finished)),
+                    new Promise((r) => setTimeout(r, 400)),
+                ]);
+            }
+            if (!dialog.hasAttribute('data-closing')) return;
+            dialog.removeAttribute('data-closing');
+        }
+        dialog.close(returnValue);
+    }
+
     static confirm(options) {
         const opts = typeof options === 'string'
             ? { title: 'Confirmar acción', message: options, confirmText: 'Confirmar', cancelText: 'Cancelar', type: 'warning' }
             : Object.assign({ title: 'Confirmar acción', message: '', confirmText: 'Confirmar', cancelText: 'Cancelar', type: 'warning' }, options);
 
         return new Promise((resolve) => {
-            const backdrop = document.createElement('div');
-            backdrop.className = 'scitic-dialog-backdrop';
+            const titleId = `scitic-dialog-title-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+            const dialog = document.createElement('dialog');
+            dialog.className = 'scitic-dialog';
+            dialog.setAttribute('closedby', 'any');
+            dialog.setAttribute('aria-labelledby', titleId);
 
             const iconSvg = opts.type === 'danger'
-                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`
-                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`
+                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
 
-            backdrop.innerHTML = `
-                <div class="scitic-dialog-box" role="dialog" aria-modal="true">
+            dialog.innerHTML = `
+                <div class="scitic-dialog-box">
                     <div class="scitic-dialog-header">
                         <div class="scitic-dialog-icon type-${opts.type === 'danger' ? 'danger' : 'warning'}">${iconSvg}</div>
                         <div style="flex:1;">
-                            <h4 class="scitic-dialog-title">${opts.title}</h4>
+                            <h4 id="${titleId}" class="scitic-dialog-title"></h4>
                             <p class="scitic-dialog-message"></p>
                         </div>
                     </div>
-                    <div class="scitic-dialog-actions">
-                        <button type="button" class="scitic-dialog-btn scitic-dialog-btn-cancel" data-action="cancel">${opts.cancelText}</button>
-                        <button type="button" class="scitic-dialog-btn scitic-dialog-btn-confirm ${opts.type === 'danger' ? 'is-danger' : ''}" data-action="confirm">${opts.confirmText}</button>
-                    </div>
+                    <form method="dialog" class="scitic-dialog-actions">
+                        <button type="submit" value="cancel" class="scitic-dialog-btn scitic-dialog-btn-cancel" autofocus></button>
+                        <button type="submit" value="confirm" class="scitic-dialog-btn scitic-dialog-btn-confirm ${opts.type === 'danger' ? 'is-danger' : ''}"></button>
+                    </form>
                 </div>
             `;
-            backdrop.querySelector('.scitic-dialog-message').textContent = opts.message;
-            document.body.appendChild(backdrop);
+            dialog.querySelector('.scitic-dialog-title').textContent = opts.title;
+            dialog.querySelector('.scitic-dialog-message').textContent = opts.message;
+            dialog.querySelector('.scitic-dialog-btn-cancel').textContent = opts.cancelText;
+            dialog.querySelector('.scitic-dialog-btn-confirm').textContent = opts.confirmText;
 
-            requestAnimationFrame(() => backdrop.classList.add('is-open'));
+            document.body.appendChild(dialog);
+            dialog.showModal();
 
-            const close = (result) => {
-                backdrop.classList.remove('is-open');
-                setTimeout(() => backdrop.remove(), 220);
-                resolve(result);
-            };
+            // Interceptar cierre para animar salida en navegadores sin transition-behavior + overlay
+            dialog.addEventListener('cancel', (event) => {
+                if (!this._supportsTopLayerExit()) {
+                    event.preventDefault();
+                    this._closeTopLayer(dialog, '');
+                }
+            });
 
-            backdrop.querySelector('[data-action="cancel"]').addEventListener('click', () => close(false));
-            backdrop.querySelector('[data-action="confirm"]').addEventListener('click', () => close(true));
-            backdrop.addEventListener('click', (e) => {
-                if (e.target === backdrop) close(false);
+            if (!this._supportsTopLayerExit()) {
+                dialog.querySelector('form').addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const val = event.submitter?.value || 'cancel';
+                    this._closeTopLayer(dialog, val);
+                });
+            }
+
+            // Fallback progresivo de closedby="any" para Safari
+            if (!('closedBy' in HTMLDialogElement.prototype)) {
+                const outside = (e) => {
+                    const r = dialog.getBoundingClientRect();
+                    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+                };
+                let pressedOutside = false;
+                dialog.addEventListener('pointerdown', (e) => { pressedOutside = outside(e); });
+                dialog.addEventListener('pointerup', (e) => {
+                    if (pressedOutside && outside(e)) this._closeTopLayer(dialog, '');
+                });
+            }
+
+            dialog.addEventListener('close', () => {
+                const confirmed = dialog.returnValue === 'confirm';
+                dialog.returnValue = '';
+                dialog.remove();
+                resolve(confirmed);
             });
         });
     }
@@ -161,11 +232,19 @@ class SCITICThemeFallback {
 
     static apply(theme) {
         const isLight = theme === 'light';
+        const resolved = isLight ? 'light' : 'dark';
         if (isLight) {
             document.documentElement.setAttribute('data-theme', 'light');
         } else {
             document.documentElement.removeAttribute('data-theme');
         }
+        let meta = document.querySelector('meta[name="color-scheme"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.name = 'color-scheme';
+            document.head.prepend(meta);
+        }
+        meta.content = resolved;
         try {
             localStorage.setItem('scitic_ui_theme', theme);
         } catch (e) {}

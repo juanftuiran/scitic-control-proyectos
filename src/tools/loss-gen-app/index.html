@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark light">
     <meta name="description" content="Calculadora de Pérdidas de Señal TDT para torres residenciales — SCITIC">
     <title>Calculadora de Pérdidas TDT — SCITIC</title>
 
@@ -11,6 +13,8 @@
         (function() {
             try {
                 var savedTheme = localStorage.getItem('scitic_ui_theme') || 'dark';
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.content = savedTheme === 'light' ? 'light' : 'dark';
                 if (savedTheme === 'light') {
                     document.documentElement.setAttribute('data-theme', 'light');
                 } else {
@@ -1145,7 +1149,7 @@
 
     function populateSelect(id, obj, defaultKey) {
         const sel = document.getElementById(id);
-        sel.innerHTML = '';
+        sel.replaceChildren();
         for (const key in obj) {
             const opt = document.createElement('option');
             opt.value = key;
@@ -1236,7 +1240,7 @@
             });
         });
 
-        container.innerHTML = '';
+        container.replaceChildren();
 
         for (let p = 0; p < pisosCadena; p++) {
             const defVals = getValoresDerivadorDefault(p, pisosCadena);
@@ -1284,7 +1288,7 @@
             estadoActual.push({ name, disp, numTomas, tomasDist });
         });
 
-        container.innerHTML = '';
+        container.replaceChildren();
 
         const defaultDisps = [15, 16, 16, 19];
         for (let a = 0; a < numAptos; a++) {
@@ -1333,7 +1337,7 @@
         
         // Guardar valores anteriores
         const oldVals = Array.from(grid.querySelectorAll('.toma-dist-input')).map(i => parseFloat(i.value));
-        grid.innerHTML = '';
+        grid.replaceChildren();
         
         for(let t = 0; t < numTomas; t++) {
             const defDist = oldVals[t] !== undefined ? oldVals[t] : 15;
@@ -1436,7 +1440,7 @@
         const distIncPiso  = parseFloat(document.getElementById('dist-inc-piso').value) || 3.5;
 
         const tbody = document.getElementById('floor-config-body');
-        tbody.innerHTML = '';
+        tbody.replaceChildren();
 
         const numCadenas = Math.ceil(numPisos / pisosCadena);
         let pisoActual = numPisos;
@@ -1657,7 +1661,7 @@
 
         const floors = leerConfigPisos();
         const tbody = document.getElementById('results-body');
-        tbody.innerHTML = '';
+        tbody.replaceChildren();
 
         for (const floor of floors) {
             // Contar el número real de tomas que tendrá este piso según la matriz de apartamentos
@@ -1828,7 +1832,7 @@
 
         const resumen = MotorCalculo.calcularResumen(filas);
         const tbody = document.getElementById('summary-body');
-        tbody.innerHTML = '';
+        tbody.replaceChildren();
 
         document.getElementById('summary-tower-name').textContent = document.getElementById('project-title').value || 'TORRE 1';
 
@@ -2511,7 +2515,7 @@
         // 5. Restaurar Matriz de Apartamentos
         if (Array.isArray(data.matrizAptos) && data.matrizAptos.length > 0) {
             const container = document.getElementById('aptos-matrix-container');
-            container.innerHTML = '';
+            container.replaceChildren();
             data.matrizAptos.forEach((apto, a) => {
                 const card = document.createElement('div');
                 card.className = 'apto-card';

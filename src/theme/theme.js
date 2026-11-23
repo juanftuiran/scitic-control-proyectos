@@ -20,6 +20,20 @@
     }
 
     /**
+     * Sincroniza <meta name="color-scheme"> en el documento dado
+     */
+    function syncColorSchemeMeta(doc, theme) {
+        if (!doc || !doc.head) return;
+        let meta = doc.querySelector('meta[name="color-scheme"]');
+        if (!meta) {
+            meta = doc.createElement('meta');
+            meta.name = 'color-scheme';
+            doc.head.prepend(meta);
+        }
+        meta.content = theme === 'light' ? 'light' : (theme === 'dark' ? 'dark' : 'light dark');
+    }
+
+    /**
      * Sincroniza el tema activo con los iframes embebidos (calculadoras/micro-herramientas)
      */
     function syncIframe() {
@@ -35,6 +49,7 @@
                     } else {
                         iframe.contentDocument.documentElement.removeAttribute('data-theme');
                     }
+                    syncColorSchemeMeta(iframe.contentDocument, theme);
                 }
                 if (iframe.contentWindow) {
                     try {
@@ -71,14 +86,16 @@
      */
     function setTheme(theme) {
         const isLight = theme === 'light';
+        const resolved = isLight ? 'light' : 'dark';
         if (isLight) {
             document.documentElement.setAttribute('data-theme', 'light');
         } else {
             document.documentElement.removeAttribute('data-theme');
         }
+        syncColorSchemeMeta(document, resolved);
 
         try {
-            localStorage.setItem(STORAGE_KEY, isLight ? 'light' : 'dark');
+            localStorage.setItem(STORAGE_KEY, resolved);
         } catch (e) {}
 
         // Sincronizar iframes y botón
@@ -87,7 +104,7 @@
 
         // Disparar evento personalizado para que gráficos (Chart.js) y tablas reaccionen
         window.dispatchEvent(new CustomEvent('sciticthemechange', { 
-            detail: { theme: isLight ? 'light' : 'dark', isLight } 
+            detail: { theme: resolved, isLight } 
         }));
     }
 
@@ -123,6 +140,13 @@
         if (iframe) {
             iframe.addEventListener('load', () => syncIframe());
         }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORAGE_KEY) {
+                const next = e.newValue === 'light' ? 'light' : 'dark';
+                setTheme(next);
+            }
+        });
     }
 
     // Inicialización preventiva inmediata (Zero-FOUC)
@@ -134,6 +158,7 @@
             } else {
                 document.documentElement.removeAttribute('data-theme');
             }
+            syncColorSchemeMeta(document, saved === 'light' ? 'light' : 'dark');
         } catch (e) {}
     })();
 
