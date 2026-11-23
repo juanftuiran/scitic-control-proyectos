@@ -2115,3 +2115,461 @@ table,
         min-block-size: 44px;
     }
 }
+
+/* =========================================================
+   CROSS-DOCUMENT VIEW TRANSITIONS (MPA NAVIGATION)
+   ========================================================= */
+@view-transition {
+    navigation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @view-transition {
+        navigation: none;
+    }
+}
+
+/* =========================================================
+   PANTALLA DE BIENVENIDA PERSONALIZADA (2s POST-LOGIN)
+   ========================================================= */
+.welcome-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: radial-gradient(circle at 50% 35%, rgba(16, 185, 129, 0.16), rgba(4, 7, 5, 0.96) 65%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    animation: splashFadeIn 0.35s var(--ios-ease) both;
+}
+
+.welcome-splash.is-leaving {
+    animation: splashFadeOut 0.4s var(--ios-ease) forwards;
+}
+
+.welcome-splash-card {
+    width: min(100%, 440px);
+    padding: 2.6rem 2.2rem;
+    border-radius: 26px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(16, 185, 129, 0.14);
+}
+
+.welcome-logo-orbit {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.welcome-orbit-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2.5px solid rgba(16, 185, 129, 0.18);
+    border-top-color: var(--primary);
+    border-right-color: var(--info, #00e5ff);
+    animation: orbitSpin 1.1s linear infinite;
+}
+
+.welcome-logo-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 14px;
+    filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.45));
+    animation: logoPulse 1.8s ease-in-out infinite;
+}
+
+.welcome-role-badge {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+}
+
+.welcome-title {
+    margin: 0;
+    font-size: clamp(1.45rem, 1.2rem + 1vw, 1.9rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 20%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.welcome-subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    min-height: 1.4em;
+}
+
+.welcome-progress-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-top: 0.6rem;
+}
+
+.welcome-progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--primary), #00e5ff);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    animation: welcomeProgressFill 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* =========================================================
+   BARRA SUPERIOR DE MÓDULO Y BOTÓN PROMINENTE DE REGRESO
+   ========================================================= */
+.module-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 18px;
+    margin-bottom: 1.75rem;
+    border: 1px solid var(--card-border);
+}
+
+.btn-back-hub {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 14px;
+    background: var(--primary-gradient);
+    color: var(--primary-contrast, #ffffff);
+    font-weight: 700;
+    font-size: 0.98rem;
+    text-decoration: none;
+    box-shadow: var(--primary-glow);
+    transition: transform 0.25s var(--ios-ease), box-shadow 0.25s var(--ios-ease), filter 0.25s ease;
+    min-block-size: 48px;
+}
+
+.btn-back-hub:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--primary-glow-hover);
+    filter: brightness(1.06);
+}
+
+.btn-back-hub:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.module-quick-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.module-pill-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-muted);
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--btn-secondary-border);
+    transition: all 0.2s var(--ios-ease);
+    min-block-size: 40px;
+}
+
+.module-pill-link:hover {
+    color: var(--text-heading);
+    border-color: var(--primary-border);
+    background: var(--primary-soft);
+}
+
+.module-pill-link[aria-current="page"] {
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+}
+
+/* =========================================================
+   HUB SELECTOR DE MÓDULOS (/)
+   ========================================================= */
+.module-hub-view {
+    padding-block: 1rem 2.5rem;
+    container-type: inline-size;
+}
+
+.hub-hero {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
+    animation: hubFadeUp 0.5s var(--ios-ease) both;
+}
+
+.hub-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.38rem 0.95rem;
+    border-radius: 9999px;
+    background: var(--primary-soft);
+    border: 1px solid var(--primary-border);
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.hub-greeting-title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.75rem, 1.35rem + 1.8vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-heading);
+}
+
+.hub-greeting-subtitle {
+    margin: 0;
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.08rem);
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.hub-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 1.5rem;
+}
+
+.hub-module-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.4rem;
+    padding: 1.85rem;
+    border-radius: 22px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--card-border);
+    transition: transform 0.32s var(--ios-ease), border-color 0.32s ease, box-shadow 0.32s var(--ios-ease);
+    animation: hubFadeUp 0.55s var(--ios-ease) calc(var(--card-delay, 0ms) + 80ms) both;
+}
+
+.hub-module-card:hover,
+.hub-module-card:focus-visible {
+    transform: translateY(-6px);
+    border-color: var(--primary);
+    box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.55), 0 0 28px rgba(16, 185, 129, 0.18);
+}
+
+.hub-card-glow {
+    position: absolute;
+    inset-block-start: -40%;
+    inset-inline-end: -30%;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.18), transparent 70%);
+    pointer-events: none;
+    transition: transform 0.4s var(--ios-ease), opacity 0.3s ease;
+}
+
+.hub-module-card:hover .hub-card-glow {
+    transform: scale(1.25);
+}
+
+.hub-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.hub-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid var(--primary-border);
+    transition: transform 0.3s var(--ios-ease-spring);
+}
+
+.hub-module-card[data-module="gastos"] .hub-card-icon {
+    background: rgba(0, 229, 255, 0.12);
+    color: #00e5ff;
+    border-color: rgba(0, 229, 255, 0.3);
+}
+
+.hub-module-card[data-module="herramientas"] .hub-card-icon {
+    background: rgba(255, 183, 3, 0.12);
+    color: #ffb703;
+    border-color: rgba(255, 183, 3, 0.3);
+}
+
+.hub-module-card:hover .hub-card-icon {
+    transform: scale(1.08) rotate(-3deg);
+}
+
+.hub-card-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.3rem 0.7rem;
+    border-radius: 9999px;
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--border-subtle);
+}
+
+.hub-card-body h2 {
+    margin: 0 0 0.55rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+
+.hub-card-body p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+}
+
+.hub-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.hub-route-badge {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-subtle);
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.hub-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--primary);
+}
+
+.hub-cta-arrow {
+    display: inline-block;
+    transition: transform 0.25s var(--ios-ease);
+}
+
+.hub-module-card:hover .hub-cta-arrow {
+    transform: translateX(5px);
+}
+
+/* Adaptación Modo Claro para Splash, Hub y Barra Superior */
+html[data-theme="light"] .welcome-splash {
+    background: radial-gradient(circle at 50% 35%, rgba(16, 185, 129, 0.14), rgba(248, 250, 252, 0.96) 65%);
+}
+
+html[data-theme="light"] .welcome-title {
+    background: linear-gradient(135deg, #0f172a 20%, #059669 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="light"] .welcome-progress-track {
+    background: rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .hub-route-badge {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+html[data-theme="light"] .hub-module-card[data-module="gastos"] .hub-card-icon {
+    background: rgba(2, 132, 199, 0.1);
+    color: #0284c7;
+    border-color: rgba(2, 132, 199, 0.28);
+}
+
+html[data-theme="light"] .hub-module-card[data-module="herramientas"] .hub-card-icon {
+    background: rgba(217, 119, 6, 0.1);
+    color: #d97706;
+    border-color: rgba(217, 119, 6, 0.28);
+}
+
+@supports (corner-shape: squircle) {
+    .hub-module-card,
+    .btn-back-hub,
+    .welcome-splash-card {
+        corner-shape: squircle;
+    }
+}
+
+@keyframes orbitSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes logoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+@keyframes welcomeProgressFill {
+    from { width: 0%; }
+    to { width: 100%; }
+}
+
+@keyframes splashFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes splashFadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(1.02); }
+}
+
+@keyframes hubFadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hub-hero,
+    .hub-module-card,
+    .welcome-splash,
+    .welcome-orbit-ring,
+    .welcome-logo-img {
+        animation: none !important;
+    }
+}

@@ -180,7 +180,8 @@ async function iniciarSesion() {
             usuarioActual = result;
             errorMsg.style.display = 'none';
             sessionStorage.removeItem('scitic_login_audited');
-            Toast.success(`Bienvenido, ${usuarioActual.name}`);
+            hideLoader();
+            await mostrarBienvenidaPersonalizada(usuarioActual);
             iniciarApp();
         } else {
             errorMsg.style.display = 'block';
@@ -191,6 +192,114 @@ async function iniciarSesion() {
     } finally {
         hideLoader();
     }
+}
+
+function getRutaModuloActual() {
+    const params = new URLSearchParams(window.location.search);
+    const qMod = (params.get('modulo') || '').toLowerCase();
+    if (qMod === 'horas' || qMod === 'gastos' || qMod === 'herramientas') return qMod;
+
+    const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    if (path.endsWith('/horas')) return 'horas';
+    if (path.endsWith('/gastos')) return 'gastos';
+    if (path.endsWith('/herramientas')) return 'herramientas';
+    return 'hub';
+}
+
+function mostrarBienvenidaPersonalizada(usuario) {
+    const splash = document.getElementById('welcomeSplash');
+    const titleEl = document.getElementById('welcomeUserTitle');
+    const roleEl = document.getElementById('welcomeUserRole');
+    const statusEl = document.getElementById('welcomeStatusText');
+    const barEl = document.getElementById('welcomeProgressBar');
+
+    if (!splash) return Promise.resolve();
+
+    const hora = Number(new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Bogota',
+        hour: 'numeric',
+        hour12: false
+    }).format(new Date()));
+    const saludo = hora < 12 ? 'Buenos días' : (hora < 19 ? 'Buenas tardes' : 'Buenas noches');
+    const nombre = usuario?.name || 'Ingeniero';
+    const rol = (usuario?.role || 'colaborador').toUpperCase();
+
+    if (titleEl) titleEl.textContent = `${saludo}, ${nombre}`;
+    if (roleEl) roleEl.textContent = rol;
+    if (statusEl) statusEl.textContent = 'Personalizando tu experiencia...';
+
+    if (barEl) {
+        barEl.style.animation = 'none';
+        void barEl.offsetWidth;
+        barEl.style.animation = '';
+    }
+
+    splash.classList.remove('is-leaving');
+    splash.style.display = 'flex';
+
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (statusEl) statusEl.textContent = 'Preparando tus módulos y entorno SCITIC...';
+        }, 950);
+
+        setTimeout(() => {
+            splash.classList.add('is-leaving');
+        }, 1700);
+
+        setTimeout(() => {
+            splash.style.display = 'none';
+            splash.classList.remove('is-leaving');
+            resolve();
+        }, 2050);
+    });
+}
+
+function montarVistaPorRuta(modulo) {
+    const hubView = document.getElementById('moduleHubView');
+    const topBar = document.getElementById('moduleTopBar');
+    const horasMod = document.getElementById('horasModule');
+    const gastosMod = document.getElementById('gastosModule');
+    const herrMod = document.getElementById('herramientasModule');
+
+    const navLinks = {
+        horas: document.getElementById('navLinkHoras'),
+        gastos: document.getElementById('navLinkGastos'),
+        herramientas: document.getElementById('navLinkHerramientas')
+    };
+
+    Object.entries(navLinks).forEach(([key, link]) => {
+        if (!link) return;
+        if (key === modulo) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+    });
+
+    if (modulo === 'hub') {
+        if (hubView) hubView.style.display = 'block';
+        if (topBar) topBar.style.display = 'none';
+        if (horasMod) horasMod.style.display = 'none';
+        if (gastosMod) gastosMod.style.display = 'none';
+        if (herrMod) herrMod.style.display = 'none';
+        const hubTitle = document.getElementById('hubGreetingTitle');
+        if (hubTitle && usuarioActual?.name) {
+            hubTitle.textContent = `Hola, ${usuarioActual.name}`;
+        }
+        document.title = 'Selector de Módulos | SCITIC S.A.S';
+        return;
+    }
+
+    if (hubView) hubView.style.display = 'none';
+    if (topBar) topBar.style.display = 'flex';
+
+    if (horasMod) horasMod.style.display = modulo === 'horas' ? 'block' : 'none';
+    if (gastosMod) gastosMod.style.display = modulo === 'gastos' ? 'block' : 'none';
+    if (herrMod) herrMod.style.display = modulo === 'herramientas' ? 'block' : 'none';
+
+    const titulos = {
+        horas: 'Módulo de Horas | SCITIC S.A.S',
+        gastos: 'Módulo de Gastos | SCITIC S.A.S',
+        herramientas: 'Herramientas | SCITIC S.A.S'
+    };
+    document.title = titulos[modulo] || 'SCITIC S.A.S';
 }
 
 async function cerrarSesion() {
@@ -222,7 +331,8 @@ function aplicarPermisos() {
 }
 
 async function registrarAuditoria(accion, detalle) {
-    const log = { fecha_hora: new Date().toLocaleString(), usuario: usuarioActual.name, rol: usuarioActual.role, accion: accion, detalle: detalle };
+    const fechaBogota = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+    const log = { fecha_hora: fechaBogota, usuario: usuarioActual.name, rol: usuarioActual.role, accion: accion, detalle: detalle };
     await window.API.registrarAuditoria(log);
     auditoria.unshift(log);
 }
@@ -249,7 +359,7 @@ async function descargarAuditoria() {
     if (!auditoria || auditoria.length === 0) return Toast.warning("No hay registros de auditoría aún.");
 
     const datosExcel = auditoria.map(a => ({
-        "Fecha / Hora": a.fecha_hora || (a.created_at ? new Date(a.created_at).toLocaleString('es-CO') : ''),
+        "Fecha / Hora": a.fecha_hora || (a.created_at ? new Date(a.created_at).toLocaleString('es-CO', { timeZone: 'America/Bogota' }) : ''),
         "Usuario": a.usuario || '',
         "Rol": (a.rol || '').toUpperCase(),
         "Acción": a.accion || '',
@@ -408,7 +518,7 @@ function renderizarTablaAuditoria() {
     }
 
     tbody.innerHTML = filtrados.map(item => {
-        const fecha = item.fecha_hora || (item.created_at ? new Date(item.created_at).toLocaleString('es-CO') : '-');
+        const fecha = item.fecha_hora || (item.created_at ? new Date(item.created_at).toLocaleString('es-CO', { timeZone: 'America/Bogota' }) : '-');
         const usuario = escapeHTML(item.usuario || 'Sistema');
         const badgeRol = getBadgeRolAuditoria(item.rol);
         const badgeAccion = getBadgeAccionAuditoria(item.accion);
@@ -511,35 +621,50 @@ async function iniciarApp() {
         try { aplicarPermisos(); } catch (e) { console.warn("Error en aplicarPermisos:", e); }
         try { aplicarPermisosWidget(); } catch (e) { console.warn("Error en aplicarPermisosWidget:", e); }
 
-        try {
-            // Carga en paralelo de datos para máxima velocidad
-            const [registrosDb, auditDb, gastosDb, usersDb] = await Promise.all([
-                window.API.getRegistros(),
-                window.API.getAuditoria(),
-                window.API.getGastos(),
-                window.API.getUsuarios()
-            ]);
+        const moduloActual = getRutaModuloActual();
+        montarVistaPorRuta(moduloActual);
 
-            if (registrosDb) datos = registrosDb;
-            if (auditDb) auditoria = auditDb;
-            if (gastosDb) gastosDatos = gastosDb;
-            if (usersDb) {
-                window.usuariosGlobal = usersDb;
-                trabajadoresActivosParaPendientes = usersDb
-                    .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
-                    .map(u => u.nombre.trim());
+        try {
+            if (moduloActual === 'horas') {
+                const [registrosDb, auditDb, usersDb] = await Promise.all([
+                    window.API.getRegistros(),
+                    window.API.getAuditoria(),
+                    window.API.getUsuarios()
+                ]);
+                if (registrosDb) datos = registrosDb;
+                if (auditDb) auditoria = auditDb;
+                if (usersDb) {
+                    window.usuariosGlobal = usersDb;
+                    trabajadoresActivosParaPendientes = usersDb
+                        .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
+                        .map(u => u.nombre.trim());
+                }
+            } else if (moduloActual === 'gastos') {
+                const [gastosDb, usersDb] = await Promise.all([
+                    window.API.getGastos(),
+                    window.API.getUsuarios()
+                ]);
+                if (gastosDb) gastosDatos = gastosDb;
+                if (usersDb) {
+                    window.usuariosGlobal = usersDb;
+                    trabajadoresActivosParaPendientes = usersDb
+                        .filter(u => u.rol === 'colaborador' || u.rol === 'moderador')
+                        .map(u => u.nombre.trim());
+                }
             }
         } catch (e) {
             console.error("Error al cargar datos iniciales:", e);
         }
 
-        try { recalcularProgresos(); } catch (err) { console.error("Error en recalcularProgresos:", err); }
-        
-        const fechaEl = document.getElementById('fecha');
-        if (fechaEl) fechaEl.value = getFechaColombiaString();
-
-        try { inicializarDatosGlobales(); } catch (err) { console.error("Error en inicializarDatosGlobales:", err); }
-        try { inicializarDatosGlobalesGastos(); } catch (err) { console.error("Error en inicializarDatosGlobalesGastos:", err); }
+        if (moduloActual === 'horas') {
+            try { recalcularProgresos(); } catch (err) { console.error("Error en recalcularProgresos:", err); }
+            const fechaEl = document.getElementById('fecha');
+            if (fechaEl) fechaEl.value = getFechaColombiaString();
+            try { inicializarDatosGlobales(); } catch (err) { console.error("Error en inicializarDatosGlobales:", err); }
+        } else if (moduloActual === 'gastos') {
+            try { inicializarDatosGlobalesGastos(); } catch (err) { console.error("Error en inicializarDatosGlobalesGastos:", err); }
+            try { switchModule('gastos'); } catch (err) { console.error("Error en inicializar vista gastos:", err); }
+        }
 
         if (usuarioActual) {
             if (userNameEl) userNameEl.innerText = usuarioActual.name;
@@ -1432,7 +1557,7 @@ async function exportarExcel() {
     await registrarAuditoria("EXPORTAR", `El usuario exportó un reporte a Excel.`);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosSalida), "Reporte");
-    XLSX.writeFile(wb, `SCITIC_Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(wb, `SCITIC_Reporte_${getFechaColombiaString()}.xlsx`);
     Toast.success("Reporte exportado exitosamente.");
 }
 
@@ -1502,7 +1627,7 @@ function editar(id) {
     document.getElementById('proyecto').value = (d.proyecto || '').trim();
     document.getElementById('trabajador').value = (d.trabajador || '').trim();
     document.getElementById('horasPres').value = d.horas_pres || 0;
-    document.getElementById('fecha').value = d.fecha || new Date().toISOString().split('T')[0];
+    document.getElementById('fecha').value = d.fecha || getFechaColombiaString();
     document.getElementById('horas').value = d.horas ? decimalAHoraMM(d.horas) : '0:00';
     actualizarPreviewHoras(document.getElementById('horas').value);
     document.getElementById('valor').value = d.valor || 0;
@@ -1710,10 +1835,12 @@ function cambiarGraficoGastos(tipo) {
 }
 
 function getFechaColombiaString() {
-    const d = new Date();
-    // Colombia es UTC-5
-    const colTime = new Date(d.getTime() - (5 * 3600000));
-    return colTime.toISOString().split('T')[0];
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Bogota',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
 }
 
 function inicializarDatosGlobalesGastos() {
@@ -1870,87 +1997,39 @@ function limpiarFiltrosGastos() {
 }
 
 function switchModule(moduleName) {
-    const horasModule = document.getElementById('horasModule');
-    const gastosModule = document.getElementById('gastosModule');
-    const herramientasModule = document.getElementById('herramientasModule');
-    
-    const tabHoras = document.getElementById('tabHoras');
-    const tabGastos = document.getElementById('tabGastos');
-    const tabHerramientas = document.getElementById('tabHerramientas');
-
-    const modules = [
-        { name: 'horas', el: horasModule, tab: tabHoras },
-        { name: 'gastos', el: gastosModule, tab: tabGastos },
-        { name: 'herramientas', el: herramientasModule, tab: tabHerramientas }
-    ];
-
-    const applyModuleSwitch = () => {
-        modules.forEach(m => {
-            if (m.el) {
-                m.el.style.display = 'none';
-                m.el.classList.remove('ios-view-enter');
-            }
-            if (m.tab) {
-                m.tab.classList.remove('active');
-                m.tab.removeAttribute('aria-current');
-            }
-        });
-
-        const activeMod = modules.find(m => m.name === moduleName);
-        if (activeMod && activeMod.el) {
-            activeMod.el.style.display = 'block';
-            if (!document.startViewTransition) {
-                void activeMod.el.offsetWidth;
-                activeMod.el.classList.add('ios-view-enter');
-            }
-            if (activeMod.tab) {
-                activeMod.tab.classList.add('active');
-                activeMod.tab.setAttribute('aria-current', 'page');
-            }
-        }
-    };
-
-    const runPostSwitch = () => {
-        if (moduleName === 'gastos') {
-            if (usuarioActual && usuarioActual.role === 'colaborador') {
-                const inTrab = document.getElementById('gastoTrabajador');
-                if (inTrab) {
-                    inTrab.value = usuarioActual.name;
-                    inTrab.setAttribute('readonly', 'true');
-                }
-            }
-            const gFecha = document.getElementById('gastoFecha');
-            if (gFecha && !gFecha.value) {
-                gFecha.value = getFechaColombiaString();
-            }
-            const gInicio = document.getElementById('gastoFechaInicio');
-            if (gInicio && !gInicio.value) {
-                gInicio.value = getFechaColombiaString();
-            }
-            const gFin = document.getElementById('gastoFechaFin');
-            if (gFin && !gFin.value) {
-                gFin.value = getFechaColombiaString();
-            }
-            filtrarGastos();
-        } else if (moduleName === 'horas') {
-            setTimeout(() => {
-                graficar(listaFiltradaGlobal);
-            }, 50);
-        }
-    };
-
-    if (!document.startViewTransition) {
-        applyModuleSwitch();
-        runPostSwitch();
+    if (getRutaModuloActual() !== moduleName && (moduleName === 'horas' || moduleName === 'gastos' || moduleName === 'herramientas')) {
+        window.location.href = `/${moduleName}`;
         return;
     }
 
-    const transition = document.startViewTransition(() => {
-        applyModuleSwitch();
-    });
-    transition.finished.finally(() => {
-        runPostSwitch();
-    });
+    montarVistaPorRuta(moduleName);
+
+    if (moduleName === 'gastos') {
+        if (usuarioActual && usuarioActual.role === 'colaborador') {
+            const inTrab = document.getElementById('gastoTrabajador');
+            if (inTrab) {
+                inTrab.value = usuarioActual.name;
+                inTrab.setAttribute('readonly', 'true');
+            }
+        }
+        const gFecha = document.getElementById('gastoFecha');
+        if (gFecha && !gFecha.value) {
+            gFecha.value = getFechaColombiaString();
+        }
+        const gInicio = document.getElementById('gastoFechaInicio');
+        if (gInicio && !gInicio.value) {
+            gInicio.value = getFechaColombiaString();
+        }
+        const gFin = document.getElementById('gastoFechaFin');
+        if (gFin && !gFin.value) {
+            gFin.value = getFechaColombiaString();
+        }
+        filtrarGastos();
+    } else if (moduleName === 'horas') {
+        setTimeout(() => {
+            graficar(listaFiltradaGlobal);
+        }, 50);
+    }
 }
 
 let toolTransitionTimeout = null;
