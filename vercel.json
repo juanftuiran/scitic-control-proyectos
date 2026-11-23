@@ -2,11 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/horas", "destination": "/index.html" },
-    { "source": "/horas/", "destination": "/index.html" },
-    { "source": "/gastos", "destination": "/index.html" },
-    { "source": "/gastos/", "destination": "/index.html" },
-    { "source": "/herramientas", "destination": "/index.html" },
-    { "source": "/herramientas/", "destination": "/index.html" }
+    { "source": "/horas", "destination": "/" },
+    { "source": "/horas/", "destination": "/" },
+    { "source": "/gastos", "destination": "/" },
+    { "source": "/gastos/", "destination": "/" },
+    { "source": "/herramientas", "destination": "/" },
+    { "source": "/herramientas/", "destination": "/" }
   ]
 }
