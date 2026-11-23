@@ -494,3 +494,47 @@ html[data-theme="light"] .watermark-name {
         animation: none !important;
     }
 }
+
+/* Barra de retorno en herramientas independientes (/herramientas/<app>) */
+.scitic-standalone-tool-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1.25rem;
+    background: var(--header-bg, rgba(6, 9, 7, 0.92));
+    border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.08));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.scitic-tool-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.48rem 0.95rem;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text-main);
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--btn-secondary-border);
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.scitic-tool-nav-btn.is-primary {
+    background: var(--primary-gradient);
+    color: var(--primary-contrast, #ffffff);
+    border-color: transparent;
+}
+
+.scitic-tool-nav-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+}
+
+@media print {
+    .scitic-standalone-tool-nav {
+        display: none !important;
+    }
+}

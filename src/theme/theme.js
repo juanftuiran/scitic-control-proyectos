@@ -132,9 +132,27 @@
         }
     }
 
+    function injectStandaloneToolNav() {
+        if (window.top !== window.self) return;
+        const path = (window.location.pathname || '').toLowerCase();
+        if (!path.startsWith('/herramientas/')) return;
+        if (document.getElementById('sciticStandaloneToolNav')) return;
+
+        const nav = document.createElement('nav');
+        nav.id = 'sciticStandaloneToolNav';
+        nav.className = 'scitic-standalone-tool-nav';
+        nav.setAttribute('aria-label', 'Navegación de herramienta');
+        nav.innerHTML = `
+            <a href="/herramientas" class="scitic-tool-nav-btn is-primary">← Herramientas</a>
+            <a href="/" class="scitic-tool-nav-btn">Selector de Módulos</a>
+        `;
+        document.body.prepend(nav);
+    }
+
     function init() {
         const saved = localStorage.getItem(STORAGE_KEY) || 'dark';
         setTheme(saved);
+        injectStandaloneToolNav();
 
         const iframe = document.getElementById('iframeHerramienta');
         if (iframe) {
