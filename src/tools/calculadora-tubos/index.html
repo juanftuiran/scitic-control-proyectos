@@ -1115,8 +1115,9 @@
             <!-- Panel Modo Atípico -->
             <div id="panel-torre-atipica" class="hidden" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                 <div class="input-group">
-                    <label title="Ingresa los nombres de los pisos en orden de altura (desde la cubierta hacia abajo) separados por comas.">Secuencia de Pisos (de arriba a abajo):</label>
-                    <input type="text" id="in-pisos-atipicos" value="5, 4, 3, 2, 1, 99, 98, 97, 96, 95" style="width: 250px;" class="input-tramo">
+                    <label title="Ingresa los pisos de arriba hacia abajo. Usa guion (-) para rangos y coma (,) para saltos o pisos especiales.">Secuencia de Pisos (de arriba a abajo):</label>
+                    <input type="text" id="in-pisos-atipicos" value="" placeholder="Ej: 15-10, 8, 5-1, S1, S2" style="width: 270px;" class="input-tramo">
+                    <small style="display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">Usa <strong>-</strong> para rangos (ej. 15-10) y <strong>,</strong> para saltos o sótanos (ej. 15-10, 8, 5-1, S1)</small>
                 </div>
                 <div class="input-group">
                     <label title="Indica en cuál de estos pisos está instalado el salón SETI.">Piso del SETI:</label>
@@ -1501,9 +1502,27 @@
                 setiPisoNombre = String(pisoBase);
             } else {
                 let inputTexto = document.getElementById('in-pisos-atipicos')?.value || '';
-                let partes = inputTexto.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                let tokens = inputTexto.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                let partes = [];
+                for (const token of tokens) {
+                    const rangoMatch = token.match(/^(-?\d+)\s*-\s*(-?\d+)$/);
+                    if (rangoMatch) {
+                        const inicio = parseInt(rangoMatch[1], 10);
+                        const fin = parseInt(rangoMatch[2], 10);
+                        if (Math.abs(fin - inicio) > 300) {
+                            notificarToast(`El rango "${token}" es demasiado grande (máx. 300 pisos).`, "warning");
+                            return;
+                        }
+                        const paso = inicio >= fin ? -1 : 1;
+                        for (let p = inicio; paso < 0 ? p >= fin : p <= fin; p += paso) {
+                            partes.push(String(p));
+                        }
+                    } else {
+                        partes.push(token);
+                    }
+                }
                 if (partes.length === 0) {
-                    notificarToast("Por favor ingresa la secuencia de pisos separados por comas (ej. 5, 4, 3, 2, 1).", "warning");
+                    notificarToast("Por favor ingresa la secuencia de pisos (ej. 15-10, 8, 5-1, S1).", "warning");
                     return;
                 }
                 listaPisos = partes;
@@ -2963,16 +2982,23 @@
                 const selTipo = document.getElementById('sel-tipo-torre');
                 if (selTipo) selTipo.value = 'estandar';
                 actualizarPanelesTipoTorre('estandar');
+                const inAtip = document.getElementById('in-pisos-atipicos');
+                if (inAtip) inAtip.value = '';
                 generarTablaTorres();
             } else if (opcion === 'atipica') {
-                // Modo Torres Atípica únicamente (limpiar parcelaciones)
+                // Modo Torres Atípica únicamente (limpiar parcelaciones y dejar secuencia en blanco)
                 const tbodyParc = document.getElementById('tabla-body-parcelaciones');
+                const tbodyTubos = document.getElementById('tabla-body-torres');
+                const tbodyBandeja = document.getElementById('tabla-body-bandeja-torres');
                 if (tbodyParc) tbodyParc.replaceChildren();
+                if (tbodyTubos) tbodyTubos.replaceChildren();
+                if (tbodyBandeja) tbodyBandeja.replaceChildren();
                 cambiarModoApp('torres');
                 const selTipo = document.getElementById('sel-tipo-torre');
                 if (selTipo) selTipo.value = 'atipica';
+                const inAtip = document.getElementById('in-pisos-atipicos');
+                if (inAtip) inAtip.value = '';
                 actualizarPanelesTipoTorre('atipica');
-                generarTablaTorres();
             } else if (opcion === 'parcelacion') {
                 // Modo Parcelación únicamente (limpiar torres)
                 const tbodyTubos = document.getElementById('tabla-body-torres');
