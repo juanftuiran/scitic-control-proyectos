@@ -121,11 +121,30 @@ class APIService {
     // GASTOS (Viáticos y extras)
     // ==========================================
 
+    async _fetchAllPaginated(table, selectCols, orderCol, ascending = false) {
+        const pageSize = 1000;
+        let allRows = [];
+        let from = 0;
+
+        while (true) {
+            let query = this.db.from(table).select(selectCols);
+            if (orderCol) {
+                query = query.order(orderCol, { ascending });
+            }
+            const { data, error } = await query.range(from, from + pageSize - 1);
+            if (error) throw error;
+            if (!data || data.length === 0) break;
+            allRows = allRows.concat(data);
+            if (data.length < pageSize) break;
+            from += pageSize;
+        }
+
+        return allRows;
+    }
+
     async getGastos() {
         try {
-            const { data, error } = await this.db.from('gastos').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            return data;
+            return await this._fetchAllPaginated('gastos', '*', 'created_at', false);
         } catch (error) {
             console.error("Error fetching gastos:", error);
             Toast.error("Error cargando gastos.");
@@ -189,9 +208,12 @@ class APIService {
 
     async getRegistros() {
         try {
-            const { data, error } = await this.db.from('registros').select('id, cliente, proyecto, trabajador, fecha, horas, actividad, horas_pres, valor, pago');
-            if (error) throw error;
-            return data;
+            return await this._fetchAllPaginated(
+                'registros',
+                'id, cliente, proyecto, trabajador, fecha, horas, actividad, horas_pres, valor, pago',
+                'fecha',
+                false
+            );
         } catch (error) {
             console.error("Error fetching registros:", error);
             Toast.error("Error cargando registros.");

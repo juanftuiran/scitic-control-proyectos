@@ -953,10 +953,20 @@ function inicializarDatosGlobales() {
 // ==========================================
 // 5. CORE: FILTROS Y CRUD
 // ==========================================
+function normalizarNombre(str) {
+    return String(str || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
 function filtrar() {
     const fc = document.getElementById('fCliente').value;
     let ft = document.getElementById('fTrabajador').value;
     if (usuarioActual.role === 'colaborador') ft = usuarioActual.name;
+    const ftNorm = normalizarNombre(ft);
 
     const fp = document.getElementById('fProyecto').value;
     const fMes = document.getElementById('fMes').value;
@@ -964,7 +974,7 @@ function filtrar() {
 
     listaFiltradaGlobal = datos.filter(d => {
         const matchCliente = !fc || (d.cliente || '').trim() === fc;
-        const matchTrabajador = !ft || (d.trabajador || '').trim() === ft;
+        const matchTrabajador = !ftNorm || normalizarNombre(d.trabajador) === ftNorm;
         const matchProyecto = !fp || (d.proyecto || '').trim() === fp;
         const matchMes = !fMes || ((d.fecha || '') && (d.fecha || '').substring(0, 7) === fMes);
 
@@ -984,7 +994,7 @@ function filtrar() {
     }
     generarPendientes();
 
-    const datosParaCliente = datos.filter(d => (!ft || (d.trabajador || '').trim() === ft) && (!fp || (d.proyecto || '').trim() === fp));
+    const datosParaCliente = datos.filter(d => (!ftNorm || normalizarNombre(d.trabajador) === ftNorm) && (!fp || (d.proyecto || '').trim() === fp));
     const clientesSet = new Set(datosParaCliente.map(d => (d.cliente || '').trim()).filter(Boolean));
 
     const datosParaTrabajador = datos.filter(d => (!fc || (d.cliente || '').trim() === fc) && (!fp || (d.proyecto || '').trim() === fp));
@@ -1233,7 +1243,7 @@ function mostrar(lista) {
         if (d.proyecto) proyActivos.add(d.proyecto.trim());
         const animDelay = Math.min(index * 0.02, 0.5);
 
-        const puedeEditar = esAdmin || usuarioActual.role === 'moderador' || ((d.trabajador || '').trim() === usuarioActual.name.trim());
+        const puedeEditar = esAdmin || usuarioActual.role === 'moderador' || (normalizarNombre(d.trabajador) === normalizarNombre(usuarioActual.name));
 
         htmlTabla += `
         <tr class="animated-row" style="animation-delay: ${animDelay}s;">
@@ -1647,7 +1657,7 @@ async function eliminar(id) {
 
 function editar(id) {
     const d = datos.find(x => x.id === id); if (!d) return;
-    if (usuarioActual.role === 'colaborador' && (d.trabajador || '').trim() !== usuarioActual.name.trim()) return Toast.error("Permiso denegado.");
+    if (usuarioActual.role === 'colaborador' && normalizarNombre(d.trabajador) !== normalizarNombre(usuarioActual.name)) return Toast.error("Permiso denegado.");
 
     document.getElementById('cliente').value = (d.cliente || '').trim();
     document.getElementById('proyecto').value = (d.proyecto || '').trim();
@@ -1920,10 +1930,11 @@ function filtrarGastos() {
     if (usuarioActual && usuarioActual.role === 'colaborador') {
         fTrabajador = usuarioActual.name;
     }
+    const fTrabNorm = normalizarNombre(fTrabajador);
 
     listaFiltradaGastos = gastosDatos.filter(g => {
         const matchMes = !fMes || (g.fecha && g.fecha.substring(0, 7) === fMes);
-        const matchTrabajador = !fTrabajador || (g.trabajador && g.trabajador.trim() === fTrabajador);
+        const matchTrabajador = !fTrabNorm || normalizarNombre(g.trabajador) === fTrabNorm;
         const matchProyecto = !fProyecto || (g.proyecto && g.proyecto.trim() === fProyecto);
         const matchEstado = !fEstado || g.estado === fEstado;
 
