@@ -1082,23 +1082,29 @@
                 ? '<span class="hub-card-source source-template">📑 Plantilla</span>'
                 : '<span class="hub-card-source source-server">☁️ Servidor</span>';
 
-            const d = p.datos_json || {};
-            const secs = d.sectores || [];
-            const cantSectores = secs.length > 0 ? secs.length : 1;
+            const d = p.datos_json || null;
+            const res = p.resumen || {};
+            let cantSectores = Number(res.cantSectores) || 1;
+            let totalCasas = Number(res.totalCasas) || 0;
+            let totalNaps = Number(res.cantNaps) || 0;
 
-            let totalCasas = 0;
-            let totalNaps = 0;
+            if (d) {
+                const secs = d.sectores || [];
+                cantSectores = secs.length > 0 ? secs.length : 1;
+                totalCasas = 0;
+                totalNaps = 0;
 
-            if (Array.isArray(d.sectores) && d.sectores.length > 0) {
-                d.sectores.forEach(s => {
-                    (s.naps || []).forEach(n => {
-                        totalCasas += (parseInt(n.numCasas) || 0);
-                        totalNaps++;
+                if (Array.isArray(d.sectores) && d.sectores.length > 0) {
+                    d.sectores.forEach(s => {
+                        (s.naps || []).forEach(n => {
+                            totalCasas += (parseInt(n.numCasas) || 0);
+                            totalNaps++;
+                        });
                     });
-                });
-            } else if (Array.isArray(d.naps)) {
-                // Compatibilidad con versión previa mono-sector
-                d.naps.forEach(n => { totalCasas += (parseInt(n.numCasas) || 0); totalNaps++; });
+                } else if (Array.isArray(d.naps)) {
+                    // Compatibilidad con versión previa mono-sector
+                    d.naps.forEach(n => { totalCasas += (parseInt(n.numCasas) || 0); totalNaps++; });
+                }
             }
 
             let fecha = 'Plantilla base';
@@ -1143,20 +1149,53 @@
         renderizarTarjetasHub(filtrados);
     }
 
-    function abrirProyectoDesdeHub(id) {
+    async function abrirProyectoDesdeHub(id) {
         const p = hubProyectosCache.find(x => String(x.id) === String(id));
         if (!p) return;
 
+        let datos = p.datos_json;
+        let nombreProyecto = p.nombre_proyecto;
+
+        if (!p.esPlantilla && !datos) {
+            const api = getAPIService();
+            if (!api || !api.getProyectoCalculadoraPorId) {
+                notificarToast('Servicio API no disponible para cargar el proyecto.', 'error');
+                return;
+            }
+            try {
+                notificarToast('Cargando proyecto desde el servidor...', 'info');
+                const proy = await api.getProyectoCalculadoraPorId(p.id);
+                if (!proy || !proy.datos_json) {
+                    throw new Error('Los datos del proyecto están vacíos.');
+                }
+                datos = proy.datos_json;
+                nombreProyecto = proy.nombre_proyecto || nombreProyecto;
+                p.datos_json = datos;
+            } catch (error) {
+                console.error('Error al cargar proyecto desde el servidor:', error);
+                notificarToast('Error al cargar el proyecto: ' + (error.message || error), 'error');
+                return;
+            }
+        }
+
+        if (!datos) {
+            notificarToast('No se encontraron datos para este proyecto.', 'error');
+            return;
+        }
+
         if (p.esPlantilla) {
             proyectoActivoId = null;
-            proyectoActivoNombre = p.nombre_proyecto;
+            proyectoActivoNombre = nombreProyecto;
         } else {
             proyectoActivoId = p.id;
-            proyectoActivoNombre = p.nombre_proyecto;
+            proyectoActivoNombre = nombreProyecto;
         }
         actualizarBadgeProyectoActivo();
 
-        cargarDatosEnInterfaz(p.datos_json);
+        cargarDatosEnInterfaz(datos);
+        if (nombreProyecto) {
+            document.getElementById('project-title').value = nombreProyecto;
+        }
 
         document.getElementById('vista-proyectos-hub').style.display = 'none';
         document.getElementById('vista-editor').style.display = 'block';
@@ -1164,6 +1203,10 @@
         generarPestañasSectores();
         renderizarSectorActivo();
         generarBalanceUrbanizacion();
+
+        if (!p.esPlantilla) {
+            notificarToast(`Proyecto "${proyectoActivoNombre}" cargado con éxito.`, 'success');
+        }
     }
 
     function crearNuevaUrbanizacion() {
